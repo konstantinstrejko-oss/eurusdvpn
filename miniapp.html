@@ -1197,7 +1197,10 @@ async function loadSub() {
   }
 }
 
+let hasActiveSub = false;
+
 function showSubActive(daysLeft, total, planName) {
+  hasActiveSub = true;
   const used = total - daysLeft;
   setStatus('active', '🟢 VPN АКТИВЕН', `Осталось ${daysLeft} дн. из ${total}`);
   setProgress(used, total);
@@ -1208,15 +1211,42 @@ function showSubActive(daysLeft, total, planName) {
     <div class="irow"><span class="irow-label">📊 Прогресс</span><span class="irow-val hl">${used}/${total} дн.</span></div>
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="openBot()">📎 Получить конфиг в боте</button>
-    <button class="btn btn-secondary" onclick="nav('buy')">🔄 Продлить подписку</button>
+    <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
     <button class="btn btn-danger" style="margin-top:4px" onclick="showCancelConfirm()">❌ Отменить подписку</button>
   `;
+
+  // Update buy screen title to "extend"
+  updateBuyScreenMode(true, daysLeft);
 }
 
 function showSubInactive() {
+  hasActiveSub = false;
   setStatus('inactive', '🔒 НЕТ ПОДПИСКИ', 'Купи подписку чтобы подключиться');
   document.getElementById('statusProgress').style.display = 'none';
+  updateBuyScreenMode(false, 0);
 }
+
+function updateBuyScreenMode(isExtend, daysLeft) {
+  const title = document.querySelector('#s-buy .card-title span');
+  const infoCard = document.querySelector('#s-buy .card:last-child');
+  if (isExtend) {
+    if (title) title.parentElement.innerHTML = '<span>🔄</span> Продление подписки';
+    if (infoCard) infoCard.innerHTML = 
+      `✅ Дни добавятся к текущей подписке<br>
+       ✅ Текущий IP и ключ сохранятся<br>
+       ✅ Подтверждение от администратора<br>
+       <span style="color:var(--cyan);font-size:13px">Сейчас активно: ${daysLeft} дн.</span>`;
+  } else {
+    if (title) title.parentElement.innerHTML = '<span>🛒</span> Выбери тариф';
+    if (infoCard) infoCard.innerHTML = 
+      `✅ Безлимитный трафик<br>
+       ✅ AES-256 военное шифрование<br>
+       ✅ Сервер в Европе · 10 Gbps<br>
+       ✅ Конфиг приходит автоматически`;
+  }
+}
+
+
 
 function showSubPending() {
   setStatus('pending', '⏳ ОЖИДАНИЕ', 'Платёж на проверке у администратора');
@@ -1224,6 +1254,11 @@ function showSubPending() {
 
 // ─── Plan selection ───
 function selectPlan(key, price, days) {
+  // Reset pending flag when starting new payment
+  isPendingPayment = false;
+  paymentSubmittedAt = null;
+  stopPolling();
+  
   selectedPlan = { key, price, days, name: PLANS[key]?.name || key };
   document.getElementById('reqAmount').textContent = price;
   document.getElementById('reqPlanName').textContent = selectedPlan.name + ' · ' + days + ' дней';
@@ -1231,6 +1266,7 @@ function selectPlan(key, price, days) {
   document.getElementById('submitBtn').style.opacity = '0.4';
   document.getElementById('submitBtn').style.pointerEvents = 'none';
   document.getElementById('digitsHint').textContent = 'Введи 4 цифры чтобы продолжить';
+  document.getElementById('digitsHint').style.color = 'var(--muted)';
   nav('req');
 }
 
@@ -1263,14 +1299,26 @@ function submitPayment() {
 
   paymentSubmittedAt = Date.now();
   isPendingPayment = true;
+  stopPolling(); // Stop any previous polling
 
   const url = `https://t.me/EurUsdVpnService_bot?start=pay_${selectedPlan.key}_${digits}`;
   if (tg) tg.openTelegramLink(url);
   else window.open(url, '_blank');
 
   // Show waiting screen immediately
-  document.getElementById('waitPlanLabel').textContent = selectedPlan.name + ' · ' + selectedPlan.price + '₽';
+  const action = hasActiveSub ? 'Продление' : 'Оплата';
+  document.getElementById('waitPlanLabel').textContent = `${action}: ${selectedPlan.name} · ${selectedPlan.price}₽`;
   document.getElementById('waitPayId').textContent = '...';
+  // Update wait screen text
+  const waitTitle = document.querySelector('.wait-title');
+  const waitSub = document.querySelector('.wait-sub');
+  if (hasActiveSub) {
+    if (waitTitle) waitTitle.textContent = 'Ожидание продления';
+    if (waitSub) waitSub.innerHTML = 'Администратор проверяет платёж.<br>После подтверждения дни добавятся к текущей подписке.<br><br>Конфиг менять не нужно 📱';
+  } else {
+    if (waitTitle) waitTitle.textContent = 'Ожидание подтверждения';
+    if (waitSub) waitSub.innerHTML = 'Администратор проверяет платёж.<br>Обычно занимает до 30 минут.<br><br>Конфиг придёт прямо в этот бот 📱';
+  }
   showSubPending();
   nav('wait');
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
@@ -1399,6 +1447,8 @@ async function checkPayment(pid) {
 }
 
 function onPaymentConfirmed() {
+  isPendingPayment = false;
+  paymentSubmittedAt = null;
   loadSub();
   // Update waiting screen
   document.getElementById('s-wait').innerHTML = `
@@ -1427,11 +1477,38 @@ function showCancelConfirm() {
   nav('cancel');
 }
 
-function confirmCancel() {
-  // Open bot with cancel command
-  openLink('https://t.me/EurUsdVpnService_bot?start=cancel_sub');
-  showToast('Открываю бота для подтверждения...');
-  goBack();
+async function confirmCancel() {
+  const tgId = user?.id || tg?.initDataUnsafe?.user?.id || urlTgId;
+  if (!tgId) {
+    showToast('❌ Ошибка: не удалось определить пользователя');
+    return;
+  }
+
+  // Show loading
+  const btn = document.querySelector('#s-cancel .btn-danger');
+  if (btn) { btn.textContent = '⏳ Отменяю...'; btn.style.pointerEvents = 'none'; }
+
+  try {
+    const r = await fetch(`https://prep-logical-diane-url.trycloudflare.com/api/cancel?tg_id=${tgId}`, {
+      signal: AbortSignal.timeout(8000)
+    });
+    const data = await r.json();
+    if (data.status === 'cancelled') {
+      hasActiveSub = false;
+      isPendingPayment = false;
+      showSubInactive();
+      nav('home');
+      showToast('✅ Подписка отменена. Ключ отозван.');
+    } else {
+      showToast('❌ Ошибка: ' + (data.msg || 'попробуй через бота'));
+      if (btn) { btn.textContent = '⚠️ Да, отменить подписку'; btn.style.pointerEvents = 'all'; }
+    }
+  } catch(e) {
+    // Fallback to bot if API fails
+    openLink('https://t.me/EurUsdVpnService_bot?start=cancel_sub');
+    showToast('Подтверди отмену в боте');
+    goBack();
+  }
 }
 
 function toggleFaq(el) {
