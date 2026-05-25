@@ -902,6 +902,25 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
       <button class="btn btn-secondary" style="margin-top:0" onclick="openSupport()">💬 Написать в поддержку</button>
     </div>
 
+    <!-- ═══ CANCEL CONFIRM ═══ -->
+    <div class="screen" id="s-cancel">
+      <div class="card" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:52px;margin-bottom:16px">⚠️</div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--red);margin-bottom:12px">ВНИМАНИЕ!</div>
+          <div style="color:var(--muted2);font-size:14px;line-height:1.8">
+            Ты собираешься <b style="color:var(--text)">отменить подписку</b>.<br><br>
+            ❗ Ключ будет отозван немедленно<br>
+            ❗ Деньги возврату не подлежат<br>
+            ❗ Подключение прекратится сразу<br><br>
+            <b style="color:var(--red)">Это действие необратимо!</b>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="confirmCancel()">⚠️ Да, отменить подписку</button>
+      <button class="btn btn-secondary" onclick="goBack()">◀️ Нет, оставить подписку</button>
+    </div>
+
     <!-- ═══ SUPPORT ═══ -->
     <div class="screen" id="s-support">
 
@@ -1072,7 +1091,7 @@ const NAV_SCREENS = ['home', 'sub', 'buy', 'support'];
 const BACK_SCREENS = { req: 'buy', wait: 'home' };
 const SCREEN_TITLES = {
   home: null, sub: 'Подписка', buy: 'Тарифы',
-  support: 'Поддержка', req: 'Оплата', wait: 'Статус заявки'
+  support: 'Поддержка', req: 'Оплата', wait: 'Статус заявки', cancel: 'Отмена подписки'
 };
 
 function nav(id) {
@@ -1190,6 +1209,7 @@ function showSubActive(daysLeft, total, planName) {
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="openBot()">📎 Получить конфиг в боте</button>
     <button class="btn btn-secondary" onclick="nav('buy')">🔄 Продлить подписку</button>
+    <button class="btn btn-danger" style="margin-top:4px" onclick="showCancelConfirm()">❌ Отменить подписку</button>
   `;
 }
 
@@ -1402,6 +1422,17 @@ function onPaymentConfirmed() {
 }
 
 
+
+function showCancelConfirm() {
+  nav('cancel');
+}
+
+function confirmCancel() {
+  // Open bot with cancel command
+  openLink('https://t.me/EurUsdVpnService_bot?start=cancel_sub');
+  showToast('Открываю бота для подтверждения...');
+  goBack();
+}
 
 function toggleFaq(el) {
   const isOpen = el.classList.contains('open');
