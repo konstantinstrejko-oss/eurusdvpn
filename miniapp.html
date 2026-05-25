@@ -1165,7 +1165,7 @@ async function loadSub() {
       showSubActive(data.days_left, data.days_total, data.plan);
     } else if (data.status === 'pending') {
       showSubPending();
-      setTimeout(loadSub, 8000);
+      setTimeout(loadSub, 4000);
     } else if (data.status === 'rejected') {
       setStatus('inactive', '❌ ЗАЯВКА ОТКЛОНЕНА', 'Обратись в поддержку');
       document.getElementById('statusProgress').style.display = 'none';
@@ -1256,7 +1256,7 @@ function submitPayment() {
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
 
   // Start polling after 15 seconds
-  setTimeout(() => startPolling(Date.now()), 15000);
+  setTimeout(() => startPolling(Date.now()), 5000);
 }
 
 // ─── Utils ───
@@ -1347,7 +1347,7 @@ let pendingPaymentId = null;
 function startPolling(pid) {
   pendingPaymentId = pid;
   stopPolling();
-  pollTimer = setInterval(() => checkPayment(pid), 5000);
+  pollTimer = setInterval(() => checkPayment(pid), 3000);
   checkPayment(pid);
 }
 
