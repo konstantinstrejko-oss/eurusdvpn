@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EurUsdVPN — Свобода без границ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050508;
+  --bg2: #0a0a12;
+  --purple: #7c3aed;
+  --purple2: #a855f7;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --border: rgba(124,58,237,0.3);
+  --glow: 0 0 20px rgba(124,58,237,0.5);
+  --glow2: 0 0 40px rgba(168,85,247,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  width: 12px; height: 12px;
+  background: var(--purple2);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.1s;
+  box-shadow: 0 0 10px var(--purple2), 0 0 20px var(--purple);
+}
+.cursor-trail {
+  width: 30px; height: 30px;
+  border: 1px solid rgba(168,85,247,0.4);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transition: all 0.15s ease;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1; opacity: 0.4;
+}
+
+/* Grid background */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none; z-index: 0;
+  animation: gridMove 20s linear infinite;
+}
+@keyframes gridMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  background: rgba(5,5,8,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple2), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+.nav-links { display: flex; gap: 40px; list-style: none; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
+  transition: color 0.3s;
+  font-weight: 600;
+}
+.nav-links a:hover { color: var(--purple2); text-shadow: 0 0 10px var(--purple2); }
+.lang-toggle {
+  display: flex; gap: 8px;
+}
+.lang-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); padding: 6px 14px; border-radius: 4px;
+  cursor: none; font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; letter-spacing: 1px; transition: all 0.3s;
+}
+.lang-btn.active, .lang-btn:hover {
+  border-color: var(--purple2); color: var(--purple2);
+  background: rgba(124,58,237,0.1);
+}
+
+/* HERO */
+.hero {
+  position: relative; z-index: 2;
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 120px 40px 80px;
+  overflow: hidden;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.hero-orb-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.3), transparent 70%);
+  top: -100px; left: -100px;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.hero-orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(6,182,212,0.2), transparent 70%);
+  bottom: -50px; right: -50px;
+  animation: orbFloat 10s ease-in-out infinite reverse;
+}
+.hero-orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(236,72,153,0.15), transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  animation: orbPulse 4s ease-in-out infinite;
+}
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0); }
+  50% { transform: translate(40px, -40px); }
+}
+@keyframes orbPulse {
+  0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.4);
+  padding: 8px 20px; border-radius: 50px;
+  font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--purple2); margin-bottom: 30px;
+  animation: fadeInDown 0.8s ease both;
+}
+.badge-dot {
+  width: 6px; height: 6px; background: var(--cyan);
+  border-radius: 50%; animation: pulseDot 2s infinite;
+}
+@keyframes pulseDot {
+  0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(6,182,212,0.4); }
+  50% { opacity:0.5; box-shadow: 0 0 0 6px rgba(6,182,212,0); }
+}
+
+.hero h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 900; line-height: 1;
+  margin-bottom: 20px;
+  animation: fadeInDown 0.8s ease 0.2s both;
+}
+.hero h1 .line1 {
+  display: block;
+  background: linear-gradient(135deg, #fff 0%, var(--purple2) 50%, var(--cyan) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(168,85,247,0.5));
+}
+.hero h1 .line2 {
+  display: block;
+  background: linear-gradient(135deg, var(--cyan), var(--purple2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 22px); color: var(--muted);
+  max-width: 600px; margin: 0 auto 50px;
+  line-height: 1.6; font-weight: 300;
+  animation: fadeInDown 0.8s ease 0.4s both;
+}
+
+.hero-cta {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  animation: fadeInDown 0.8s ease 0.6s both;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: white; text-decoration: none;
+  padding: 16px 36px; border-radius: 8px;
+  font-family: 'Orbitron', monospace; font-size: 14px;
+  letter-spacing: 2px; text-transform: uppercase;
+  border: none; cursor: none;
+  position: relative; overflow: hidden;
+  box-shadow: 0 0 30px rgba(124,58,237,0.4);
+  transition: all 0.3s;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary:hover {
+  box-shadow: 0 0 50px rgba(124,58,237,0.7);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); color: var(--text);
+  text-decoration: none; padding: 16px 36px; border-radius: 8px;
+  font-family: 'Orbitron', monospace; font-size: 14px;
+  letter-spacing: 2px; text-transform: uppercase; cursor: none;
+  transition: all 0.3s; backdrop-filter: blur(10px);
+}
+.btn-secondary:hover {
+  border-color: var(--purple2); color: var(--purple2);
+  background: rgba(124,58,237,0.1);
+  box-shadow: var(--glow);
+}
+
+/* STATS */
+.stats {
+  position: relative; z-index: 2;
+  display: flex; justify-content: center; gap: 0;
+  padding: 0 60px 80px; flex-wrap: wrap;
+  animation: fadeInUp 0.8s ease 0.8s both;
+}
+.stat {
+  flex: 1; min-width: 180px; max-width: 260px;
+  text-align: center; padding: 40px 30px;
+  border: 1px solid var(--border);
+  background: rgba(124,58,237,0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+  position: relative; overflow: hidden;
+}
+.stat:first-child { border-radius: 12px 0 0 12px; }
+.stat:last-child { border-radius: 0 12px 12px 0; }
+.stat::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(124,58,237,0.1), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.stat:hover::before { opacity: 1; }
+.stat:hover { border-color: var(--purple2); box-shadow: var(--glow); }
+.stat-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 42px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple2), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  display: block; line-height: 1;
+}
+.stat-label { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; }
+
+/* FEATURES */
+.section { position: relative; z-index: 2; padding: 100px 60px; }
+.section-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(28px, 4vw, 48px);
+  text-align: center; margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff, var(--purple2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.section-sub { text-align: center; color: var(--muted); margin-bottom: 70px; font-size: 16px; letter-spacing: 1px; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px; max-width: 1200px; margin: 0 auto;
+}
+.feature-card {
+  background: rgba(10,10,18,0.8);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s; position: relative; overflow: hidden;
+}
+.feature-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple2), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.feature-card:hover { border-color: var(--purple2); transform: translateY(-4px); box-shadow: var(--glow2); }
+.feature-card:hover::after { opacity: 1; }
+.feature-icon { font-size: 40px; margin-bottom: 20px; display: block; filter: drop-shadow(0 0 10px rgba(168,85,247,0.5)); }
+.feature-title { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+.feature-desc { color: var(--muted); line-height: 1.7; font-size: 15px; }
+
+/* PLANS */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px; max-width: 1100px; margin: 0 auto;
+}
+.plan-card {
+  background: rgba(10,10,18,0.9);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px 32px;
+  text-align: center; transition: all 0.4s;
+  position: relative; overflow: hidden; cursor: none;
+}
+.plan-card.featured {
+  border-color: var(--purple2);
+  background: rgba(124,58,237,0.08);
+  box-shadow: var(--glow2);
+  transform: scale(1.05);
+}
+.plan-card.featured::before {
+  content: attr(data-badge);
+  position: absolute; top: 16px; right: 16px;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: white; font-size: 11px; letter-spacing: 1px;
+  padding: 4px 12px; border-radius: 50px; text-transform: uppercase;
+  font-family: 'Orbitron', monospace;
+}
+.plan-card:hover:not(.featured) { border-color: var(--purple2); box-shadow: var(--glow); transform: translateY(-4px); }
+.plan-name { font-family: 'Orbitron', monospace; font-size: 16px; color: var(--purple2); letter-spacing: 2px; margin-bottom: 24px; }
+.plan-price {
+  font-family: 'Orbitron', monospace;
+  font-size: 52px; font-weight: 900; line-height: 1;
+  background: linear-gradient(135deg, #fff, var(--purple2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.plan-currency { font-size: 24px; }
+.plan-period { color: var(--muted); font-size: 14px; margin: 8px 0 24px; letter-spacing: 1px; }
+.plan-features { list-style: none; text-align: left; margin-bottom: 32px; }
+.plan-features li {
+  padding: 8px 0; color: var(--muted); font-size: 14px;
+  border-bottom: 1px solid rgba(124,58,237,0.1);
+  display: flex; align-items: center; gap: 8px;
+}
+.plan-features li::before { content: '◆'; color: var(--purple2); font-size: 8px; }
+.plan-btn {
+  display: block; width: 100%;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: white; text-decoration: none; padding: 14px;
+  border-radius: 8px; font-family: 'Orbitron', monospace;
+  font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  border: none; cursor: none; transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(124,58,237,0.3);
+}
+.plan-btn:hover { box-shadow: 0 0 40px rgba(124,58,237,0.6); transform: translateY(-1px); }
+
+/* HOW IT WORKS */
+.steps {
+  display: flex; gap: 0; max-width: 1000px; margin: 0 auto;
+  flex-wrap: wrap;
+}
+.step {
+  flex: 1; min-width: 200px;
+  padding: 40px 30px; text-align: center;
+  position: relative;
+}
+.step:not(:last-child)::after {
+  content: '→';
+  position: absolute; right: -12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--purple2); font-size: 24px;
+  text-shadow: 0 0 10px var(--purple2);
+}
+.step-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 48px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1; margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
+}
+.step-title { font-family: 'Orbitron', monospace; font-size: 16px; margin-bottom: 10px; color: #fff; }
+.step-desc { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* TERMINAL */
+.terminal {
+  max-width: 700px; margin: 60px auto 0;
+  background: rgba(5,5,8,0.95);
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 0 60px rgba(124,58,237,0.2);
+}
+.terminal-header {
+  background: rgba(124,58,237,0.1);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width:12px; height:12px; border-radius:50%; }
+.dot-r { background: #ff5f56; }
+.dot-y { background: #ffbd2e; }
+.dot-g { background: #27c93f; }
+.terminal-title { flex:1; text-align:center; color: var(--muted); font-size: 13px; letter-spacing: 1px; }
+.terminal-body { padding: 24px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.8; }
+.t-comment { color: #4a5568; }
+.t-key { color: var(--cyan); }
+.t-val { color: var(--purple2); }
+.t-str { color: #68d391; }
+.t-cursor { display: inline-block; width: 8px; height: 16px; background: var(--purple2); animation: blink 1s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* SUPPORT SECTION */
+.support-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px; max-width: 900px; margin: 0 auto;
+}
+.support-card {
+  background: rgba(10,10,18,0.8);
+  border: 1px solid var(--border); border-radius: 16px;
+  padding: 40px; text-align: center; transition: all 0.3s;
+}
+.support-card:hover { border-color: var(--purple2); box-shadow: var(--glow); transform: translateY(-4px); }
+.support-icon { font-size: 48px; margin-bottom: 20px; display: block; }
+.support-title { font-family: 'Orbitron', monospace; font-size: 18px; margin-bottom: 12px; }
+.support-desc { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 24px; }
+.support-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--purple2); text-decoration: none;
+  font-size: 14px; letter-spacing: 1px;
+  border: 1px solid rgba(124,58,237,0.4); padding: 10px 24px; border-radius: 6px;
+  transition: all 0.3s;
+}
+.support-link:hover { background: rgba(124,58,237,0.15); box-shadow: var(--glow); }
+
+/* FOOTER */
+footer {
+  position: relative; z-index: 2;
+  text-align: center; padding: 60px;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 14px; letter-spacing: 1px;
+}
+footer .footer-logo {
+  font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900;
+  background: linear-gradient(135deg, var(--purple2), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 20px; display: block;
+}
+footer p { margin: 8px 0; }
+
+/* GLITCH effect for logo */
+@keyframes glitch {
+  0%,100% { clip-path: none; transform: none; }
+  5% { clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%); transform: translate(-3px); }
+  10% { clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%); transform: translate(3px); }
+  15% { clip-path: none; transform: none; }
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity:0; transform: translateY(-30px); }
+  to { opacity:1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity:0; transform: translateY(30px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.fade-in { opacity: 0; transform: translateY(40px); transition: all 0.7s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* Scanline effect */
+.scanline {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+  );
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .section { padding: 60px 24px; }
+  .stats { padding: 0 24px 60px; }
+  .stat { border-radius: 8px; margin: 4px; }
+  .plan-card.featured { transform: none; }
+  .step:not(:last-child)::after { display: none; }
+}
+
+/* EN hidden by default */
+[data-lang="en"] { display: none; }
+body.lang-en [data-lang="ru"] { display: none; }
+body.lang-en [data-lang="en"] { display: block; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<div class="scanline"></div>
+
+<nav>
+  <div class="logo">EUR/USD<span style="color:var(--cyan)">VPN</span></div>
+  <ul class="nav-links">
+    <li><a href="#features" data-lang="ru">Функции</a><a href="#features" data-lang="en">Features</a></li>
+    <li><a href="#plans" data-lang="ru">Тарифы</a><a href="#plans" data-lang="en">Plans</a></li>
+    <li><a href="#how" data-lang="ru">Как начать</a><a href="#how" data-lang="en">How to start</a></li>
+    <li><a href="#support" data-lang="ru">Поддержка</a><a href="#support" data-lang="en">Support</a></li>
+  </ul>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+  <div style="position:relative;z-index:2">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span data-lang="ru">Серверы онлайн · AmneziaWG</span>
+      <span data-lang="en">Servers online · AmneziaWG</span>
+    </div>
+    <h1>
+      <span class="line1" data-lang="ru">СВОБОДА</span>
+      <span class="line1" data-lang="en">FREEDOM</span>
+      <span class="line2" data-lang="ru">БЕЗ ГРАНИЦ</span>
+      <span class="line2" data-lang="en">NO LIMITS</span>
+    </h1>
+    <p class="hero-sub" data-lang="ru">VPN нового поколения на базе AmneziaWG. Не обнаруживается провайдерами. Максимальная скорость. Европейские серверы.</p>
+    <p class="hero-sub" data-lang="en">Next-gen VPN powered by AmneziaWG. Undetectable by ISPs. Maximum speed. European servers.</p>
+    <div class="hero-cta">
+      <a href="https://t.me/EurUsdVpnService_bot" class="btn-primary">
+        ⚡ <span data-lang="ru">Подключиться</span><span data-lang="en">Connect now</span>
+      </a>
+      <a href="#plans" class="btn-secondary">
+        💎 <span data-lang="ru">Тарифы</span><span data-lang="en">Pricing</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat fade-in">
+    <span class="stat-num" data-count="99.9">0</span><span style="color:var(--purple2);font-family:Orbitron;font-size:24px">%</span>
+    <span class="stat-label" data-lang="ru">Аптайм</span>
+    <span class="stat-label" data-lang="en">Uptime</span>
+  </div>
+  <div class="stat fade-in">
+    <span class="stat-num" data-count="10">0</span><span style="color:var(--cyan);font-family:Orbitron;font-size:24px">Gbps</span>
+    <span class="stat-label" data-lang="ru">Скорость</span>
+    <span class="stat-label" data-lang="en">Speed</span>
+  </div>
+  <div class="stat fade-in">
+    <span class="stat-num" data-count="0">0</span>
+    <span class="stat-label" data-lang="ru">Логов не ведётся</span>
+    <span class="stat-label" data-lang="en">Zero logs</span>
+  </div>
+  <div class="stat fade-in">
+    <span class="stat-num" data-count="24">0</span><span style="color:var(--pink);font-family:Orbitron;font-size:24px">/7</span>
+    <span class="stat-label" data-lang="ru">Поддержка</span>
+    <span class="stat-label" data-lang="en">Support</span>
+  </div>
+</div>
+
+<section class="section" id="features">
+  <h2 class="section-title fade-in" data-lang="ru">Почему EurUsdVPN?</h2>
+  <h2 class="section-title fade-in" data-lang="en">Why EurUsdVPN?</h2>
+  <p class="section-sub fade-in" data-lang="ru">Технологии будущего уже сегодня</p>
+  <p class="section-sub fade-in" data-lang="en">Future technology available today</p>
+  <div class="features-grid">
+    <div class="feature-card fade-in">
+      <span class="feature-icon">🛡️</span>
+      <div class="feature-title" data-lang="ru">AmneziaWG Протокол</div>
+      <div class="feature-title" data-lang="en">AmneziaWG Protocol</div>
+      <p class="feature-desc" data-lang="ru">Модифицированный WireGuard с обфускацией трафика. Провайдеры не могут определить что это VPN.</p>
+      <p class="feature-desc" data-lang="en">Modified WireGuard with traffic obfuscation. ISPs cannot detect it's a VPN.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <span class="feature-icon">⚡</span>
+      <div class="feature-title" data-lang="ru">Максимальная скорость</div>
+      <div class="feature-title" data-lang="en">Maximum speed</div>
+      <p class="feature-desc" data-lang="ru">Никаких ограничений трафика. Серверы с пропускной способностью 10 Гбит/с в центре Европы.</p>
+      <p class="feature-desc" data-lang="en">No traffic limits. Servers with 10 Gbps bandwidth in the heart of Europe.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <span class="feature-icon">🔒</span>
+      <div class="feature-title" data-lang="ru">Полная анонимность</div>
+      <div class="feature-title" data-lang="en">Full anonymity</div>
+      <p class="feature-desc" data-lang="ru">Zero-log политика. Никаких данных не хранится. Ваша активность полностью приватна.</p>
+      <p class="feature-desc" data-lang="en">Zero-log policy. No data stored. Your activity is completely private.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <span class="feature-icon">📱</span>
+      <div class="feature-title" data-lang="ru">Все устройства</div>
+      <div class="feature-title" data-lang="en">All devices</div>
+      <p class="feature-desc" data-lang="ru">iOS, Android, Windows, macOS, Linux. Один конфиг — одно устройство. Без ограничений.</p>
+      <p class="feature-desc" data-lang="en">iOS, Android, Windows, macOS, Linux. One config — one device. No restrictions.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <span class="feature-icon">🤖</span>
+      <div class="feature-title" data-lang="ru">Telegram Bot</div>
+      <div class="feature-title" data-lang="en">Telegram Bot</div>
+      <p class="feature-desc" data-lang="ru">Управление подпиской прямо в Telegram. Конфиг генерируется автоматически за секунды.</p>
+      <p class="feature-desc" data-lang="en">Manage your subscription directly in Telegram. Config generated automatically in seconds.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <span class="feature-icon">💜</span>
+      <div class="feature-title" data-lang="ru">Поддержка 24/7</div>
+      <div class="feature-title" data-lang="en">24/7 Support</div>
+      <p class="feature-desc" data-lang="ru">Живые менеджеры, не боты. Отвечаем быстро и решаем любые вопросы.</p>
+      <p class="feature-desc" data-lang="en">Live managers, not bots. We respond fast and solve any issues.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="plans" style="background: rgba(124,58,237,0.03);">
+  <h2 class="section-title fade-in" data-lang="ru">Тарифы</h2>
+  <h2 class="section-title fade-in" data-lang="en">Pricing</h2>
+  <p class="section-sub fade-in" data-lang="ru">Выбери подходящий план</p>
+  <p class="section-sub fade-in" data-lang="en">Choose your plan</p>
+  <div class="plans-grid">
+    <div class="plan-card fade-in">
+      <div class="plan-name">🔹 <span data-lang="ru">3 ДНЯ</span><span data-lang="en">3 DAYS</span></div>
+      <div class="plan-price"><span class="plan-currency">₽</span>30</div>
+      <div class="plan-period" data-lang="ru">пробный период</div>
+      <div class="plan-period" data-lang="en">trial period</div>
+      <ul class="plan-features">
+        <li data-lang="ru">Безлимитный трафик</li><li data-lang="en">Unlimited traffic</li>
+        <li data-lang="ru">Все протоколы</li><li data-lang="en">All protocols</li>
+        <li data-lang="ru">Европейский сервер</li><li data-lang="en">European server</li>
+      </ul>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="ru">Купить →</a>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="en">Buy →</a>
+    </div>
+    <div class="plan-card fade-in">
+      <div class="plan-name">🔸 <span data-lang="ru">7 ДНЕЙ</span><span data-lang="en">7 DAYS</span></div>
+      <div class="plan-price"><span class="plan-currency">₽</span>50</div>
+      <div class="plan-period" data-lang="ru">неделя свободы</div>
+      <div class="plan-period" data-lang="en">week of freedom</div>
+      <ul class="plan-features">
+        <li data-lang="ru">Безлимитный трафик</li><li data-lang="en">Unlimited traffic</li>
+        <li data-lang="ru">Все протоколы</li><li data-lang="en">All protocols</li>
+        <li data-lang="ru">Европейский сервер</li><li data-lang="en">European server</li>
+      </ul>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="ru">Купить →</a>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="en">Buy →</a>
+    </div>
+    <div class="plan-card featured fade-in" data-badge="🔥 HIT">
+      <div class="plan-name">⭐ <span data-lang="ru">1 МЕСЯЦ</span><span data-lang="en">1 MONTH</span></div>
+      <div class="plan-price"><span class="plan-currency">₽</span>119</div>
+      <div class="plan-period" data-lang="ru">самый популярный</div>
+      <div class="plan-period" data-lang="en">most popular</div>
+      <ul class="plan-features">
+        <li data-lang="ru">Безлимитный трафик</li><li data-lang="en">Unlimited traffic</li>
+        <li data-lang="ru">Все протоколы</li><li data-lang="en">All protocols</li>
+        <li data-lang="ru">Европейский сервер</li><li data-lang="en">European server</li>
+        <li data-lang="ru">Приоритетная поддержка</li><li data-lang="en">Priority support</li>
+      </ul>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="ru">Купить →</a>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="en">Buy →</a>
+    </div>
+    <div class="plan-card fade-in">
+      <div class="plan-name">💎 <span data-lang="ru">3 МЕСЯЦА</span><span data-lang="en">3 MONTHS</span></div>
+      <div class="plan-price"><span class="plan-currency">₽</span>249</div>
+      <div class="plan-period" data-lang="ru">максимальная выгода</div>
+      <div class="plan-period" data-lang="en">best value</div>
+      <ul class="plan-features">
+        <li data-lang="ru">Безлимитный трафик</li><li data-lang="en">Unlimited traffic</li>
+        <li data-lang="ru">Все протоколы</li><li data-lang="en">All protocols</li>
+        <li data-lang="ru">Европейский сервер</li><li data-lang="en">European server</li>
+        <li data-lang="ru">Приоритетная поддержка</li><li data-lang="en">Priority support</li>
+        <li data-lang="ru">Скидка 30%</li><li data-lang="en">30% discount</li>
+      </ul>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="ru">Купить →</a>
+      <a href="https://t.me/EurUsdVpnService_bot" class="plan-btn" data-lang="en">Buy →</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <h2 class="section-title fade-in" data-lang="ru">Как начать за 3 минуты</h2>
+  <h2 class="section-title fade-in" data-lang="en">Start in 3 minutes</h2>
+  <div class="steps fade-in">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title" data-lang="ru">Выбери тариф</div>
+      <div class="step-title" data-lang="en">Choose plan</div>
+      <p class="step-desc" data-lang="ru">Открой бота в Telegram и выбери подходящий тариф</p>
+      <p class="step-desc" data-lang="en">Open the Telegram bot and select a plan</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title" data-lang="ru">Оплати</div>
+      <div class="step-title" data-lang="en">Pay</div>
+      <p class="step-desc" data-lang="ru">Переведи оплату по реквизитам. Подтверждение за 30 мин.</p>
+      <p class="step-desc" data-lang="en">Transfer payment. Confirmation within 30 min.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title" data-lang="ru">Получи конфиг</div>
+      <div class="step-title" data-lang="en">Get config</div>
+      <p class="step-desc" data-lang="ru">Бот автоматически пришлёт .conf файл</p>
+      <p class="step-desc" data-lang="en">Bot automatically sends .conf file</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-title" data-lang="ru">Подключись</div>
+      <div class="step-title" data-lang="en">Connect</div>
+      <p class="step-desc" data-lang="ru">Импортируй в AmneziaVPN и наслаждайся свободой</p>
+      <p class="step-desc" data-lang="en">Import into AmneziaVPN and enjoy freedom</p>
+    </div>
+  </div>
+
+  <div class="terminal fade-in">
+    <div class="terminal-header">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="terminal-title">eurusdvpn.conf</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-comment"># EurUsdVPN — AmneziaWG Config</span></div>
+      <div><span class="t-key">[Interface]</span></div>
+      <div><span class="t-key">PrivateKey</span> = <span class="t-val">xxxxxxxxxxxxxxxxxxxxxxxxxxx=</span></div>
+      <div><span class="t-key">Address</span> = <span class="t-str">10.8.1.x/32</span></div>
+      <div><span class="t-key">DNS</span> = <span class="t-str">1.1.1.1, 8.8.8.8</span></div>
+      <div><span class="t-key">Jc</span> = <span class="t-val">5</span> &nbsp;<span class="t-key">Jmin</span> = <span class="t-val">10</span> &nbsp;<span class="t-key">Jmax</span> = <span class="t-val">50</span></div>
+      <div><br></div>
+      <div><span class="t-key">[Peer]</span></div>
+      <div><span class="t-key">PublicKey</span> = <span class="t-val">mjgK+i8a0Bt3APGQUyz...=</span></div>
+      <div><span class="t-key">Endpoint</span> = <span class="t-str">91.228.152.77:43884</span></div>
+      <div><span class="t-key">AllowedIPs</span> = <span class="t-str">0.0.0.0/0</span><span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="support">
+  <h2 class="section-title fade-in" data-lang="ru">Поддержка</h2>
+  <h2 class="section-title fade-in" data-lang="en">Support</h2>
+  <p class="section-sub fade-in" data-lang="ru">Всегда на связи</p>
+  <p class="section-sub fade-in" data-lang="en">Always in touch</p>
+  <div class="support-grid">
+    <div class="support-card fade-in">
+      <span class="support-icon">🤖</span>
+      <div class="support-title" data-lang="ru">Telegram Бот</div>
+      <div class="support-title" data-lang="en">Telegram Bot</div>
+      <p class="support-desc" data-lang="ru">Управление подпиской, получение конфига, статус подключения</p>
+      <p class="support-desc" data-lang="en">Subscription management, config download, connection status</p>
+      <a href="https://t.me/EurUsdVpnService_bot" class="support-link">@EurUsdVpnService_bot →</a>
+    </div>
+    <div class="support-card fade-in">
+      <span class="support-icon">💬</span>
+      <div class="support-title" data-lang="ru">Живой менеджер</div>
+      <div class="support-title" data-lang="en">Live manager</div>
+      <p class="support-desc" data-lang="ru">Техническая поддержка, вопросы по оплате, решение проблем</p>
+      <p class="support-desc" data-lang="en">Technical support, payment questions, problem solving</p>
+      <a href="https://t.me/eurusdvpnservicemanager" class="support-link">@eurusdvpnservicemanager →</a>
+    </div>
+    <div class="support-card fade-in">
+      <span class="support-icon">📢</span>
+      <div class="support-title" data-lang="ru">Канал новостей</div>
+      <div class="support-title" data-lang="en">News channel</div>
+      <p class="support-desc" data-lang="ru">Статус серверов, обновления, акции и скидки</p>
+      <p class="support-desc" data-lang="en">Server status, updates, promotions and discounts</p>
+      <a href="https://t.me/EurUsdVpnService_bot" class="support-link" data-lang="ru">Подписаться →</a>
+      <a href="https://t.me/EurUsdVpnService_bot" class="support-link" data-lang="en">Subscribe →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">EUR/USD<span style="color:var(--cyan)">VPN</span></span>
+  <p data-lang="ru">© 2026 EurUsdVPN · Все права защищены</p>
+  <p data-lang="en">© 2026 EurUsdVPN · All rights reserved</p>
+  <p style="margin-top:16px">
+    <a href="https://t.me/EurUsdVpnService_bot" style="color:var(--purple2);text-decoration:none">Telegram Bot</a>
+    &nbsp;·&nbsp;
+    <a href="https://t.me/eurusdvpnservicemanager" style="color:var(--muted);text-decoration:none" data-lang="ru">Поддержка</a>
+    <a href="https://t.me/eurusdvpnservicemanager" style="color:var(--muted);text-decoration:none" data-lang="en">Support</a>
+  </p>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursorTrail');
+let mx=0, my=0, tx=0, ty=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx-6+'px'; cursor.style.top = my-6+'px';
+});
+function animTrail() {
+  tx += (mx-tx)*0.15; ty += (my-ty)*0.15;
+  trail.style.left = tx-15+'px'; trail.style.top = ty-15+'px';
+  requestAnimationFrame(animTrail);
+}
+animTrail();
+
+// Scroll animations
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+// Counter animation
+function animateCount(el, target, duration=2000) {
+  let start = 0, step = target/60;
+  let isFloat = target % 1 !== 0;
+  let timer = setInterval(() => {
+    start += step;
+    if(start >= target) { start = target; clearInterval(timer); }
+    el.textContent = isFloat ? start.toFixed(1) : Math.floor(start);
+  }, duration/60);
+}
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const el = e.target;
+      animateCount(el, parseFloat(el.dataset.count));
+      countObs.unobserve(el);
+    }
+  });
+}, {threshold:0.5});
+document.querySelectorAll('[data-count]').forEach(el => countObs.observe(el));
+
+// Language toggle
+function setLang(lang) {
+  document.body.classList.toggle('lang-en', lang==='en');
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent===lang.toUpperCase());
+  });
+}
+
+// Particles
+const canvas = document.createElement('canvas');
+canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4';
+document.body.appendChild(canvas);
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width=innerWidth; canvas.height=innerHeight; });
+
+const particles = Array.from({length:80}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+  vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+  r: Math.random()*1.5+0.5, a: Math.random()
+}));
+
+function drawParticles() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p => {
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+    if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle = `rgba(168,85,247,${p.a*0.6})`; ctx.fill();
+  });
+  // Connect nearby
+  for(let i=0;i<particles.length;i++) for(let j=i+1;j<particles.length;j++) {
+    const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if(d<120) {
+      ctx.beginPath();
+      ctx.moveTo(particles[i].x,particles[i].y);
+      ctx.lineTo(particles[j].x,particles[j].y);
+      ctx.strokeStyle=`rgba(124,58,237,${0.15*(1-d/120)})`;
+      ctx.lineWidth=0.5; ctx.stroke();
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+</script>
+</body>
+</html>
