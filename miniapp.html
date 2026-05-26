@@ -693,7 +693,8 @@ async function submitPayment() {
   let statusBefore = 'inactive';
   try {
     if (MY_TG_ID) {
-      const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+      // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
+    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       const d = await r.json();
       endBefore = d.end_date || '';
@@ -772,7 +773,8 @@ async function checkConfirmation() {
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
 
   try {
-    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
+    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
@@ -1693,7 +1695,8 @@ async function submitPayment() {
   // 2. Сохраняем текущий end_date ДО открытия бота
   try {
     if (MY_TG_ID) {
-      const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+      // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
+    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       subBeforePayment = await r.json();
 
@@ -1731,7 +1734,8 @@ function stopPolling() {
 async function checkConfirmation() {
   if (!MY_TG_ID || !isPending) return;
   try {
-    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
+    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
