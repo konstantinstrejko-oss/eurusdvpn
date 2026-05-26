@@ -704,7 +704,15 @@ async function submitPayment() {
   const digits = document.getElementById('digitsInput').value;
   if (!digits || digits.length !== 4 || !selectedPlan) return;
 
-  // Сохраняем текущие данные подписки ДО отправки
+  // 1. СРАЗУ показываем экран ожидания
+  isPending = true;
+  stopPolling();
+  const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  document.getElementById('waitPlan').textContent = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
+  nav('wait');
+  showToast('Заявка отправлена! Ожидай подтверждения ⏳');
+
+  // 2. Сохраняем текущий статус подписки ДО отправки (для детекции продления)
   try {
     if (MY_TG_ID) {
       const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
@@ -712,19 +720,12 @@ async function submitPayment() {
     }
   } catch(e) { subBeforePayment = null; }
 
-  // Открываем бота с командой оплаты
+  // 3. Открываем бота
   const url = `https://t.me/EurUsdVpnService_bot?start=pay_${selectedPlan.key}_${digits}`;
   if (tg) tg.openTelegramLink(url);
   else window.open(url,'_blank');
 
-  // Показываем экран ожидания
-  isPending = true;
-  const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
-  document.getElementById('waitPlan').textContent = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
-  nav('wait');
-  showToast('Заявка отправлена! Ожидай подтверждения ⏳');
-
-  // Запускаем поллинг через 10 секунд
+  // 4. Запускаем поллинг через 10 секунд
   setTimeout(() => startPolling(), 10000);
 }
 
