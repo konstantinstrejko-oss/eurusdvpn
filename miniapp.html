@@ -8,662 +8,285 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #060609;
-  --bg2: #0e0e1a;
-  --bg3: #13131f;
-  --purple: #7c3aed;
-  --purple2: #a855f7;
-  --purple3: #c084fc;
-  --cyan: #06b6d4;
-  --green: #10b981;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --text: #f1f5f9;
-  --muted: #64748b;
-  --muted2: #94a3b8;
-  --border: rgba(124,58,237,0.2);
-  --border2: rgba(124,58,237,0.4);
+  --bg: #060609; --bg2: #0e0e1a; --bg3: #13131f;
+  --purple: #7c3aed; --purple2: #a855f7; --cyan: #06b6d4;
+  --green: #10b981; --red: #ef4444; --yellow: #f59e0b;
+  --text: #f1f5f9; --muted: #64748b; --muted2: #94a3b8;
+  --border: rgba(124,58,237,0.2); --border2: rgba(124,58,237,0.4);
 }
-
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-serif; font-size:16px; overflow:hidden; }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: linear-gradient(rgba(124,58,237,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(124,58,237,0.04) 1px,transparent 1px);
+  background-size:32px 32px; }
+#app { position:relative; z-index:1; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 16px;
-  overflow: hidden;
-}
+/* HEADER */
+.hdr { flex-shrink:0; display:flex; align-items:center; gap:12px; padding:14px 18px 12px;
+  background:rgba(6,6,9,0.95); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+.hdr-back { display:none; align-items:center; justify-content:center; width:34px; height:34px;
+  border-radius:8px; background:rgba(124,58,237,0.1); border:1px solid var(--border);
+  cursor:pointer; font-size:16px; flex-shrink:0; transition:all 0.2s; }
+.hdr-logo { font-family:'Orbitron',monospace; font-size:17px; font-weight:900;
+  background:linear-gradient(135deg,var(--purple2),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:1px; flex:1; }
+.hdr-user { font-size:13px; color:var(--muted); font-weight:500;
+  max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-/* Grid bg */
-body::before {
-  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-  background-image:
-    linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
+/* SCREENS */
+.screens { flex:1; overflow:hidden; position:relative; }
+.screen { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; padding:16px 16px 90px;
+  opacity:0; pointer-events:none; transform:translateX(30px);
+  transition:all 0.28s cubic-bezier(0.4,0,0.2,1); }
+.screen.active { opacity:1; pointer-events:all; transform:translateX(0); }
+.screen.slide-out { opacity:0; transform:translateX(-30px); }
 
-/* ═══ APP SHELL ═══ */
-#app {
-  position: relative; z-index: 1;
-  height: 100vh;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
+/* BOTTOM NAV */
+.bnav { flex-shrink:0; display:flex; background:rgba(6,6,9,0.97); backdrop-filter:blur(20px);
+  border-top:1px solid var(--border); padding-bottom:env(safe-area-inset-bottom,0); }
+.bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:10px 8px 8px; gap:4px; cursor:pointer; background:none; border:none;
+  color:var(--muted); transition:all 0.2s; position:relative; }
+.bnav-item.active { color:var(--purple2); }
+.bnav-item.active::before { content:''; position:absolute; top:0; left:25%; right:25%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--purple2),transparent); border-radius:0 0 2px 2px; }
+.bnav-icon { font-size:22px; line-height:1; }
+.bnav-label { font-size:10px; font-weight:600; letter-spacing:0.5px; font-family:'Rajdhani',sans-serif; }
 
-/* ═══ HEADER ═══ */
-.hdr {
-  flex-shrink: 0;
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 18px 12px;
-  background: rgba(6,6,9,0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
-.hdr-back {
-  display: none; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 8px;
-  background: rgba(124,58,237,0.1); border: 1px solid var(--border);
-  cursor: pointer; font-size: 16px; flex-shrink: 0;
-  transition: all 0.2s;
-}
-.hdr-back:active { background: rgba(124,58,237,0.25); }
-.hdr-logo {
-  font-family: 'Orbitron', monospace; font-size: 17px; font-weight: 900;
-  background: linear-gradient(135deg, var(--purple2), var(--cyan));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  letter-spacing: 1px; flex: 1;
-}
-.hdr-user {
-  font-size: 13px; color: var(--muted); font-weight: 500;
-  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+/* CARDS */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:20px;
+  margin-bottom:12px; position:relative; overflow:hidden; }
+.card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(168,85,247,0.6),transparent); }
+.card-title { font-family:'Orbitron',monospace; font-size:11px; color:var(--muted);
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:16px;
+  display:flex; align-items:center; gap:8px; }
+.card-title span { color:var(--purple2); }
 
-/* ═══ SCREENS ═══ */
-.screens {
-  flex: 1; overflow: hidden; position: relative;
-}
-.screen {
-  position: absolute; inset: 0;
-  overflow-y: auto; overflow-x: hidden;
-  padding: 16px 16px 90px;
-  opacity: 0; pointer-events: none;
-  transform: translateX(30px);
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.screen.active {
-  opacity: 1; pointer-events: all; transform: translateX(0);
-}
-.screen.slide-out {
-  opacity: 0; transform: translateX(-30px);
-}
+/* STATUS WIDGET */
+.status-widget { background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(6,182,212,0.05));
+  border:1px solid var(--border2); border-radius:20px; padding:24px 20px;
+  text-align:center; margin-bottom:12px; position:relative; overflow:hidden; }
+.status-widget::before { content:''; position:absolute; inset:-1px; border-radius:20px;
+  background:linear-gradient(135deg,var(--purple),var(--cyan),var(--purple2));
+  z-index:-1; opacity:0.15; animation:borderGlow 3s ease-in-out infinite; }
+@keyframes borderGlow { 0%,100%{opacity:0.1} 50%{opacity:0.25} }
+.status-orb { width:80px; height:80px; border-radius:50%; margin:0 auto 16px;
+  display:flex; align-items:center; justify-content:center; font-size:32px; }
+.status-orb.active { background:radial-gradient(circle,rgba(16,185,129,0.2),rgba(16,185,129,0.05));
+  animation:pulseGreen 2s ease-in-out infinite; }
+.status-orb.inactive { background:radial-gradient(circle,rgba(100,116,139,0.15),rgba(100,116,139,0.05));
+  animation:pulseGray 3s ease-in-out infinite; }
+.status-orb.pending { background:radial-gradient(circle,rgba(245,158,11,0.2),rgba(245,158,11,0.05));
+  animation:pulsePending 1s ease-in-out infinite; }
+@keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4),0 0 20px rgba(16,185,129,0.15)} 50%{box-shadow:0 0 0 16px rgba(16,185,129,0),0 0 40px rgba(16,185,129,0.3)} }
+@keyframes pulseGray { 0%,100%{box-shadow:0 0 0 0 rgba(100,116,139,0.2)} 50%{box-shadow:0 0 0 10px rgba(100,116,139,0)} }
+@keyframes pulsePending { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)} 50%{box-shadow:0 0 0 12px rgba(245,158,11,0)} }
+.status-label { font-family:'Orbitron',monospace; font-size:15px; font-weight:700; margin-bottom:6px; }
+.status-label.active { color:var(--green); }
+.status-label.inactive { color:var(--muted2); }
+.status-label.pending { color:var(--yellow); }
+.status-sub { font-size:13px; color:var(--muted); margin-bottom:16px; }
+.prog-wrap { background:rgba(255,255,255,0.05); border-radius:6px; height:8px;
+  margin:12px 0 6px; overflow:hidden; border:1px solid rgba(124,58,237,0.15); }
+.prog-bar { height:100%; border-radius:6px;
+  background:linear-gradient(90deg,var(--purple),var(--purple2),var(--cyan));
+  box-shadow:0 0 8px rgba(168,85,247,0.6);
+  transition:width 1.2s cubic-bezier(0.4,0,0.2,1); position:relative; overflow:hidden; }
+.prog-bar::after { content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  animation:shimmer 2s infinite; }
+@keyframes shimmer { to{left:200%} }
+.prog-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
 
-/* ═══ BOTTOM NAV ═══ */
-.bnav {
-  flex-shrink: 0;
-  display: flex;
-  background: rgba(6,6,9,0.97);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
-.bnav-item {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 10px 8px 8px; gap: 4px;
-  cursor: pointer; background: none; border: none;
-  color: var(--muted); transition: all 0.2s;
-  position: relative;
-}
-.bnav-item.active { color: var(--purple2); }
-.bnav-item.active::before {
-  content: '';
-  position: absolute; top: 0; left: 25%; right: 25%; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--purple2), transparent);
-  border-radius: 0 0 2px 2px;
-}
-.bnav-icon { font-size: 22px; line-height: 1; }
-.bnav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; font-family: 'Rajdhani', sans-serif; }
+/* INFO ROWS */
+.irow { display:flex; justify-content:space-between; align-items:center;
+  padding:11px 0; border-bottom:1px solid rgba(124,58,237,0.08); gap:12px; }
+.irow:last-child { border-bottom:none; }
+.irow-label { color:var(--muted); font-size:14px; flex-shrink:0; }
+.irow-val { font-size:14px; font-weight:600; text-align:right; }
+.irow-val.hl { color:var(--purple2); }
+.irow-val.green { color:var(--green); }
 
-/* ═══ CARDS ═══ */
-.card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 16px; padding: 20px;
-  margin-bottom: 12px; position: relative; overflow: hidden;
-}
-.card::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(168,85,247,0.6), transparent);
-}
-.card-title {
-  font-family: 'Orbitron', monospace; font-size: 11px;
-  color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
-  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-}
-.card-title span { color: var(--purple2); }
+/* BUTTONS */
+.btn { display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:15px 20px; border-radius:12px;
+  font-family:'Orbitron',monospace; font-size:12px; letter-spacing:1.5px;
+  text-transform:uppercase; border:none; cursor:pointer; transition:all 0.2s;
+  margin-bottom:10px; font-weight:700; }
+.btn:last-child { margin-bottom:0; }
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:linear-gradient(135deg,var(--purple),var(--purple2)); color:white;
+  box-shadow:0 4px 20px rgba(124,58,237,0.35); }
+.btn-secondary { background:rgba(124,58,237,0.08); border:1px solid var(--border); color:var(--text); }
+.btn-cyan { background:linear-gradient(135deg,#0891b2,var(--cyan)); color:white; }
+.btn-danger { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:var(--red); }
 
-/* ═══ STATUS WIDGET ═══ */
-.status-widget {
-  background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.05));
-  border: 1px solid var(--border2);
-  border-radius: 20px; padding: 24px 20px;
-  text-align: center; margin-bottom: 12px;
-  position: relative; overflow: hidden;
-}
-.status-widget::before {
-  content: ''; position: absolute; inset: -1px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--purple), var(--cyan), var(--purple2));
-  z-index: -1; opacity: 0.15;
-  animation: borderGlow 3s ease-in-out infinite;
-}
-@keyframes borderGlow {
-  0%,100% { opacity: 0.1; }
-  50% { opacity: 0.25; }
-}
+/* PLAN CARDS */
+.plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.plan-card { background:var(--bg3); border:1px solid var(--border); border-radius:14px;
+  padding:18px 14px; text-align:center; cursor:pointer; transition:all 0.25s;
+  position:relative; overflow:hidden; }
+.plan-card.hot { border-color:var(--purple2);
+  background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(168,85,247,0.06));
+  box-shadow:0 0 20px rgba(124,58,237,0.2); }
+.plan-hot-badge { position:absolute; top:8px; right:8px;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  color:white; font-size:9px; padding:2px 8px; border-radius:20px;
+  font-family:'Orbitron',monospace; }
+.plan-emoji { font-size:28px; margin-bottom:10px; display:block; }
+.plan-name { font-family:'Orbitron',monospace; font-size:10px; color:var(--purple2); letter-spacing:1.5px; margin-bottom:8px; }
+.plan-price { font-family:'Orbitron',monospace; font-size:30px; font-weight:900; line-height:1;
+  background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.plan-rub { font-size:18px; }
+.plan-days { color:var(--muted); font-size:12px; margin-top:4px; }
 
-.status-orb {
-  width: 80px; height: 80px;
-  border-radius: 50%; margin: 0 auto 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; position: relative;
-}
-.status-orb.active {
-  background: radial-gradient(circle, rgba(16,185,129,0.2), rgba(16,185,129,0.05));
-  box-shadow: 0 0 0 0 rgba(16,185,129,0.4);
-  animation: pulseGreen 2s ease-in-out infinite;
-}
-.status-orb.inactive {
-  background: radial-gradient(circle, rgba(100,116,139,0.15), rgba(100,116,139,0.05));
-  box-shadow: 0 0 0 0 rgba(100,116,139,0.2);
-  animation: pulseGray 3s ease-in-out infinite;
-}
-.status-orb.pending {
-  background: radial-gradient(circle, rgba(245,158,11,0.2), rgba(245,158,11,0.05));
-  animation: pulsePending 1s ease-in-out infinite;
-}
-@keyframes pulseGreen {
-  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4), 0 0 20px rgba(16,185,129,0.15); }
-  50% { box-shadow: 0 0 0 16px rgba(16,185,129,0), 0 0 40px rgba(16,185,129,0.3); }
-}
-@keyframes pulseGray {
-  0%,100% { box-shadow: 0 0 0 0 rgba(100,116,139,0.2); }
-  50% { box-shadow: 0 0 0 10px rgba(100,116,139,0); }
-}
-@keyframes pulsePending {
-  0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4), 0 0 15px rgba(245,158,11,0.2); }
-  50% { box-shadow: 0 0 0 12px rgba(245,158,11,0), 0 0 30px rgba(245,158,11,0.35); }
-}
+/* PAYMENT FLOW */
+.pay-step { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; margin-bottom:8px; }
+.pay-step.done { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); }
+.pay-step.current { background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); }
+.pay-step.waiting { background:rgba(100,116,139,0.06); border:1px solid rgba(100,116,139,0.15); }
+.step-num { width:32px; height:32px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:14px; }
+.step-num.done { background:rgba(16,185,129,0.2); color:var(--green); }
+.step-num.current { background:rgba(124,58,237,0.2); color:var(--purple2);
+  animation:pulsePurple 1.5s infinite; }
+.step-num.waiting { background:rgba(100,116,139,0.1); color:var(--muted); }
+@keyframes pulsePurple { 0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.4)} 50%{box-shadow:0 0 0 8px rgba(124,58,237,0)} }
+.step-info { flex:1; }
+.step-name { font-size:14px; font-weight:600; }
+.step-desc { font-size:12px; color:var(--muted); margin-top:2px; }
 
-.status-label {
-  font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700;
-  margin-bottom: 6px;
-}
-.status-label.active { color: var(--green); }
-.status-label.inactive { color: var(--muted2); }
-.status-label.pending { color: var(--yellow); }
+/* REQUISITES */
+.req-box { background:rgba(124,58,237,0.06); border:1px solid var(--border2); border-radius:14px; padding:20px; margin-bottom:12px; }
+.req-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(124,58,237,0.08); }
+.req-row:last-child { border-bottom:none; }
+.req-label { color:var(--muted); font-size:13px; }
+.req-val { font-weight:700; font-size:14px; color:var(--text); }
+.req-val.phone { font-family:'Orbitron',monospace; font-size:13px; color:var(--cyan); cursor:pointer; display:flex; align-items:center; gap:6px; }
+.amount-big { text-align:center; padding:20px; }
+.amount-num { font-family:'Orbitron',monospace; font-size:56px; font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+.amount-label { color:var(--muted); font-size:14px; margin-top:6px; }
+.digits-input { width:100%; padding:16px 20px; background:var(--bg3); border:2px solid var(--border);
+  border-radius:12px; color:var(--text); font-family:'Orbitron',monospace; font-size:24px;
+  letter-spacing:8px; text-align:center; outline:none; transition:border-color 0.2s; -webkit-appearance:none; margin:16px 0; }
+.digits-input:focus { border-color:var(--purple2); box-shadow:0 0 0 3px rgba(124,58,237,0.15); }
+.digits-input::placeholder { letter-spacing:4px; font-size:18px; color:var(--muted); }
+.digits-hint { text-align:center; color:var(--muted); font-size:13px; }
 
-.status-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+/* WAIT SCREEN */
+.wait-ring { width:100px; height:100px; margin:0 auto 24px; border-radius:50%;
+  position:relative; display:flex; align-items:center; justify-content:center; }
+.wait-ring::before,.wait-ring::after { content:''; position:absolute; inset:0; border-radius:50%; }
+.wait-ring::before { border:3px solid rgba(124,58,237,0.15); }
+.wait-ring::after { border:3px solid transparent; border-top-color:var(--purple2); animation:spin 1.2s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.wait-icon { font-size:40px; z-index:1; }
 
-/* Progress bar */
-.prog-wrap {
-  background: rgba(255,255,255,0.05); border-radius: 6px;
-  height: 8px; margin: 12px 0 6px; overflow: hidden;
-  border: 1px solid rgba(124,58,237,0.15);
-}
-.prog-bar {
-  height: 100%; border-radius: 6px;
-  background: linear-gradient(90deg, var(--purple), var(--purple2), var(--cyan));
-  box-shadow: 0 0 8px rgba(168,85,247,0.6);
-  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative; overflow: hidden;
-}
-.prog-bar::after {
-  content: '';
-  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  animation: shimmer 2s infinite;
-}
-@keyframes shimmer { to { left: 200%; } }
-.prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+/* SERVER CARD */
+.server-card { background:linear-gradient(135deg,rgba(13,13,24,0.95),rgba(20,10,40,0.9));
+  border:1px solid var(--border2); border-radius:20px; padding:20px; margin-bottom:12px;
+  position:relative; overflow:hidden; }
+.server-card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--purple2),var(--cyan),transparent);
+  animation:scanLine 3s ease-in-out infinite; }
+@keyframes scanLine { 0%{opacity:0;transform:scaleX(0)} 50%{opacity:1;transform:scaleX(1)} 100%{opacity:0;transform:scaleX(0)} }
+.server-title { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+.server-pulse { width:8px; height:8px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 6px var(--green); animation:pulseDot 2s infinite; flex-shrink:0; }
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.server-online { margin-left:auto; font-family:'Orbitron',monospace; font-size:10px; color:var(--green);
+  letter-spacing:1px; text-shadow:0 0 8px rgba(16,185,129,0.6); animation:blink 3s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+.server-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.server-stat { background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.15);
+  border-radius:12px; padding:14px 12px; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:6px; }
+.server-stat-icon { font-size:24px; filter:drop-shadow(0 0 6px rgba(168,85,247,0.4)); }
+.server-stat-val { font-family:'Orbitron',monospace; font-size:13px; font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.server-stat-label { font-size:11px; color:var(--muted); }
+.feat-tag { background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2);
+  border-radius:50px; padding:5px 12px; font-size:12px; color:var(--muted2); white-space:nowrap; }
+.server-features { display:flex; flex-wrap:wrap; gap:6px; }
 
-/* ═══ INFO ROWS ═══ */
-.irow {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 11px 0; border-bottom: 1px solid rgba(124,58,237,0.08);
-  gap: 12px;
-}
-.irow:last-child { border-bottom: none; }
-.irow-label { color: var(--muted); font-size: 14px; flex-shrink: 0; }
-.irow-val { font-size: 14px; font-weight: 600; text-align: right; }
-.irow-val.hl { color: var(--purple2); }
-.irow-val.green { color: var(--green); }
-.irow-val.copy {
-  color: var(--cyan); cursor: pointer; display: flex; align-items: center; gap: 6px;
-  font-family: 'Orbitron', monospace; font-size: 13px;
-}
-
-/* ═══ BUTTONS ═══ */
-.btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 15px 20px; border-radius: 12px;
-  font-family: 'Orbitron', monospace; font-size: 12px;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  border: none; cursor: pointer; transition: all 0.2s;
-  margin-bottom: 10px; font-weight: 700;
-}
-.btn:last-child { margin-bottom: 0; }
-.btn:active { transform: scale(0.97); }
-.btn-primary {
-  background: linear-gradient(135deg, var(--purple), var(--purple2));
-  color: white; box-shadow: 0 4px 20px rgba(124,58,237,0.35);
-}
-.btn-primary:active { box-shadow: 0 2px 10px rgba(124,58,237,0.2); }
-.btn-secondary {
-  background: rgba(124,58,237,0.08);
-  border: 1px solid var(--border); color: var(--text);
-}
-.btn-secondary:active { background: rgba(124,58,237,0.15); }
-.btn-cyan {
-  background: linear-gradient(135deg, #0891b2, var(--cyan));
-  color: white; box-shadow: 0 4px 20px rgba(6,182,212,0.25);
-}
-.btn-danger {
-  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--red);
-}
-.btn-sm {
-  padding: 10px 16px; font-size: 11px; border-radius: 8px; margin-bottom: 0;
-}
-
-/* ═══ PLAN CARDS ═══ */
-.plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.plan-card {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 14px; padding: 18px 14px; text-align: center;
-  cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
-}
-.plan-card::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(124,58,237,0.1), transparent);
-  opacity: 0; transition: opacity 0.2s;
-}
-.plan-card:active::before { opacity: 1; }
-.plan-card.hot {
-  border-color: var(--purple2);
-  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(168,85,247,0.06));
-  box-shadow: 0 0 20px rgba(124,58,237,0.2);
-}
-.plan-hot-badge {
-  position: absolute; top: 8px; right: 8px;
-  background: linear-gradient(135deg, var(--purple), var(--purple2));
-  color: white; font-size: 9px; padding: 2px 8px; border-radius: 20px;
-  font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
-}
-.plan-emoji { font-size: 28px; margin-bottom: 10px; display: block; }
-.plan-name { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--purple2); letter-spacing: 1.5px; margin-bottom: 8px; }
-.plan-price {
-  font-family: 'Orbitron', monospace; font-size: 30px; font-weight: 900; line-height: 1;
-  background: linear-gradient(135deg, #fff, var(--purple2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.plan-rub { font-size: 18px; }
-.plan-days { color: var(--muted); font-size: 12px; margin-top: 4px; }
-
-/* ═══ PAYMENT FLOW ═══ */
-.pay-step {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px; border-radius: 10px;
-  margin-bottom: 8px;
-}
-.pay-step.done { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
-.pay-step.current { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); }
-.pay-step.pending { background: rgba(100,116,139,0.06); border: 1px solid rgba(100,116,139,0.15); }
-.step-circle {
-  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-}
-.step-circle.done { background: rgba(16,185,129,0.2); color: var(--green); }
-.step-circle.current { background: rgba(124,58,237,0.2); color: var(--purple2); animation: pulsePurple 1.5s infinite; }
-.step-circle.pending { background: rgba(100,116,139,0.1); color: var(--muted); }
-@keyframes pulsePurple {
-  0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(124,58,237,0); }
-}
-.step-info { flex: 1; }
-.step-name { font-size: 14px; font-weight: 600; }
-.step-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-/* Requisites */
-.req-box {
-  background: rgba(124,58,237,0.06);
-  border: 1px solid var(--border2); border-radius: 14px;
-  padding: 20px; margin-bottom: 12px;
-}
-.req-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid rgba(124,58,237,0.08);
-}
-.req-row:last-child { border-bottom: none; }
-.req-label { color: var(--muted); font-size: 13px; }
-.req-val { font-weight: 700; font-size: 14px; color: var(--text); }
-.req-val.phone {
-  font-family: 'Orbitron', monospace; font-size: 13px; color: var(--cyan);
-  cursor: pointer; display: flex; align-items: center; gap: 6px;
-}
-
-/* Amount big */
-.amount-big {
-  text-align: center; padding: 20px;
-}
-.amount-num {
-  font-family: 'Orbitron', monospace; font-size: 56px; font-weight: 900;
-  background: linear-gradient(135deg, #fff, var(--purple2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  line-height: 1;
-}
-.amount-label { color: var(--muted); font-size: 14px; margin-top: 6px; }
-
-/* Digits input */
-.digits-wrap { position: relative; margin: 16px 0; }
-.digits-input {
-  width: 100%; padding: 16px 20px;
-  background: var(--bg3); border: 2px solid var(--border);
-  border-radius: 12px; color: var(--text);
-  font-family: 'Orbitron', monospace; font-size: 24px;
-  letter-spacing: 8px; text-align: center;
-  outline: none; transition: border-color 0.2s;
-  -webkit-appearance: none;
-}
-.digits-input:focus { border-color: var(--purple2); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
-.digits-input::placeholder { letter-spacing: 4px; font-size: 18px; color: var(--muted); }
-.digits-hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; }
-
-/* Waiting screen */
-.wait-anim {
-  text-align: center; padding: 30px 20px;
-}
-.wait-ring {
-  width: 100px; height: 100px; margin: 0 auto 24px;
-  border-radius: 50%; position: relative;
-  display: flex; align-items: center; justify-content: center;
-}
-.wait-ring::before, .wait-ring::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-}
-.wait-ring::before {
-  border: 3px solid rgba(124,58,237,0.15);
-}
-.wait-ring::after {
-  border: 3px solid transparent;
-  border-top-color: var(--purple2);
-  animation: spin 1.2s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.wait-icon { font-size: 40px; z-index: 1; }
-.wait-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--purple2); }
-.wait-sub { color: var(--muted); font-size: 14px; line-height: 1.6; }
-
-/* Support items */
-.supp-item {
-  display: flex; align-items: center; gap: 14px;
-  padding: 16px; background: var(--bg3);
-  border: 1px solid var(--border); border-radius: 12px;
-  margin-bottom: 10px; text-decoration: none; color: var(--text);
-  transition: all 0.2s;
-}
-.supp-item:active { background: rgba(124,58,237,0.1); border-color: var(--purple2); }
-.supp-icon { font-size: 30px; flex-shrink: 0; }
-.supp-info { flex: 1; }
-.supp-name { font-family: 'Orbitron', monospace; font-size: 12px; margin-bottom: 3px; color: var(--text); }
-.supp-desc { font-size: 12px; color: var(--muted); }
-.supp-arr { color: var(--purple2); font-size: 20px; }
-
-/* OLD FAQ */
-details {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; margin-bottom: 8px; overflow: hidden;
-}
-summary {
-  padding: 14px 16px; cursor: pointer;
-  font-size: 14px; font-weight: 600; color: var(--purple2);
-  list-style: none; display: flex; justify-content: space-between; align-items: center;
-}
-summary::after { content: '﹢'; font-size: 18px; }
-details[open] summary::after { content: '－'; }
-details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-height: 1.7; }
-
-/* Toast */
-.toast {
-  position: fixed; bottom: 90px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: rgba(124,58,237,0.92); backdrop-filter: blur(10px);
-  color: white; padding: 10px 22px; border-radius: 50px;
-  font-size: 13px; letter-spacing: 0.5px; z-index: 500;
-  opacity: 0; transition: all 0.3s; pointer-events: none;
-  border: 1px solid rgba(168,85,247,0.4); white-space: nowrap;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* Orbs */
-.orb { position: fixed; border-radius: 50%; filter: blur(70px); pointer-events: none; z-index: 0; }
-.orb1 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%); top: -80px; right: -60px; }
-.orb2 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(6,182,212,0.08), transparent 70%); bottom: 80px; left: -60px; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
-
-/* Pull to refresh */
-.ptr-indicator {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  height: 0; overflow: hidden; transition: height 0.3s;
-  background: rgba(124,58,237,0.15); backdrop-filter: blur(10px);
-  font-size: 13px; color: var(--purple2); letter-spacing: 1px;
-  font-family: 'Orbitron', monospace;
-}
-.ptr-indicator.pulling { height: 50px; }
-.ptr-indicator.refreshing { height: 50px; }
-.ptr-spinner {
-  width: 18px; height: 18px; border: 2px solid rgba(124,58,237,0.3);
-  border-top-color: var(--purple2); border-radius: 50%;
-}
-.ptr-spinner.spin { animation: spin 0.8s linear infinite; }
-
+/* SUPPORT */
+.supp-hero { text-align:center; padding:24px 16px 16px; }
+.supp-hero-icon { font-size:52px; margin-bottom:12px; display:block;
+  filter:drop-shadow(0 0 20px rgba(124,58,237,0.5)); animation:floatIcon 3s ease-in-out infinite; }
+@keyframes floatIcon { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.supp-hero-title { font-family:'Orbitron',monospace; font-size:20px; font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+.supp-hero-sub { color:var(--muted); font-size:13px; }
+.supp-contacts { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.supp-contact-card { display:flex; align-items:center; gap:14px; padding:18px 16px;
+  background:rgba(13,13,24,0.9); border:1px solid var(--border); border-radius:16px;
+  cursor:pointer; transition:all 0.2s; }
+.supp-contact-card:active { background:rgba(124,58,237,0.1); }
+.supp-contact-card.primary { border-color:var(--purple2); background:linear-gradient(135deg,rgba(124,58,237,0.1),rgba(168,85,247,0.05)); }
+.supp-contact-icon { font-size:36px; flex-shrink:0; }
+.supp-contact-info { flex:1; }
+.supp-contact-name { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; margin-bottom:4px; }
+.supp-contact-desc { font-size:12px; color:var(--muted); }
+.supp-arr-circle { width:32px; height:32px; border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--purple2));
+  display:flex; align-items:center; justify-content:center; font-size:16px; color:white;
+  box-shadow:0 0 12px rgba(124,58,237,0.4); }
+.supp-arr-circle.secondary { background:rgba(124,58,237,0.15); border:1px solid var(--border); color:var(--purple2); box-shadow:none; }
 
 /* FAQ */
-.faq-list { display: flex; flex-direction: column; gap: 8px; }
-.faq-item {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden; cursor: pointer;
-  transition: all 0.2s;
-}
-.faq-item:active { background: rgba(124,58,237,0.08); }
-.faq-item.open { border-color: var(--purple2); }
-.faq-q {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 16px; font-size: 14px; font-weight: 600;
-}
-.faq-icon { font-size: 18px; flex-shrink: 0; }
-.faq-q span:nth-child(2) { flex: 1; }
-.faq-arr {
-  color: var(--purple2); font-size: 20px; font-weight: 300;
-  transition: transform 0.25s; flex-shrink: 0;
-}
-.faq-item.open .faq-arr { transform: rotate(90deg); }
-.faq-a {
-  max-height: 0; overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s;
-  color: var(--muted); font-size: 13px; line-height: 1.7;
-  padding: 0 16px;
-}
-.faq-item.open .faq-a { max-height: 200px; padding: 0 16px 14px; }
+.faq-section { margin-bottom:12px; }
+.faq-header { display:flex; align-items:center; gap:10px; font-family:'Orbitron',monospace;
+  font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:12px; padding:0 4px; }
+.faq-list { display:flex; flex-direction:column; gap:8px; }
+.faq-item { background:var(--bg3); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; }
+.faq-item.open { border-color:var(--purple2); }
+.faq-q { display:flex; align-items:center; gap:10px; padding:14px 16px; font-size:14px; font-weight:600; }
+.faq-icon { font-size:18px; flex-shrink:0; }
+.faq-q span:nth-child(2) { flex:1; }
+.faq-arr { color:var(--purple2); font-size:20px; font-weight:300; transition:transform 0.25s; flex-shrink:0; }
+.faq-item.open .faq-arr { transform:rotate(90deg); }
+.faq-a { max-height:0; overflow:hidden; transition:max-height 0.3s ease,padding 0.3s;
+  color:var(--muted); font-size:13px; line-height:1.7; padding:0 16px; }
+.faq-item.open .faq-a { max-height:200px; padding:0 16px 14px; }
 
+/* TOAST */
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(124,58,237,0.92); backdrop-filter:blur(10px); color:white;
+  padding:10px 22px; border-radius:50px; font-size:13px; z-index:500;
+  opacity:0; transition:all 0.3s; pointer-events:none;
+  border:1px solid rgba(168,85,247,0.4); white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* Server card */
-.server-card {
-  background: linear-gradient(135deg, rgba(13,13,24,0.95), rgba(20,10,40,0.9));
-  border: 1px solid var(--border2);
-  border-radius: 20px; padding: 20px;
-  margin-bottom: 12px; position: relative; overflow: hidden;
-}
-.server-card::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.12), transparent 60%),
-              radial-gradient(ellipse at 20% 80%, rgba(6,182,212,0.08), transparent 60%);
-  pointer-events: none;
-}
-.server-card::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--purple2), var(--cyan), transparent);
-  animation: scanLine 3s ease-in-out infinite;
-}
-@keyframes scanLine {
-  0% { opacity: 0; transform: scaleX(0); }
-  50% { opacity: 1; transform: scaleX(1); }
-  100% { opacity: 0; transform: scaleX(0); }
-}
-.server-title {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
-}
-.server-pulse {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: pulseDot 2s infinite;
-  flex-shrink: 0;
-}
-.server-online {
-  margin-left: auto; font-family: 'Orbitron', monospace;
-  font-size: 10px; color: var(--green); letter-spacing: 1px;
-  text-shadow: 0 0 8px rgba(16,185,129,0.6);
-  animation: blink 3s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
-.server-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 16px;
-}
-.server-stat {
-  background: rgba(124,58,237,0.06);
-  border: 1px solid rgba(124,58,237,0.15);
-  border-radius: 12px; padding: 14px 12px;
-  text-align: center; display: flex; flex-direction: column;
-  align-items: center; gap: 6px;
-  animation: fadeInUp 0.5s ease both;
-  transition: all 0.2s;
-}
-.server-stat:active { background: rgba(124,58,237,0.12); transform: scale(0.97); }
-@keyframes fadeInUp {
-  from { opacity:0; transform: translateY(10px); }
-  to { opacity:1; transform: translateY(0); }
-}
-.server-stat-icon { font-size: 24px; filter: drop-shadow(0 0 6px rgba(168,85,247,0.4)); }
-.server-stat-val {
-  font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
-  background: linear-gradient(135deg, #fff, var(--purple2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.server-stat-label { font-size: 11px; color: var(--muted); }
-.server-features {
-  display: flex; flex-wrap: wrap; gap: 6px;
-}
-.feat-tag {
-  background: rgba(124,58,237,0.08);
-  border: 1px solid rgba(124,58,237,0.2);
-  border-radius: 50px; padding: 5px 12px;
-  font-size: 12px; color: var(--muted2);
-  font-weight: 500; white-space: nowrap;
-  transition: all 0.2s;
-}
-.feat-tag:hover { border-color: var(--purple2); color: var(--purple2); }
+/* PTR */
+.ptr-indicator { position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  height:0; overflow:hidden; transition:height 0.3s;
+  background:rgba(124,58,237,0.15); backdrop-filter:blur(10px);
+  font-size:13px; color:var(--purple2); font-family:'Orbitron',monospace; }
+.ptr-indicator.pulling { height:50px; }
+.ptr-spinner { width:18px; height:18px; border:2px solid rgba(124,58,237,0.3);
+  border-top-color:var(--purple2); border-radius:50%; }
+.ptr-spinner.spin { animation:spin 0.8s linear infinite; }
 
-
-/* Support hero */
-.supp-hero {
-  text-align: center; padding: 24px 16px 16px;
-}
-.supp-hero-icon {
-  font-size: 52px; margin-bottom: 12px; display: block;
-  filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
-  animation: floatIcon 3s ease-in-out infinite;
-}
-@keyframes floatIcon {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.supp-hero-title {
-  font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 900;
-  background: linear-gradient(135deg, #fff, var(--purple2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-bottom: 6px;
-}
-.supp-hero-sub { color: var(--muted); font-size: 13px; }
-
-/* Contact cards */
-.supp-contacts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-.supp-contact-card {
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px 16px;
-  background: rgba(13,13,24,0.9);
-  border: 1px solid var(--border);
-  border-radius: 16px; cursor: pointer;
-  transition: all 0.2s; position: relative; overflow: hidden;
-}
-.supp-contact-card::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(124,58,237,0.08), transparent);
-  opacity: 0; transition: opacity 0.2s;
-}
-.supp-contact-card:active::before { opacity: 1; }
-.supp-contact-card.primary {
-  border-color: var(--purple2);
-  background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(168,85,247,0.05));
-  box-shadow: 0 0 20px rgba(124,58,237,0.15);
-}
-.supp-contact-icon { font-size: 36px; flex-shrink: 0; }
-.supp-contact-info { flex: 1; }
-.supp-contact-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.supp-contact-desc { font-size: 12px; color: var(--muted); }
-.supp-arr-circle {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--purple), var(--purple2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: white; flex-shrink: 0;
-  box-shadow: 0 0 12px rgba(124,58,237,0.4);
-}
-.supp-arr-circle.secondary {
-  background: rgba(124,58,237,0.15);
-  border: 1px solid var(--border); color: var(--purple2);
-  box-shadow: none;
-}
-
-/* FAQ section */
-.faq-section { margin-bottom: 12px; }
-.faq-header {
-  display: flex; align-items: center; gap: 10px;
-  font-family: 'Orbitron', monospace; font-size: 11px;
-  color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
-  margin-bottom: 12px; padding: 0 4px;
-}
-.faq-header-icon { font-size: 16px; color: var(--purple2); }
-
+/* Orbs */
+.orb { position:fixed; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0; }
+.orb1 { width:280px; height:280px; background:radial-gradient(circle,rgba(124,58,237,0.12),transparent 70%); top:-80px; right:-60px; }
+.orb2 { width:200px; height:200px; background:radial-gradient(circle,rgba(6,182,212,0.08),transparent 70%); bottom:80px; left:-60px; }
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-thumb { background:rgba(124,58,237,0.3); border-radius:3px; }
 </style>
 </head>
 <body>
-
-<div class="ptr-indicator" id="ptrIndicator">
-  <div class="ptr-spinner" id="ptrSpinner"></div>
-  <span id="ptrText">Потяни чтобы обновить</span>
-</div>
-
 <div class="orb orb1"></div>
 <div class="orb orb2"></div>
 <div class="toast" id="toast"></div>
+<div class="ptr-indicator" id="ptr">
+  <div class="ptr-spinner" id="ptrSpinner"></div>
+  <span id="ptrText">Потяни чтобы обновить</span>
+</div>
 
 <div id="app">
   <div class="hdr">
@@ -674,33 +297,25 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
 
   <div class="screens">
 
-    <!-- ═══ HOME ═══ -->
+    <!-- HOME -->
     <div class="screen active" id="s-home">
-
-      <!-- Status Widget -->
-      <div class="status-widget" id="statusWidget">
+      <div class="status-widget">
         <div class="status-orb inactive" id="statusOrb">🔒</div>
         <div class="status-label inactive" id="statusLabel">Загрузка...</div>
         <div class="status-sub" id="statusSub">Проверяем подписку</div>
         <div id="statusProgress" style="display:none">
-          <div class="prog-wrap">
-            <div class="prog-bar" id="progBar" style="width:0%"></div>
-          </div>
+          <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
           <div class="prog-labels">
             <span id="progLeft">0 дн. использовано</span>
             <span id="progRight">0 дн. осталось</span>
           </div>
         </div>
       </div>
-
-      <!-- Quick actions -->
       <div class="card">
         <div class="card-title"><span>⚡</span> Быстрые действия</div>
-        <button class="btn btn-primary" onclick="nav('buy')">🛒 Купить VPN</button>
+        <button class="btn btn-primary" onclick="nav('buy')">🛒 Купить / Продлить VPN</button>
         <button class="btn btn-secondary" onclick="nav('sub')">📦 Моя подписка</button>
       </div>
-
-      <!-- Server info -->
       <div class="server-card">
         <div class="server-title">
           <span class="server-pulse"></span>
@@ -708,37 +323,22 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
           <span class="server-online">● ONLINE</span>
         </div>
         <div class="server-grid">
-          <div class="server-stat" style="animation-delay:0s">
-            <span class="server-stat-icon">🛡️</span>
-            <span class="server-stat-val">AmneziaWG</span>
-            <span class="server-stat-label">Протокол</span>
-          </div>
-          <div class="server-stat" style="animation-delay:0.1s">
-            <span class="server-stat-icon">👁️</span>
-            <span class="server-stat-val">Zero-Log</span>
-            <span class="server-stat-label">Приватность</span>
-          </div>
-          <div class="server-stat" style="animation-delay:0.2s">
-            <span class="server-stat-icon">🔐</span>
-            <span class="server-stat-val">AES-256</span>
-            <span class="server-stat-label">Шифрование</span>
-          </div>
-          <div class="server-stat" style="animation-delay:0.3s">
-            <span class="server-stat-icon">⚡</span>
-            <span class="server-stat-val">< 10ms</span>
-            <span class="server-stat-label">Пинг</span>
-          </div>
+          <div class="server-stat"><span class="server-stat-icon">🛡️</span><span class="server-stat-val">AmneziaWG</span><span class="server-stat-label">Протокол</span></div>
+          <div class="server-stat"><span class="server-stat-icon">👁️</span><span class="server-stat-val">Zero-Log</span><span class="server-stat-label">Приватность</span></div>
+          <div class="server-stat"><span class="server-stat-icon">🔐</span><span class="server-stat-val">AES-256</span><span class="server-stat-label">Шифрование</span></div>
+          <div class="server-stat"><span class="server-stat-icon">⚡</span><span class="server-stat-val">&lt;10ms</span><span class="server-stat-label">Пинг</span></div>
         </div>
         <div class="server-features">
           <span class="feat-tag">🔐 Шифрование</span>
           <span class="feat-tag">👻 Анонимность</span>
           <span class="feat-tag">♾️ Безлимит</span>
-          <span class="feat-tag">🤖 Авто-конфиг</span>
+          <span class="feat-tag">🕵️ Zero-Log</span>
+          <span class="feat-tag">🛡️ Защита DNS</span>
         </div>
       </div>
     </div>
 
-    <!-- ═══ SUBSCRIPTION ═══ -->
+    <!-- SUBSCRIPTION -->
     <div class="screen" id="s-sub">
       <div class="card" id="subCard">
         <div class="card-title"><span>📦</span> Моя подписка</div>
@@ -746,62 +346,49 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
           <div style="text-align:center;padding:20px 0">
             <div style="font-size:40px;margin-bottom:12px">📭</div>
             <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--muted2);margin-bottom:8px">Нет активной подписки</div>
-            <div style="font-size:13px;color:var(--muted);line-height:1.6">Купи подписку чтобы получить доступ к VPN</div>
           </div>
-          <button class="btn btn-primary" style="margin-top:16px" onclick="nav('buy')">🛒 Купить VPN</button>
+          <button class="btn btn-primary" onclick="nav('buy')">🛒 Купить VPN</button>
         </div>
       </div>
-
       <div class="card">
         <div class="card-title"><span>📱</span> Инструкция</div>
-        <div class="irow"><span class="irow-label">1️⃣</span><span class="irow-val" style="font-size:13px;text-align:right">Скачай AmneziaVPN</span></div>
-        <div class="irow"><span class="irow-label">2️⃣</span><span class="irow-val" style="font-size:13px;text-align:right">+ → Импортировать конфиг</span></div>
-        <div class="irow"><span class="irow-label">3️⃣</span><span class="irow-val" style="font-size:13px;text-align:right">Выбери файл .conf из бота</span></div>
-        <div class="irow"><span class="irow-label">4️⃣</span><span class="irow-val" style="font-size:13px;text-align:right;color:var(--green)">Нажми Подключить ✅</span></div>
+        <div class="irow"><span class="irow-label">1️⃣</span><span class="irow-val" style="font-size:13px">Скачай AmneziaVPN</span></div>
+        <div class="irow"><span class="irow-label">2️⃣</span><span class="irow-val" style="font-size:13px">+ → Импортировать конфиг</span></div>
+        <div class="irow"><span class="irow-label">3️⃣</span><span class="irow-val" style="font-size:13px">Выбери файл .conf из бота</span></div>
+        <div class="irow"><span class="irow-label">4️⃣</span><span class="irow-val" style="font-size:13px;color:var(--green)">Подключить ✅</span></div>
       </div>
     </div>
 
-    <!-- ═══ BUY — PLANS ═══ -->
+    <!-- BUY -->
     <div class="screen" id="s-buy">
       <div class="card">
-        <div class="card-title"><span>🛒</span> Выбери тариф</div>
+        <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
         <div class="plans-grid">
           <div class="plan-card" onclick="selectPlan('3d',30,3)">
-            <span class="plan-emoji">🔹</span>
-            <div class="plan-name">3 ДНЯ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>30</div>
-            <div class="plan-days">Пробный</div>
+            <span class="plan-emoji">🔹</span><div class="plan-name">3 ДНЯ</div>
+            <div class="plan-price"><span class="plan-rub">₽</span>30</div><div class="plan-days">Пробный</div>
           </div>
           <div class="plan-card" onclick="selectPlan('7d',50,7)">
-            <span class="plan-emoji">🔸</span>
-            <div class="plan-name">7 ДНЕЙ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>50</div>
-            <div class="plan-days">Неделя</div>
+            <span class="plan-emoji">🔸</span><div class="plan-name">7 ДНЕЙ</div>
+            <div class="plan-price"><span class="plan-rub">₽</span>50</div><div class="plan-days">Неделя</div>
           </div>
           <div class="plan-card hot" onclick="selectPlan('1m',119,30)">
             <div class="plan-hot-badge">🔥 HIT</div>
-            <span class="plan-emoji">⭐</span>
-            <div class="plan-name">1 МЕСЯЦ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>119</div>
-            <div class="plan-days">Популярный</div>
+            <span class="plan-emoji">⭐</span><div class="plan-name">1 МЕСЯЦ</div>
+            <div class="plan-price"><span class="plan-rub">₽</span>119</div><div class="plan-days">Популярный</div>
           </div>
           <div class="plan-card" onclick="selectPlan('3m',249,90)">
-            <span class="plan-emoji">💎</span>
-            <div class="plan-name">3 МЕСЯЦА</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>249</div>
-            <div class="plan-days">Выгодно</div>
+            <span class="plan-emoji">💎</span><div class="plan-name">3 МЕСЯЦА</div>
+            <div class="plan-price"><span class="plan-rub">₽</span>249</div><div class="plan-days">Выгодно</div>
           </div>
         </div>
       </div>
-      <div class="card" style="font-size:13px;color:var(--muted);line-height:1.7">
-        ✅ Безлимитный трафик<br>
-        ✅ AES-256 военное шифрование<br>
-        ✅ Сервер в Европе · 10 Gbps<br>
-        ✅ Конфиг приходит автоматически
+      <div class="card" id="buyInfo" style="font-size:13px;color:var(--muted);line-height:1.8">
+        ✅ Безлимитный трафик<br>✅ AES-256 шифрование<br>✅ Европейский сервер<br>✅ Конфиг автоматически
       </div>
     </div>
 
-    <!-- ═══ BUY — REQUISITES ═══ -->
+    <!-- REQUISITES -->
     <div class="screen" id="s-req">
       <div class="card">
         <div class="card-title"><span>💳</span> Оплата</div>
@@ -810,137 +397,84 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
           <div class="amount-label" id="reqPlanName">—</div>
         </div>
       </div>
-
       <div class="req-box">
-        <div class="req-row">
-          <span class="req-label">📱 Номер</span>
-          <span class="req-val phone" onclick="copyPhone()">
-            +7 977 854-77-10 <span style="font-size:16px">⧉</span>
-          </span>
-        </div>
-        <div class="req-row">
-          <span class="req-label">🏦 Банк</span>
-          <span class="req-val">Т-БАНК</span>
-        </div>
-        <div class="req-row">
-          <span class="req-label">👤 Получатель</span>
-          <span class="req-val">EurUsdVpnService</span>
-        </div>
+        <div class="req-row"><span class="req-label">📱 Номер</span>
+          <span class="req-val phone" onclick="copyPhone()">+7 977 854-77-10 <span>⧉</span></span></div>
+        <div class="req-row"><span class="req-label">🏦 Банк</span><span class="req-val">Т-БАНК</span></div>
+        <div class="req-row"><span class="req-label">👤 Получатель</span><span class="req-val">EurUsdVpnService</span></div>
       </div>
-
       <div class="card">
         <div class="card-title"><span>📱</span> После перевода</div>
-        <div style="color:var(--muted2);font-size:14px;margin-bottom:16px;line-height:1.6">
-          Введи <b style="color:var(--text)">последние 4 цифры</b> номера карты или телефона, с которого делал перевод:
+        <div style="color:var(--muted2);font-size:14px;margin-bottom:8px;line-height:1.6">
+          Введи <b style="color:var(--text)">последние 4 цифры</b> карты/телефона отправителя:
         </div>
-        <div class="digits-wrap">
-          <input class="digits-input" id="digitsInput" type="number"
-            inputmode="numeric" pattern="[0-9]*"
-            maxlength="4" placeholder="••••"
-            oninput="onDigits(this)">
-        </div>
+        <input class="digits-input" id="digitsInput" type="number" inputmode="numeric"
+          maxlength="4" placeholder="••••" oninput="onDigits(this)">
         <div class="digits-hint" id="digitsHint">Введи 4 цифры чтобы продолжить</div>
         <button class="btn btn-primary" id="submitBtn" style="margin-top:16px;opacity:0.4;pointer-events:none" onclick="submitPayment()">
           ✅ Подтвердить оплату
         </button>
       </div>
-
-      <div style="padding:4px 4px 0;color:var(--muted);font-size:12px;line-height:1.6;text-align:center">
+      <div style="padding:4px;color:var(--muted);font-size:12px;text-align:center">
         ⚠️ В комментарии к переводу ничего не пиши
       </div>
     </div>
 
-    <!-- ═══ BUY — WAITING ═══ -->
+    <!-- WAIT -->
     <div class="screen" id="s-wait">
-      <div class="card">
-        <div class="wait-anim">
-          <div class="wait-ring">
-            <span class="wait-icon">⏳</span>
-          </div>
-          <div class="wait-title">Ожидание подтверждения</div>
-          <div class="wait-sub">
-            Администратор проверяет платёж.<br>
-            Обычно занимает до 30 минут.<br><br>
-            Конфиг придёт прямо в этот бот 📱
-          </div>
+      <div class="card" style="text-align:center;padding:30px 20px">
+        <div class="wait-ring"><span class="wait-icon">⏳</span></div>
+        <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px" id="waitTitle">Ожидание подтверждения</div>
+        <div style="color:var(--muted);font-size:14px;line-height:1.6" id="waitDesc">
+          Администратор проверяет платёж.<br>Обычно до 30 минут.<br><br>Конфиг придёт в бот 📱
         </div>
       </div>
-
       <div class="card">
         <div class="card-title"><span>📋</span> Статус заявки</div>
-        <div class="pay-step done">
-          <div class="step-circle done">✓</div>
-          <div class="step-info">
-            <div class="step-name">Тариф выбран</div>
-            <div class="step-desc" id="waitPlanLabel">—</div>
-          </div>
-        </div>
-        <div class="pay-step done">
-          <div class="step-circle done">✓</div>
-          <div class="step-info">
-            <div class="step-name">Оплата отправлена</div>
-            <div class="step-desc">Заявка #<span id="waitPayId">—</span> создана</div>
-          </div>
-        </div>
-        <div class="pay-step current">
-          <div class="step-circle current">⟳</div>
-          <div class="step-info">
-            <div class="step-name">Проверка платежа</div>
-            <div class="step-desc">Администратор проверяет перевод</div>
-          </div>
-        </div>
-        <div class="pay-step pending">
-          <div class="step-circle pending">4</div>
-          <div class="step-info">
-            <div class="step-name">Получение конфига</div>
-            <div class="step-desc">Конфиг будет выдан после проверки</div>
-          </div>
-        </div>
+        <div class="pay-step done"><div class="step-num done">✓</div>
+          <div class="step-info"><div class="step-name">Тариф выбран</div><div class="step-desc" id="waitPlan">—</div></div></div>
+        <div class="pay-step done"><div class="step-num done">✓</div>
+          <div class="step-info"><div class="step-name">Оплата отправлена</div><div class="step-desc">Заявка создана</div></div></div>
+        <div class="pay-step current"><div class="step-num current">⟳</div>
+          <div class="step-info"><div class="step-name">Проверка платежа</div><div class="step-desc">Администратор проверяет</div></div></div>
+        <div class="pay-step waiting"><div class="step-num waiting">4</div>
+          <div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">После проверки</div></div></div>
       </div>
-
       <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
-      <button class="btn btn-secondary" style="margin-top:0" onclick="openSupport()">💬 Написать в поддержку</button>
+      <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
     </div>
 
-    <!-- ═══ CANCEL CONFIRM ═══ -->
+    <!-- CANCEL CONFIRM -->
     <div class="screen" id="s-cancel">
       <div class="card" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
         <div style="text-align:center;padding:20px 0">
           <div style="font-size:52px;margin-bottom:16px">⚠️</div>
           <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--red);margin-bottom:12px">ВНИМАНИЕ!</div>
           <div style="color:var(--muted2);font-size:14px;line-height:1.8">
-            Ты собираешься <b style="color:var(--text)">отменить подписку</b>.<br><br>
-            ❗ Ключ будет отозван немедленно<br>
-            ❗ Деньги возврату не подлежат<br>
-            ❗ Подключение прекратится сразу<br><br>
-            <b style="color:var(--red)">Это действие необратимо!</b>
+            Ты собираешься <b style="color:var(--text)">отменить подписку</b><br><br>
+            ❗ Ключ отзывается немедленно<br>❗ Деньги не возвращаются<br>❗ Действие необратимо
           </div>
         </div>
       </div>
       <button class="btn btn-danger" onclick="confirmCancel()">⚠️ Да, отменить подписку</button>
-      <button class="btn btn-secondary" onclick="goBack()">◀️ Нет, оставить подписку</button>
+      <button class="btn btn-secondary" onclick="goBack()">◀️ Нет, оставить</button>
     </div>
 
-    <!-- ═══ SUPPORT ═══ -->
+    <!-- SUPPORT -->
     <div class="screen" id="s-support">
-
-      <!-- Contact cards -->
       <div class="supp-hero">
-        <div class="supp-hero-icon">🛡️</div>
+        <span class="supp-hero-icon">🛡️</span>
         <div class="supp-hero-title">Поддержка 24/7</div>
         <div class="supp-hero-sub">Живые менеджеры · Быстрые ответы</div>
       </div>
-
       <div class="supp-contacts">
         <div class="supp-contact-card primary" onclick="openLink('https://t.me/eurusdvpnservicemanager')">
           <div class="supp-contact-icon">💬</div>
           <div class="supp-contact-info">
-            <div class="supp-contact-name">Написать менеджеру</div>
+            <div class="supp-contact-name">Менеджер поддержки</div>
             <div class="supp-contact-desc">Любой вопрос · Оплата · Проблемы</div>
           </div>
-          <div class="supp-contact-arr">
-            <div class="supp-arr-circle">→</div>
-          </div>
+          <div class="supp-arr-circle">→</div>
         </div>
         <div class="supp-contact-card" onclick="openLink('https://t.me/EurUsdVpnService_bot')">
           <div class="supp-contact-icon">🤖</div>
@@ -948,418 +482,343 @@ details p { padding: 0 16px 14px; color: var(--muted); font-size: 13px; line-hei
             <div class="supp-contact-name">Telegram Бот</div>
             <div class="supp-contact-desc">Подписка · Конфиг · Команды</div>
           </div>
-          <div class="supp-contact-arr">
-            <div class="supp-arr-circle secondary">→</div>
-          </div>
+          <div class="supp-arr-circle secondary">→</div>
         </div>
       </div>
-
-      <!-- FAQ -->
       <div class="faq-section">
-        <div class="faq-header">
-          <span class="faq-header-icon">❓</span>
-          <span>Частые вопросы</span>
-        </div>
+        <div class="faq-header"><span style="color:var(--purple2)">❓</span> Частые вопросы</div>
         <div class="faq-list">
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">📱</span>
-              <span>Как подключиться к VPN?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              Скачай <b style="color:var(--purple2)">AmneziaVPN</b> →<br>
-              нажми <b>+</b> → <b>Импортировать конфиг</b> →<br>
-              выбери файл <b>.conf</b> из бота → <b>Подключить</b> ✅
-            </div>
+            <div class="faq-q"><span class="faq-icon">📱</span><span>Как подключиться?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">Скачай <b>AmneziaVPN</b> → нажми <b>+</b> → <b>Импортировать конфиг</b> → выбери .conf из бота → <b>Подключить</b> ✅</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">⏳</span>
-              <span>Когда придёт конфиг?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              После подтверждения оплаты — обычно до <b style="color:var(--cyan)">30 минут</b>.<br>
-              Конфиг придёт прямо в этот бот 📱
-            </div>
+            <div class="faq-q"><span class="faq-icon">⏳</span><span>Когда придёт конфиг?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">После подтверждения оплаты — обычно до <b>30 минут</b>. Конфиг придёт прямо в Telegram бот.</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">🔴</span>
-              <span>VPN не подключается?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              Убедись что используешь именно <b style="color:var(--purple2)">AmneziaVPN</b>.<br>
-              Если проблема остаётся — напиши менеджеру, решим за 15 минут 🔧
-            </div>
+            <div class="faq-q"><span class="faq-icon">🔴</span><span>VPN не подключается?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">Убедись что используешь именно <b>AmneziaVPN</b>. Если проблема — напиши менеджеру 🔧</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">📲</span>
-              <span>Сколько устройств?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              1 подписка = 1 устройство одновременно.<br>
-              Нужно больше? Купи дополнительные подписки.
-            </div>
+            <div class="faq-q"><span class="faq-icon">📲</span><span>Сколько устройств?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">1 подписка = 1 устройство одновременно.</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">🔐</span>
-              <span>Мои данные в безопасности?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              Да. <b style="color:var(--green)">Zero-Log политика</b> — мы не храним никаких данных о твоей активности.<br>
-              Шифрование AES-256 + AmneziaWG протокол.
-            </div>
+            <div class="faq-q"><span class="faq-icon">🔐</span><span>Мои данные в безопасности?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a"><b style="color:var(--green)">Zero-Log политика</b> — никаких данных об активности. AES-256 + AmneziaWG.</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q">
-              <span class="faq-icon">💰</span>
-              <span>Возврат средств?</span>
-              <span class="faq-arr">›</span>
-            </div>
-            <div class="faq-a">
-              Напиши менеджеру в течение <b>24 часов</b> после оплаты если VPN не заработал — вернём деньги.
-            </div>
+            <div class="faq-q"><span class="faq-icon">💰</span><span>Возврат средств?</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">Напиши менеджеру в течение 24 часов если VPN не заработал.</div>
           </div>
         </div>
       </div>
-
     </div>
 
-  </div><!-- /screens -->
+  </div>
 
-  <!-- Bottom nav -->
   <div class="bnav" id="bnav">
     <button class="bnav-item active" id="nav-home" onclick="nav('home')">
-      <span class="bnav-icon">🏠</span>
-      <span class="bnav-label">Главная</span>
+      <span class="bnav-icon">🏠</span><span class="bnav-label">Главная</span>
     </button>
     <button class="bnav-item" id="nav-sub" onclick="nav('sub')">
-      <span class="bnav-icon">📦</span>
-      <span class="bnav-label">Подписка</span>
+      <span class="bnav-icon">📦</span><span class="bnav-label">Подписка</span>
     </button>
     <button class="bnav-item" id="nav-buy" onclick="nav('buy')">
-      <span class="bnav-icon">🛒</span>
-      <span class="bnav-label">Купить</span>
+      <span class="bnav-icon">🛒</span><span class="bnav-label">Купить</span>
     </button>
     <button class="bnav-item" id="nav-support" onclick="nav('support')">
-      <span class="bnav-icon">💬</span>
-      <span class="bnav-label">Поддержка</span>
+      <span class="bnav-icon">💬</span><span class="bnav-label">Поддержка</span>
     </button>
   </div>
 </div>
 
 <script>
+const API = 'https://prep-logical-diane-url.trycloudflare.com/api';
+const BOT = 'https://t.me/EurUsdVpnService_bot';
 const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.expand();
-  tg.setHeaderColor && tg.setHeaderColor('#060609');
-  tg.setBackgroundColor && tg.setBackgroundColor('#060609');
-}
+if (tg) { tg.expand(); tg.ready(); tg.setHeaderColor && tg.setHeaderColor('#060609'); tg.setBackgroundColor && tg.setBackgroundColor('#060609'); }
 
-const user = tg?.initDataUnsafe?.user;
-// Get tg_id from URL params (passed by bot) or from initDataUnsafe
+// Get tg_id from URL params (passed by bot) or from Telegram WebApp
 const urlParams = new URLSearchParams(window.location.search);
 const urlTgId = urlParams.get('tg_id') ? parseInt(urlParams.get('tg_id')) : null;
 const urlName = urlParams.get('name') ? decodeURIComponent(urlParams.get('name')) : null;
-const userId = user?.id || urlTgId;
-const userName = user?.first_name || urlName;
-document.getElementById('hdrUser').textContent = userName
-  ? userName + (userId ? ' #' + userId : '')
-  : 'Гость';
+const tgUser = tg?.initDataUnsafe?.user;
+const MY_TG_ID = tgUser?.id || urlTgId;
+const MY_NAME = tgUser?.first_name || urlName || 'Гость';
 
-// ─── State ───
-let history = [];
+document.getElementById('hdrUser').textContent = MY_NAME;
+
+// ─── STATE ───
+const NAV_SCREENS = ['home','sub','buy','support'];
+const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки' };
+let navHistory = [];
 let selectedPlan = null;
-let paymentId = null;
+let pollTimer = null;
+let isPending = false;      // Флаг: пользователь отправил заявку в текущей сессии
+let subBeforePayment = null; // Данные подписки ДО отправки заявки
 
-const PLANS = {
-  '3d':  { name: '🔹 3 дня',    days: 3,  price: 30  },
-  '7d':  { name: '🔸 7 дней',   days: 7,  price: 50  },
-  '1m':  { name: '⭐ 1 месяц',  days: 30, price: 119 },
-  '3m':  { name: '💎 3 месяца', days: 90, price: 249 },
-};
-
-// ─── Navigation ───
-const NAV_SCREENS = ['home', 'sub', 'buy', 'support'];
-const BACK_SCREENS = { req: 'buy', wait: 'home' };
-const SCREEN_TITLES = {
-  home: null, sub: 'Подписка', buy: 'Тарифы',
-  support: 'Поддержка', req: 'Оплата', wait: 'Статус заявки', cancel: 'Отмена подписки'
-};
-
+// ─── NAVIGATION ───
 function nav(id) {
   const cur = document.querySelector('.screen.active');
   const curId = cur?.id.replace('s-','');
-
-  // Prevent navigating to same screen
   if (curId === id) return;
-
-  if (cur) cur.classList.add('slide-out');
-  setTimeout(() => { if (cur) { cur.classList.remove('active', 'slide-out'); } }, 280);
-
-  const next = document.getElementById('s-' + id);
+  cur?.classList.add('slide-out');
+  setTimeout(() => cur?.classList.remove('active','slide-out'), 280);
+  const next = document.getElementById('s-'+id);
   if (!next) return;
   next.classList.add('active');
   next.scrollTop = 0;
-
-  // Update header
   const title = SCREEN_TITLES[id];
-  document.getElementById('hdrLogo').textContent = title
-    ? title
-    : 'EUR/USDVPN';
-  if (!title) {
-    document.getElementById('hdrLogo').innerHTML = 'EUR/USD<span style="color:var(--cyan)">VPN</span>';
-  }
-
-  const backBtn = document.getElementById('backBtn');
+  const logo = document.getElementById('hdrLogo');
+  logo.innerHTML = title ? title : 'EUR/USD<span style="color:var(--cyan)">VPN</span>';
   const isMain = NAV_SCREENS.includes(id);
+  const backBtn = document.getElementById('backBtn');
   backBtn.style.display = isMain ? 'none' : 'flex';
-  if (!isMain) history.push(curId || 'home');
-
-  // Bottom nav
+  if (!isMain && id !== 'wait') navHistory.push(curId || 'home');
   document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
-  const navBtn = document.getElementById('nav-' + id);
-  if (navBtn) navBtn.classList.add('active');
+  document.getElementById('nav-'+id)?.classList.add('active');
   document.getElementById('bnav').style.display = isMain ? 'flex' : 'none';
 }
 
 function goBack() {
-  const prev = history.pop() || 'home';
-  nav(prev);
+  nav(navHistory.pop() || 'home');
 }
 
-// ─── Status Widget ───
+// ─── STATUS ───
 function setStatus(type, label, sub) {
   const orb = document.getElementById('statusOrb');
   const lbl = document.getElementById('statusLabel');
-  const sl  = document.getElementById('statusSub');
-  orb.className = 'status-orb ' + type;
-  lbl.className = 'status-label ' + type;
+  const sl = document.getElementById('statusSub');
+  orb.className = 'status-orb '+type;
+  lbl.className = 'status-label '+type;
   lbl.textContent = label;
   sl.textContent = sub;
-
-  const icons = { active: '🟢', inactive: '🔒', pending: '⏳' };
-  orb.textContent = icons[type] || '🔒';
+  orb.textContent = {active:'🟢', inactive:'🔒', pending:'⏳'}[type] || '🔒';
 }
 
 function setProgress(used, total) {
-  if (total <= 0) return;
-  const pct = Math.min(100, Math.round(used / total * 100));
+  if (!total) return;
+  const pct = Math.min(100, Math.round(used/total*100));
   document.getElementById('statusProgress').style.display = 'block';
-  setTimeout(() => {
-    document.getElementById('progBar').style.width = pct + '%';
-  }, 300);
-  const left = total - used;
-  document.getElementById('progLeft').textContent = used + ' дн. использовано';
-  document.getElementById('progRight').textContent = left > 0 ? left + ' дн. осталось' : 'Истекает сегодня';
+  setTimeout(() => document.getElementById('progBar').style.width = pct+'%', 300);
+  document.getElementById('progLeft').textContent = used+' дн. использовано';
+  document.getElementById('progRight').textContent = (total-used > 0 ? total-used+' дн. осталось' : 'Истекает сегодня');
 }
 
-// ─── Load subscription ───
+// ─── LOAD SUBSCRIPTION ───
 async function loadSub() {
-  // Don't override wait screen if user just submitted payment
-  if (isPendingPayment) return;
-
-  const tgId = user?.id || tg?.initDataUnsafe?.user?.id || urlTgId;
-  
-  if (!tgId) {
-    setStatus('inactive', '🔒 НЕТ ПОДПИСКИ', 'Открой через Telegram бот');
-    return;
-  }
-
-  setStatus('inactive', '⟳ ЗАГРУЗКА...', 'Проверяем подписку...');
-
+  if (isPending) return; // Не перебиваем экран ожидания
+  if (!MY_TG_ID) { setStatus('inactive','🔒 НЕТ ПОДПИСКИ','Открой через Telegram бот'); return; }
+  setStatus('inactive','⟳ ЗАГРУЗКА...','Проверяем подписку...');
   try {
-    const r = await fetch(`https://prep-logical-diane-url.trycloudflare.com/api?tg_id=${tgId}`, {
-      signal: AbortSignal.timeout(8000)
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-
-    if (data.status === 'active') {
-      showSubActive(data.days_left, data.days_total, data.plan);
-    } else if (data.status === 'pending') {
-      showSubPending();
-      setTimeout(loadSub, 4000);
-    } else if (data.status === 'rejected') {
-      setStatus('inactive', '❌ ЗАЯВКА ОТКЛОНЕНА', 'Обратись в поддержку');
-      document.getElementById('statusProgress').style.display = 'none';
+    const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if (d.status === 'active') {
+      renderSubActive(d);
+    } else if (d.status === 'pending') {
+      setStatus('pending','⏳ ОЖИДАНИЕ','Платёж на проверке');
     } else {
-      showSubInactive();
+      renderSubInactive();
     }
   } catch(e) {
-    console.error('API error:', e);
-    setStatus('inactive', '⚠️ ОШИБКА', 'Не удалось загрузить статус');
+    setStatus('inactive','⚠️ ОШИБКА','Не удалось загрузить статус');
   }
 }
 
-let hasActiveSub = false;
-
-function showSubActive(daysLeft, total, planName) {
-  hasActiveSub = true;
-  const used = total - daysLeft;
-  // Show hours if less than 2 days left
-  const statusText = daysLeft <= 1 
-    ? `Истекает сегодня · из ${total} дн.`
-    : `Осталось ${daysLeft} дн. из ${total}`;
-  setStatus('active', '🟢 VPN АКТИВЕН', statusText);
+function renderSubActive(d) {
+  const left = d.days_left || 0;
+  const total = d.days_total || 1;
+  const used = total - left;
+  const plan = d.plan || '—';
+  const endText = left <= 1 ? 'Истекает сегодня' : 'Осталось '+left+' дн. из '+total;
+  setStatus('active','🟢 VPN АКТИВЕН', endText);
   setProgress(used, total);
-
+  // Update sub screen
   document.getElementById('subContent').innerHTML = `
-    <div class="irow"><span class="irow-label">📦 Тариф</span><span class="irow-val hl">${planName || '—'}</span></div>
-    <div class="irow"><span class="irow-label">📅 Осталось</span><span class="irow-val green">${daysLeft} дней</span></div>
+    <div class="irow"><span class="irow-label">📦 Тариф</span><span class="irow-val hl">${plan}</span></div>
+    <div class="irow"><span class="irow-label">📅 Осталось</span><span class="irow-val green">${left} дней</span></div>
     <div class="irow"><span class="irow-label">📊 Прогресс</span><span class="irow-val hl">${used}/${total} дн.</span></div>
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
-    <button class="btn btn-primary" style="margin-top:12px" onclick="openBot()">📎 Получить конфиг в боте</button>
-    <button class="btn btn-cyan" onclick="extendSub()">🔄 Продлить подписку</button>
-    <button class="btn btn-danger" style="margin-top:4px" onclick="showCancelConfirm()">❌ Отменить подписку</button>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="openLink('${BOT}')">📎 Получить конфиг в боте</button>
+    <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
+    <button class="btn btn-danger" style="margin-top:4px" onclick="nav('cancel')">❌ Отменить подписку</button>
   `;
-
-  // Update buy screen title to "extend"
-  updateBuyScreenMode(true, daysLeft);
+  // Update buy screen
+  document.getElementById('buyTitle').innerHTML = '<span>🔄</span> Продление подписки';
+  document.getElementById('buyInfo').innerHTML =
+    '✅ Дни добавятся к текущей подписке<br>✅ Ключ и IP не изменятся<br>✅ Конфиг менять не нужно<br><span style="color:var(--cyan);font-size:13px">Сейчас активно: '+left+' дн.</span>';
 }
 
-function showSubInactive() {
-  hasActiveSub = false;
-  setStatus('inactive', '🔒 НЕТ ПОДПИСКИ', 'Купи подписку чтобы подключиться');
+function renderSubInactive() {
+  setStatus('inactive','🔒 НЕТ ПОДПИСКИ','Купи подписку чтобы подключиться');
   document.getElementById('statusProgress').style.display = 'none';
-  updateBuyScreenMode(false, 0);
+  document.getElementById('subContent').innerHTML = `
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:40px;margin-bottom:12px">📭</div>
+      <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--muted2)">Нет активной подписки</div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="nav('buy')">🛒 Купить VPN</button>
+  `;
+  document.getElementById('buyTitle').innerHTML = '<span>🛒</span> Выбери тариф';
+  document.getElementById('buyInfo').innerHTML =
+    '✅ Безлимитный трафик<br>✅ AES-256 шифрование<br>✅ Европейский сервер<br>✅ Конфиг автоматически';
 }
 
-function updateBuyScreenMode(isExtend, daysLeft) {
-  const title = document.querySelector('#s-buy .card-title span');
-  const infoCard = document.querySelector('#s-buy .card:last-child');
-  if (isExtend) {
-    if (title) title.parentElement.innerHTML = '<span>🔄</span> Продление подписки';
-    if (infoCard) infoCard.innerHTML = 
-      `✅ Дни добавятся к текущей подписке<br>
-       ✅ Текущий IP и ключ сохранятся<br>
-       ✅ Подтверждение от администратора<br>
-       <span style="color:var(--cyan);font-size:13px">Сейчас активно: ${daysLeft} дн.</span>`;
-  } else {
-    if (title) title.parentElement.innerHTML = '<span>🛒</span> Выбери тариф';
-    if (infoCard) infoCard.innerHTML = 
-      `✅ Безлимитный трафик<br>
-       ✅ AES-256 военное шифрование<br>
-       ✅ Сервер в Европе · 10 Gbps<br>
-       ✅ Конфиг приходит автоматически`;
-  }
-}
-
-
-
-function showSubPending() {
-  setStatus('pending', '⏳ ОЖИДАНИЕ', 'Платёж на проверке у администратора');
-}
-
-// ─── Plan selection ───
+// ─── PAYMENT FLOW ───
 function selectPlan(key, price, days) {
-  // Reset pending flag when starting new payment
-  isPendingPayment = false;
-  paymentSubmittedAt = null;
+  isPending = false;
+  subBeforePayment = null;
   stopPolling();
-  
-  selectedPlan = { key, price, days, name: PLANS[key]?.name || key };
+  selectedPlan = {key, price, days};
   document.getElementById('reqAmount').textContent = price;
-  document.getElementById('reqPlanName').textContent = selectedPlan.name + ' · ' + days + ' дней';
+  document.getElementById('reqPlanName').textContent = {
+    '3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'
+  }[key] + ' · '+days+' дней';
   document.getElementById('digitsInput').value = '';
-  document.getElementById('submitBtn').style.opacity = '0.4';
-  document.getElementById('submitBtn').style.pointerEvents = 'none';
   document.getElementById('digitsHint').textContent = 'Введи 4 цифры чтобы продолжить';
   document.getElementById('digitsHint').style.color = 'var(--muted)';
+  const btn = document.getElementById('submitBtn');
+  btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
   nav('req');
 }
 
-// ─── Digits input ───
 function onDigits(el) {
-  let v = el.value.replace(/\D/g, '').slice(0, 4);
+  const v = el.value.replace(/\D/g,'').slice(0,4);
   el.value = v;
   const btn = document.getElementById('submitBtn');
   const hint = document.getElementById('digitsHint');
   if (v.length === 4) {
-    btn.style.opacity = '1';
-    btn.style.pointerEvents = 'all';
+    btn.style.opacity = '1'; btn.style.pointerEvents = 'all';
     hint.textContent = '✅ Готово! Нажми Подтвердить';
     hint.style.color = 'var(--green)';
   } else {
-    btn.style.opacity = '0.4';
-    btn.style.pointerEvents = 'none';
-    hint.textContent = `Введено: ${v.length}/4 цифры`;
+    btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+    hint.textContent = 'Введено: '+v.length+'/4 цифры';
     hint.style.color = 'var(--muted)';
   }
 }
 
-// ─── Submit payment ───
-let paymentSubmittedAt = null;
-let isPendingPayment = false; // blocks loadSub from showing confirmed
-
-function submitPayment() {
+async function submitPayment() {
   const digits = document.getElementById('digitsInput').value;
   if (!digits || digits.length !== 4 || !selectedPlan) return;
 
-  paymentSubmittedAt = Date.now();
-  isPendingPayment = true;
-  stopPolling(); // Stop any previous polling
-  // Store current days_left to detect real confirmation later
-  prePaymentSubDaysLeft = hasActiveSub ? parseInt(document.querySelector('.irow-val.green')?.textContent) || 0 : -1;
+  // Сохраняем текущие данные подписки ДО отправки
+  try {
+    if (MY_TG_ID) {
+      const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+      subBeforePayment = await r.json();
+    }
+  } catch(e) { subBeforePayment = null; }
 
+  // Открываем бота с командой оплаты
   const url = `https://t.me/EurUsdVpnService_bot?start=pay_${selectedPlan.key}_${digits}`;
   if (tg) tg.openTelegramLink(url);
-  else window.open(url, '_blank');
+  else window.open(url,'_blank');
 
-  // Show waiting screen immediately
-  const action = hasActiveSub ? 'Продление' : 'Оплата';
-  document.getElementById('waitPlanLabel').textContent = `${action}: ${selectedPlan.name} · ${selectedPlan.price}₽`;
-  document.getElementById('waitPayId').textContent = '...';
-  // Update wait screen text
-  const waitTitle = document.querySelector('.wait-title');
-  const waitSub = document.querySelector('.wait-sub');
-  if (hasActiveSub) {
-    if (waitTitle) waitTitle.textContent = 'Ожидание продления';
-    if (waitSub) waitSub.innerHTML = 'Администратор проверяет платёж.<br>После подтверждения дни добавятся к текущей подписке.<br><br>Конфиг менять не нужно 📱';
-  } else {
-    if (waitTitle) waitTitle.textContent = 'Ожидание подтверждения';
-    if (waitSub) waitSub.innerHTML = 'Администратор проверяет платёж.<br>Обычно занимает до 30 минут.<br><br>Конфиг придёт прямо в этот бот 📱';
-  }
-  showSubPending();
+  // Показываем экран ожидания
+  isPending = true;
+  const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  document.getElementById('waitPlan').textContent = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
   nav('wait');
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
 
-  // Start polling after 15 seconds
-  setTimeout(() => startPolling(Date.now()), 5000);
+  // Запускаем поллинг через 10 секунд
+  setTimeout(() => startPolling(), 10000);
 }
 
-// ─── Utils ───
-function copyPhone() {
-  const phone = '+79778547710';
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(phone).then(() => showToast('📱 Номер скопирован!'));
-  } else {
-    showToast('📱 +7 977 854-77-10');
+// ─── POLLING ───
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(checkConfirmation, 4000);
+  checkConfirmation();
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+async function checkConfirmation() {
+  if (!MY_TG_ID || !isPending) return;
+  try {
+    const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+    const d = await r.json();
+
+    if (d.status === 'rejected') {
+      stopPolling(); isPending = false;
+      setStatus('inactive','❌ ЗАЯВКА ОТКЛОНЕНА','Обратись в поддержку');
+      showToast('❌ Заявка отклонена');
+      nav('home');
+      return;
+    }
+
+    if (d.status === 'active') {
+      // Проверяем что это НОВОЕ подтверждение, а не старая подписка
+      const prevDaysLeft = subBeforePayment?.days_left || 0;
+      const prevStatus = subBeforePayment?.status;
+      const newDaysLeft = d.days_left || 0;
+
+      // Подтверждаем если:
+      // 1. До этого не было подписки (prevStatus != 'active')
+      // 2. Или дней стало больше (продление подтверждено)
+      if (prevStatus !== 'active' || newDaysLeft > prevDaysLeft + 2) {
+        stopPolling(); isPending = false;
+        renderSubActive(d);
+        showConfirmed();
+      }
+    }
+  } catch(e) {}
+}
+
+function showConfirmed() {
+  document.getElementById('s-wait').innerHTML = `
+    <div style="padding:20px">
+      <div class="card" style="text-align:center;padding:30px 20px">
+        <div style="font-size:64px;margin-bottom:20px">🎉</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--green);margin-bottom:12px">ОПЛАТА ПОДТВЕРЖДЕНА!</div>
+        <div style="color:var(--muted);font-size:14px;line-height:1.7">
+          Конфиг отправлен в Telegram бот.<br>Открой бота чтобы получить файл .conf
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="openLink('${BOT}')">🤖 Открыть бота</button>
+      <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
+    </div>
+  `;
+  showToast('🎉 Оплата подтверждена!');
+}
+
+// ─── CANCEL SUB ───
+async function confirmCancel() {
+  if (!MY_TG_ID) { showToast('❌ Ошибка: нет ID'); return; }
+  const btn = document.querySelector('#s-cancel .btn-danger');
+  if (btn) { btn.textContent = '⏳ Отменяю...'; btn.style.pointerEvents = 'none'; }
+  try {
+    const r = await fetch(API+'/cancel?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if (d.status === 'cancelled') {
+      renderSubInactive();
+      nav('home');
+      showToast('✅ Подписка отменена. Ключ отозван.');
+    } else {
+      showToast('❌ Ошибка: '+(d.msg||'попробуй через бота'));
+      if (btn) { btn.textContent = '⚠️ Да, отменить подписку'; btn.style.pointerEvents = 'all'; }
+    }
+  } catch(e) {
+    openLink('https://t.me/EurUsdVpnService_bot?start=cancel_sub');
+    showToast('Подтверди отмену в боте');
+    goBack();
   }
 }
 
-function openBot() {
-  openLink('https://t.me/EurUsdVpnService_bot');
-}
-
-function openSupport() {
-  openLink('https://t.me/eurusdvpnservicemanager');
+// ─── UTILS ───
+function copyPhone() {
+  navigator.clipboard?.writeText('+79778547710').then(() => showToast('📱 Номер скопирован!'));
 }
 
 function openLink(url) {
-  if (tg) {
-    if (url.includes('t.me')) tg.openTelegramLink(url);
-    else tg.openLink(url);
-  } else {
-    window.open(url, '_blank');
-  }
+  if (tg && url.includes('t.me')) tg.openTelegramLink(url);
+  else window.open(url,'_blank');
 }
 
 function showToast(msg) {
@@ -1368,194 +827,47 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+function toggleFaq(el) {
+  const open = el.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(f => f.classList.remove('open'));
+  if (!open) el.classList.add('open');
+}
 
-
-// ─── Pull to refresh ───
-let ptrStartY = 0, ptrDelta = 0, ptrActive = false;
-const ptrEl = document.getElementById('ptrIndicator');
-const ptrSpinner = document.getElementById('ptrSpinner');
-const ptrText = document.getElementById('ptrText');
-
+// ─── PULL TO REFRESH ───
+let ptrY = 0, ptrDelta = 0, ptrActive = false;
+const ptrEl = document.getElementById('ptr');
 document.addEventListener('touchstart', e => {
-  const screens = document.querySelector('.screens');
-  if (screens.scrollTop === 0) {
-    ptrStartY = e.touches[0].clientY;
-    ptrActive = true;
-  }
-}, { passive: true });
-
+  const s = document.querySelector('.screen.active');
+  if (s?.scrollTop === 0) { ptrY = e.touches[0].clientY; ptrActive = true; }
+}, {passive:true});
 document.addEventListener('touchmove', e => {
   if (!ptrActive) return;
-  ptrDelta = e.touches[0].clientY - ptrStartY;
+  ptrDelta = e.touches[0].clientY - ptrY;
   if (ptrDelta > 0 && ptrDelta < 100) {
     ptrEl.classList.add('pulling');
-    ptrText.textContent = ptrDelta > 60 ? '↑ Отпусти для обновления' : '↓ Потяни чтобы обновить';
+    document.getElementById('ptrText').textContent = ptrDelta > 60 ? '↑ Отпусти' : '↓ Потяни';
   }
-}, { passive: true });
-
+}, {passive:true});
 document.addEventListener('touchend', () => {
   if (!ptrActive) return;
   ptrActive = false;
   if (ptrDelta > 60) {
-    ptrText.textContent = '⟳ Обновление...';
-    ptrSpinner.classList.add('spin');
-    doRefresh();
-  } else {
-    ptrEl.classList.remove('pulling');
-  }
+    document.getElementById('ptrSpinner').classList.add('spin');
+    document.getElementById('ptrText').textContent = '⟳ Обновление...';
+    loadSub();
+    setTimeout(() => {
+      ptrEl.classList.remove('pulling');
+      document.getElementById('ptrSpinner').classList.remove('spin');
+      document.getElementById('ptrText').textContent = 'Потяни чтобы обновить';
+      showToast('✅ Обновлено');
+    }, 1200);
+  } else { ptrEl.classList.remove('pulling'); }
   ptrDelta = 0;
 });
 
-function doRefresh() {
-  loadSub();
-  setTimeout(() => {
-    ptrEl.classList.remove('pulling', 'refreshing');
-    ptrSpinner.classList.remove('spin');
-    ptrText.textContent = 'Потяни чтобы обновить';
-    showToast('✅ Обновлено');
-  }, 1200);
-}
-
-// ─── Real-time payment polling ───
-let pollTimer = null;
-let pendingPaymentId = null;
-
-function startPolling(pid) {
-  pendingPaymentId = pid;
-  stopPolling();
-  pollTimer = setInterval(() => checkPayment(pid), 3000);
-  checkPayment(pid);
-}
-
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
-
-let prePaymentSubDaysLeft = -1; // days left BEFORE payment was submitted
-
-async function checkPayment(pid) {
-  try {
-    const tgId = user?.id || tg?.initDataUnsafe?.user?.id || urlTgId;
-    if (!tgId) return;
-    const r = await fetch(`https://prep-logical-diane-url.trycloudflare.com/api?tg_id=${tgId}`, {
-      signal: AbortSignal.timeout(5000)
-    });
-    const data = await r.json();
-    if (data.status === 'rejected') {
-      stopPolling();
-      isPendingPayment = false;
-      setStatus('inactive', '❌ ЗАЯВКА ОТКЛОНЕНА', 'Обратись в поддержку');
-      showToast('❌ Заявка отклонена');
-      return;
-    }
-    if (data.status === 'active' && isPendingPayment) {
-      // Only confirm if days increased (renewal) or it's a brand new sub
-      const newDaysLeft = data.days_left || 0;
-      if (prePaymentSubDaysLeft < 0 || newDaysLeft > prePaymentSubDaysLeft + 1) {
-        stopPolling();
-        isPendingPayment = false;
-        onPaymentConfirmed();
-      }
-    }
-  } catch(e) {}
-}
-
-function onPaymentConfirmed() {
-  isPendingPayment = false;
-  paymentSubmittedAt = null;
-  loadSub();
-  // Update waiting screen
-  document.getElementById('s-wait').innerHTML = `
-    <div style="padding:20px">
-      <div class="card">
-        <div style="text-align:center;padding:30px 0">
-          <div style="font-size:64px;margin-bottom:20px;animation:orbPulse 2s infinite">🎉</div>
-          <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--green);margin-bottom:12px">ОПЛАТА ПОДТВЕРЖДЕНА!</div>
-          <div style="color:var(--muted);font-size:14px;line-height:1.7">
-            Конфиг отправлен в Telegram бот.<br>
-            Открой бота чтобы получить файл .conf
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="openBot()">🤖 Открыть бота</button>
-        <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
-      </div>
-    </div>
-  `;
-  setStatus('active', '🟢 VPN АКТИВЕН', 'Подписка активирована!');
-  showToast('🎉 Оплата подтверждена!');
-}
-
-
-
-function extendSub() {
-  // Go to buy screen in extend mode
-  isPendingPayment = false;
-  paymentSubmittedAt = null;
-  nav('buy');
-}
-
-function showCancelConfirm() {
-  nav('cancel');
-}
-
-async function confirmCancel() {
-  const tgId = user?.id || tg?.initDataUnsafe?.user?.id || urlTgId;
-  if (!tgId) {
-    showToast('❌ Ошибка: не удалось определить пользователя');
-    return;
-  }
-
-  // Show loading
-  const btn = document.querySelector('#s-cancel .btn-danger');
-  if (btn) { btn.textContent = '⏳ Отменяю...'; btn.style.pointerEvents = 'none'; }
-
-  try {
-    const r = await fetch(`https://prep-logical-diane-url.trycloudflare.com/api/cancel?tg_id=${tgId}`, {
-      signal: AbortSignal.timeout(8000)
-    });
-    const data = await r.json();
-    if (data.status === 'cancelled') {
-      hasActiveSub = false;
-      isPendingPayment = false;
-      showSubInactive();
-      nav('home');
-      showToast('✅ Подписка отменена. Ключ отозван.');
-    } else {
-      showToast('❌ Ошибка: ' + (data.msg || 'попробуй через бота'));
-      if (btn) { btn.textContent = '⚠️ Да, отменить подписку'; btn.style.pointerEvents = 'all'; }
-    }
-  } catch(e) {
-    // Fallback to bot if API fails
-    openLink('https://t.me/EurUsdVpnService_bot?start=cancel_sub');
-    showToast('Подтверди отмену в боте');
-    goBack();
-  }
-}
-
-function toggleFaq(el) {
-  const isOpen = el.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(f => f.classList.remove('open'));
-  if (!isOpen) el.classList.add('open');
-}
-
-// ─── Init ───
+// ─── INIT ───
 document.getElementById('backBtn').style.display = 'none';
-
-// Wait for Telegram WebApp to be ready
-if (tg) {
-  tg.ready();
-  tg.onEvent('viewportChanged', () => {});
-}
-
-// Debug: show tg_id in console
-const debugId = tg?.initDataUnsafe?.user?.id;
-console.log('TG WebApp:', !!tg);
-console.log('TG user:', tg?.initDataUnsafe?.user);
-console.log('TG ID:', debugId);
-console.log('initData:', tg?.initData?.substring(0, 50));
-
-// Small delay to ensure tg.initDataUnsafe is populated
-setTimeout(loadSub, 500);
+setTimeout(loadSub, 400);
 </script>
 </body>
 </html>
