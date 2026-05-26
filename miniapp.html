@@ -693,7 +693,8 @@ async function submitPayment() {
   let statusBefore = 'inactive';
   try {
     if (MY_TG_ID) {
-      const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+      const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       const d = await r.json();
       endBefore = d.end_date || '';
       statusBefore = d.status || 'inactive';
@@ -705,6 +706,7 @@ async function submitPayment() {
   localStorage.setItem('vpn_status_before', statusBefore);
   localStorage.setItem('vpn_pending', '1');
   localStorage.setItem('vpn_plan_label', planLabel);
+  localStorage.setItem('vpn_submit_time', Math.floor(Date.now()/1000).toString());
 
   // 2. Показываем экран ожидания
   showWaitScreen(planLabel);
@@ -770,7 +772,8 @@ async function checkConfirmation() {
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
 
   try {
-    const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
     if (d.status === 'rejected') {
@@ -778,6 +781,7 @@ async function checkConfirmation() {
       localStorage.removeItem('vpn_pending');
       localStorage.removeItem('vpn_end_before');
       localStorage.removeItem('vpn_status_before');
+      localStorage.removeItem('vpn_submit_time');
       const wasRenewal = statusBefore === 'active';
       showRejected(wasRenewal);
       return;
@@ -793,6 +797,7 @@ async function checkConfirmation() {
         localStorage.removeItem('vpn_pending');
         localStorage.removeItem('vpn_end_before');
         localStorage.removeItem('vpn_status_before');
+        localStorage.removeItem('vpn_submit_time');
         renderSubActive(d);
         if (isRenewed) showRenewed(d);
         else showConfirmed();
@@ -1688,7 +1693,8 @@ async function submitPayment() {
   // 2. Сохраняем текущий end_date ДО открытия бота
   try {
     if (MY_TG_ID) {
-      const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+      const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       subBeforePayment = await r.json();
 
     }
@@ -1725,7 +1731,8 @@ function stopPolling() {
 async function checkConfirmation() {
   if (!MY_TG_ID || !isPending) return;
   try {
-    const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
+    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
     // Отклонение
