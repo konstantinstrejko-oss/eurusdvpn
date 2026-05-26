@@ -422,26 +422,28 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
 
     <!-- WAIT -->
     <div class="screen" id="s-wait">
-      <div class="card" style="text-align:center;padding:30px 20px">
-        <div class="wait-ring"><span class="wait-icon">⏳</span></div>
-        <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px" id="waitTitle">Ожидание подтверждения</div>
-        <div style="color:var(--muted);font-size:14px;line-height:1.6" id="waitDesc">
-          Администратор проверяет платёж.<br>Обычно до 30 минут.<br><br>Конфиг придёт в бот 📱
+      <div id="waitContent">
+        <div class="card" style="text-align:center;padding:30px 20px">
+          <div class="wait-ring"><span class="wait-icon">⏳</span></div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидание подтверждения</div>
+          <div style="color:var(--muted);font-size:14px;line-height:1.6">
+            Администратор проверяет платёж.<br>Обычно до 30 минут.<br><br>Конфиг придёт в бот 📱
+          </div>
         </div>
+        <div class="card">
+          <div class="card-title"><span>📋</span> Статус заявки</div>
+          <div class="pay-step done"><div class="step-num done">✓</div>
+            <div class="step-info"><div class="step-name">Тариф выбран</div><div class="step-desc" id="waitPlan">—</div></div></div>
+          <div class="pay-step done"><div class="step-num done">✓</div>
+            <div class="step-info"><div class="step-name">Оплата отправлена</div><div class="step-desc">Заявка создана</div></div></div>
+          <div class="pay-step current"><div class="step-num current">⟳</div>
+            <div class="step-info"><div class="step-name">Проверка платежа</div><div class="step-desc">Администратор проверяет</div></div></div>
+          <div class="pay-step waiting"><div class="step-num waiting">4</div>
+            <div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">После проверки</div></div></div>
+        </div>
+        <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
+        <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
       </div>
-      <div class="card">
-        <div class="card-title"><span>📋</span> Статус заявки</div>
-        <div class="pay-step done"><div class="step-num done">✓</div>
-          <div class="step-info"><div class="step-name">Тариф выбран</div><div class="step-desc" id="waitPlan">—</div></div></div>
-        <div class="pay-step done"><div class="step-num done">✓</div>
-          <div class="step-info"><div class="step-name">Оплата отправлена</div><div class="step-desc">Заявка создана</div></div></div>
-        <div class="pay-step current"><div class="step-num current">⟳</div>
-          <div class="step-info"><div class="step-name">Проверка платежа</div><div class="step-desc">Администратор проверяет</div></div></div>
-        <div class="pay-step waiting"><div class="step-num waiting">4</div>
-          <div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">После проверки</div></div></div>
-      </div>
-      <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
-      <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
     </div>
 
     <!-- CANCEL CONFIRM -->
@@ -710,7 +712,10 @@ async function submitPayment() {
   const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const planLabel = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
 
-  document.getElementById('s-wait').innerHTML = `
+  // Обновляем только содержимое, не трогаем сам экран
+  document.getElementById('waitPlan').textContent = planLabel;
+  // Восстанавливаем стандартный вид экрана ожидания
+  document.getElementById('waitContent').innerHTML = `
     <div class="card" style="text-align:center;padding:30px 20px">
       <div class="wait-ring"><span class="wait-icon">⏳</span></div>
       <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидание подтверждения</div>
@@ -815,7 +820,7 @@ async function checkConfirmation() {
 }
 
 function showConfirmed() {
-  document.getElementById('s-wait').innerHTML = `
+  document.getElementById('waitContent').innerHTML = `
     <div style="padding:20px">
       <div class="card" style="text-align:center;padding:30px 20px">
         <div style="font-size:64px;margin-bottom:16px">🎉</div>
@@ -836,7 +841,7 @@ function showConfirmed() {
 function showRenewed(d) {
   const left = d.days_left || 0;
   const total = d.days_total || 0;
-  document.getElementById('s-wait').innerHTML = `
+  document.getElementById('waitContent').innerHTML = `
     <div style="padding:20px">
       <div class="card" style="text-align:center;padding:30px 20px;border-color:rgba(6,182,212,0.4);background:rgba(6,182,212,0.05)">
         <div style="font-size:64px;margin-bottom:16px">🔄</div>
@@ -944,7 +949,7 @@ if (localStorage.getItem('vpn_pending') === '1') {
       end_date: localStorage.getItem('vpn_end_before') || ''
     };
     const _plan = localStorage.getItem('vpn_plan_label') || '—';
-    document.getElementById('s-wait').innerHTML = `
+    document.getElementById('waitContent').innerHTML = `
       <div class="card" style="text-align:center;padding:30px 20px">
         <div class="wait-ring"><span class="wait-icon">⏳</span></div>
         <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидание подтверждения</div>
