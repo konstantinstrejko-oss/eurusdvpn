@@ -1150,13 +1150,15 @@ function setStatus(type, label, sub) {
 }
 
 function setProgress(used, total) {
+  if (total <= 0) return;
   const pct = Math.min(100, Math.round(used / total * 100));
   document.getElementById('statusProgress').style.display = 'block';
   setTimeout(() => {
     document.getElementById('progBar').style.width = pct + '%';
   }, 300);
+  const left = total - used;
   document.getElementById('progLeft').textContent = used + ' дн. использовано';
-  document.getElementById('progRight').textContent = (total - used) + ' дн. осталось';
+  document.getElementById('progRight').textContent = left > 0 ? left + ' дн. осталось' : 'Истекает сегодня';
 }
 
 // ─── Load subscription ───
@@ -1202,7 +1204,11 @@ let hasActiveSub = false;
 function showSubActive(daysLeft, total, planName) {
   hasActiveSub = true;
   const used = total - daysLeft;
-  setStatus('active', '🟢 VPN АКТИВЕН', `Осталось ${daysLeft} дн. из ${total}`);
+  // Show hours if less than 2 days left
+  const statusText = daysLeft <= 1 
+    ? `Истекает сегодня · из ${total} дн.`
+    : `Осталось ${daysLeft} дн. из ${total}`;
+  setStatus('active', '🟢 VPN АКТИВЕН', statusText);
   setProgress(used, total);
 
   document.getElementById('subContent').innerHTML = `
