@@ -780,22 +780,22 @@ async function checkConfirmation() {
     }
 
     const prevStatus = subBeforePayment?.status || 'inactive';
-    const prevTotal = subBeforePayment?.days_total || 0;
-    const newTotal = d.days_total || 0;
+    const prevEndDate = subBeforePayment?.end_date || '';
+    const newEndDate = d.end_date || '';
 
     if (d.status === 'active') {
       if (prevStatus !== 'active') {
-        // Новая подписка подтверждена
+        // Новая подписка подтверждена (раньше не было)
         stopPolling(); isPending = false;
         renderSubActive(d);
         showConfirmed();
-      } else if (newTotal > prevTotal) {
-        // Продление подтверждено — days_total увеличился
+      } else if (newEndDate && prevEndDate && newEndDate !== prevEndDate) {
+        // Продление подтверждено — end_date изменился
         stopPolling(); isPending = false;
         renderSubActive(d);
         showRenewed(d);
       }
-      // Иначе — days_total не изменился, продолжаем ждать
+      // end_date не изменился — продолжаем ждать
     }
   } catch(e) {}
 }
