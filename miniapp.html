@@ -704,15 +704,12 @@ async function submitPayment() {
   const digits = document.getElementById('digitsInput').value;
   if (!digits || digits.length !== 4 || !selectedPlan) return;
 
-  // 1. СРАЗУ показываем экран ожидания — восстанавливаем оригинальный HTML
+  // 1. СРАЗУ показываем экран ожидания
   isPending = true;
   stopPolling();
   const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const planLabel = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
 
-  // Сохраняем план для восстановления после возврата из бота
-  sessionStorage.setItem('pending_plan', planLabel);
-  // Восстанавливаем экран ожидания (он мог быть перезаписан после предыдущей оплаты)
   document.getElementById('s-wait').innerHTML = `
     <div class="card" style="text-align:center;padding:30px 20px">
       <div class="wait-ring"><span class="wait-icon">⏳</span></div>
@@ -743,18 +740,25 @@ async function submitPayment() {
     if (MY_TG_ID) {
       const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
       subBeforePayment = await r.json();
-      // Сохраняем в sessionStorage чтобы не потерять при возврате из бота
-      sessionStorage.setItem('sub_before_payment', JSON.stringify(subBeforePayment));
+
     }
   } catch(e) { subBeforePayment = null; }
 
-  // 3. Открываем бота
+  // 3. Сохраняем end_date и открываем бота
+  // end_date сохраняем ДО открытия бота
+  const endDateBefore = subBeforePayment?.end_date || '';
+  const statusBefore = subBeforePayment?.status || 'inactive';
+  localStorage.setItem('vpn_end_before', endDateBefore);
+  localStorage.setItem('vpn_status_before', statusBefore);
+  localStorage.setItem('vpn_pending', '1');
+  localStorage.setItem('vpn_plan_label', planLabel);
+
   const url = `https://t.me/EurUsdVpnService_bot?start=pay_${selectedPlan.key}_${digits}`;
   if (tg) tg.openTelegramLink(url);
   else window.open(url,'_blank');
 
-  // 4. Запускаем поллинг через 10 секунд
-  setTimeout(() => startPolling(), 10000);
+  // 4. Запускаем поллинг через 5 секунд
+  setTimeout(() => startPolling(), 5000);
 }
 
 // ─── POLLING ───
@@ -770,11 +774,6 @@ function stopPolling() {
 
 async function checkConfirmation() {
   if (!MY_TG_ID || !isPending) return;
-  // Восстанавливаем subBeforePayment из sessionStorage если потерялся
-  if (!subBeforePayment) {
-    const stored = sessionStorage.getItem('sub_before_payment');
-    if (stored) { try { subBeforePayment = JSON.parse(stored); } catch(e) {} }
-  }
   try {
     const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
@@ -788,21 +787,25 @@ async function checkConfirmation() {
       return;
     }
 
-    const prevStatus = subBeforePayment?.status || 'inactive';
-    const prevEndDate = subBeforePayment?.end_date || '';
+    const prevStatus = localStorage.getItem('vpn_status_before') || subBeforePayment?.status || 'inactive';
+    const prevEndDate = localStorage.getItem('vpn_end_before') || subBeforePayment?.end_date || '';
     const newEndDate = d.end_date || '';
 
     if (d.status === 'active') {
       if (prevStatus !== 'active') {
         // Новая подписка подтверждена (раньше не было)
         stopPolling(); isPending = false;
-        sessionStorage.removeItem('sub_before_payment');
+        localStorage.removeItem('vpn_pending');
+        localStorage.removeItem('vpn_end_before');
+        localStorage.removeItem('vpn_status_before');
         renderSubActive(d);
         showConfirmed();
       } else if (newEndDate && prevEndDate && newEndDate !== prevEndDate) {
         // Продление подтверждено — end_date изменился
         stopPolling(); isPending = false;
-        sessionStorage.removeItem('sub_before_payment');
+        localStorage.removeItem('vpn_pending');
+        localStorage.removeItem('vpn_end_before');
+        localStorage.removeItem('vpn_status_before');
         renderSubActive(d);
         showRenewed(d);
       }
@@ -933,13 +936,14 @@ document.addEventListener('touchend', () => {
 document.getElementById('backBtn').style.display = 'none';
 
 // Восстанавливаем состояние ожидания если пользователь вернулся из бота
-const _stored = sessionStorage.getItem('sub_before_payment');
-if (_stored) {
+if (localStorage.getItem('vpn_pending') === '1') {
   try {
-    subBeforePayment = JSON.parse(_stored);
     isPending = true;
-    // Показываем экран ожидания
-    const _plan = sessionStorage.getItem('pending_plan') || '—';
+    subBeforePayment = {
+      status: localStorage.getItem('vpn_status_before') || 'inactive',
+      end_date: localStorage.getItem('vpn_end_before') || ''
+    };
+    const _plan = localStorage.getItem('vpn_plan_label') || '—';
     document.getElementById('s-wait').innerHTML = `
       <div class="card" style="text-align:center;padding:30px 20px">
         <div class="wait-ring"><span class="wait-icon">⏳</span></div>
@@ -958,7 +962,7 @@ if (_stored) {
     `;
     nav('wait');
     setTimeout(() => startPolling(), 3000);
-  } catch(e) { sessionStorage.removeItem('sub_before_payment'); }
+  } catch(e) { localStorage.removeItem('vpn_pending'); setTimeout(loadSub, 400); }
 } else {
   setTimeout(loadSub, 400);
 }
