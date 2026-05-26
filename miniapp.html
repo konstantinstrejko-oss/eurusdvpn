@@ -1211,7 +1211,7 @@ function showSubActive(daysLeft, total, planName) {
     <div class="irow"><span class="irow-label">📊 Прогресс</span><span class="irow-val hl">${used}/${total} дн.</span></div>
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="openBot()">📎 Получить конфиг в боте</button>
-    <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
+    <button class="btn btn-cyan" onclick="extendSub()">🔄 Продлить подписку</button>
     <button class="btn btn-danger" style="margin-top:4px" onclick="showCancelConfirm()">❌ Отменить подписку</button>
   `;
 
@@ -1300,6 +1300,8 @@ function submitPayment() {
   paymentSubmittedAt = Date.now();
   isPendingPayment = true;
   stopPolling(); // Stop any previous polling
+  // Store current days_left to detect real confirmation later
+  prePaymentSubDaysLeft = hasActiveSub ? parseInt(document.querySelector('.irow-val.green')?.textContent) || 0 : -1;
 
   const url = `https://t.me/EurUsdVpnService_bot?start=pay_${selectedPlan.key}_${digits}`;
   if (tg) tg.openTelegramLink(url);
@@ -1423,6 +1425,8 @@ function stopPolling() {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
+let prePaymentSubDaysLeft = -1; // days left BEFORE payment was submitted
+
 async function checkPayment(pid) {
   try {
     const tgId = user?.id || tg?.initDataUnsafe?.user?.id || urlTgId;
@@ -1439,9 +1443,13 @@ async function checkPayment(pid) {
       return;
     }
     if (data.status === 'active' && isPendingPayment) {
-      stopPolling();
-      isPendingPayment = false;
-      onPaymentConfirmed();
+      // Only confirm if days increased (renewal) or it's a brand new sub
+      const newDaysLeft = data.days_left || 0;
+      if (prePaymentSubDaysLeft < 0 || newDaysLeft > prePaymentSubDaysLeft + 1) {
+        stopPolling();
+        isPendingPayment = false;
+        onPaymentConfirmed();
+      }
     }
   } catch(e) {}
 }
@@ -1472,6 +1480,13 @@ function onPaymentConfirmed() {
 }
 
 
+
+function extendSub() {
+  // Go to buy screen in extend mode
+  isPendingPayment = false;
+  paymentSubmittedAt = null;
+  nav('buy');
+}
 
 function showCancelConfirm() {
   nav('cancel');
