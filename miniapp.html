@@ -710,6 +710,8 @@ async function submitPayment() {
   const planNames = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const planLabel = (planNames[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
 
+  // Сохраняем план для восстановления после возврата из бота
+  sessionStorage.setItem('pending_plan', planLabel);
   // Восстанавливаем экран ожидания (он мог быть перезаписан после предыдущей оплаты)
   document.getElementById('s-wait').innerHTML = `
     <div class="card" style="text-align:center;padding:30px 20px">
@@ -736,11 +738,13 @@ async function submitPayment() {
   nav('wait');
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
 
-  // 2. Сохраняем текущий статус подписки ДО отправки (для детекции продления)
+  // 2. Сохраняем текущий end_date ДО открытия бота
   try {
     if (MY_TG_ID) {
       const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
       subBeforePayment = await r.json();
+      // Сохраняем в sessionStorage чтобы не потерять при возврате из бота
+      sessionStorage.setItem('sub_before_payment', JSON.stringify(subBeforePayment));
     }
   } catch(e) { subBeforePayment = null; }
 
@@ -766,6 +770,11 @@ function stopPolling() {
 
 async function checkConfirmation() {
   if (!MY_TG_ID || !isPending) return;
+  // Восстанавливаем subBeforePayment из sessionStorage если потерялся
+  if (!subBeforePayment) {
+    const stored = sessionStorage.getItem('sub_before_payment');
+    if (stored) { try { subBeforePayment = JSON.parse(stored); } catch(e) {} }
+  }
   try {
     const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
@@ -787,11 +796,13 @@ async function checkConfirmation() {
       if (prevStatus !== 'active') {
         // Новая подписка подтверждена (раньше не было)
         stopPolling(); isPending = false;
+        sessionStorage.removeItem('sub_before_payment');
         renderSubActive(d);
         showConfirmed();
       } else if (newEndDate && prevEndDate && newEndDate !== prevEndDate) {
         // Продление подтверждено — end_date изменился
         stopPolling(); isPending = false;
+        sessionStorage.removeItem('sub_before_payment');
         renderSubActive(d);
         showRenewed(d);
       }
@@ -920,7 +931,37 @@ document.addEventListener('touchend', () => {
 
 // ─── INIT ───
 document.getElementById('backBtn').style.display = 'none';
-setTimeout(loadSub, 400);
+
+// Восстанавливаем состояние ожидания если пользователь вернулся из бота
+const _stored = sessionStorage.getItem('sub_before_payment');
+if (_stored) {
+  try {
+    subBeforePayment = JSON.parse(_stored);
+    isPending = true;
+    // Показываем экран ожидания
+    const _plan = sessionStorage.getItem('pending_plan') || '—';
+    document.getElementById('s-wait').innerHTML = `
+      <div class="card" style="text-align:center;padding:30px 20px">
+        <div class="wait-ring"><span class="wait-icon">⏳</span></div>
+        <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидание подтверждения</div>
+        <div style="color:var(--muted);font-size:14px;line-height:1.6">Администратор проверяет платёж.<br>Обычно до 30 минут.<br><br>Конфиг придёт в бот 📱</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>📋</span> Статус заявки</div>
+        <div class="pay-step done"><div class="step-num done">✓</div><div class="step-info"><div class="step-name">Тариф выбран</div><div class="step-desc">${_plan}</div></div></div>
+        <div class="pay-step done"><div class="step-num done">✓</div><div class="step-info"><div class="step-name">Оплата отправлена</div><div class="step-desc">Заявка создана</div></div></div>
+        <div class="pay-step current"><div class="step-num current">⟳</div><div class="step-info"><div class="step-name">Проверка платежа</div><div class="step-desc">Администратор проверяет</div></div></div>
+        <div class="pay-step waiting"><div class="step-num waiting">4</div><div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">После проверки</div></div></div>
+      </div>
+      <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
+      <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
+    `;
+    nav('wait');
+    setTimeout(() => startPolling(), 3000);
+  } catch(e) { sessionStorage.removeItem('sub_before_payment'); }
+} else {
+  setTimeout(loadSub, 400);
+}
 </script>
 </body>
 </html>
