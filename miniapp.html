@@ -408,8 +408,8 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
         <div style="color:var(--muted2);font-size:14px;margin-bottom:8px;line-height:1.6">
           Введи <b style="color:var(--text)">последние 4 цифры</b> карты/телефона отправителя:
         </div>
-        <input class="digits-input" id="digitsInput" type="number" inputmode="numeric"
-          maxlength="4" placeholder="••••" oninput="onDigits(this)">
+        <input class="digits-input" id="digitsInput" type="text" inputmode="numeric"
+          maxlength="4" placeholder="••••" oninput="onDigits(this)" onkeyup="onDigits(this)" onchange="onDigits(this)">
         <div class="digits-hint" id="digitsHint">Введи 4 цифры чтобы продолжить</div>
         <button class="btn btn-primary" id="submitBtn" style="margin-top:16px;opacity:0.4;pointer-events:none" onclick="submitPayment()">
           ✅ Подтвердить оплату
@@ -685,7 +685,7 @@ function selectPlan(key, price, days) {
 }
 
 function onDigits(el) {
-  const v = el.value.replace(/\D/g,'').slice(0,4);
+  const v = el.value.replace(/[^0-9]/g,'').slice(0,4);
   el.value = v;
   const btn = document.getElementById('submitBtn');
   const hint = document.getElementById('digitsHint');
@@ -755,18 +755,26 @@ async function checkConfirmation() {
     }
 
     if (d.status === 'active') {
-      // Проверяем что это НОВОЕ подтверждение, а не старая подписка
       const prevDaysLeft = subBeforePayment?.days_left || 0;
       const prevStatus = subBeforePayment?.status;
+      const prevTotal = subBeforePayment?.days_total || 0;
       const newDaysLeft = d.days_left || 0;
+      const newTotal = d.days_total || 0;
+      const isRenewal = prevStatus === 'active';
 
-      // Подтверждаем если:
-      // 1. До этого не было подписки (prevStatus != 'active')
-      // 2. Или дней стало больше (продление подтверждено)
-      if (prevStatus !== 'active' || newDaysLeft > prevDaysLeft + 2) {
+      // Новая покупка: раньше не было подписки
+      // Продление: days_total увеличился (добавили дни)
+      const isNewSub = prevStatus !== 'active' && d.status === 'active';
+      const isRenewed = isRenewal && newTotal > prevTotal + 1;
+
+      if (isNewSub || isRenewed) {
         stopPolling(); isPending = false;
         renderSubActive(d);
-        showConfirmed();
+        if (isRenewed) {
+          showRenewed(d);
+        } else {
+          showConfirmed();
+        }
       }
     }
   } catch(e) {}
@@ -776,17 +784,41 @@ function showConfirmed() {
   document.getElementById('s-wait').innerHTML = `
     <div style="padding:20px">
       <div class="card" style="text-align:center;padding:30px 20px">
-        <div style="font-size:64px;margin-bottom:20px">🎉</div>
-        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--green);margin-bottom:12px">ОПЛАТА ПОДТВЕРЖДЕНА!</div>
-        <div style="color:var(--muted);font-size:14px;line-height:1.7">
-          Конфиг отправлен в Telegram бот.<br>Открой бота чтобы получить файл .conf
+        <div style="font-size:64px;margin-bottom:16px">🎉</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--green);margin-bottom:16px">ОПЛАТА ПОДТВЕРЖДЕНА!</div>
+        <div style="color:var(--muted2);font-size:14px;line-height:1.8;margin-bottom:8px">
+          Твой конфиг готов!<br>
+          Открой бота чтобы получить файл <b style="color:var(--purple2)">.conf</b><br><br>
+          <span style="color:var(--muted);font-size:13px">AmneziaVPN → + → Импортировать конфиг</span>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="openLink('${BOT}')">🤖 Открыть бота</button>
+      <button class="btn btn-primary" onclick="openLink('${BOT}')">🤖 Получить конфиг в боте</button>
       <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
     </div>
   `;
   showToast('🎉 Оплата подтверждена!');
+}
+
+function showRenewed(d) {
+  const left = d.days_left || 0;
+  const total = d.days_total || 0;
+  document.getElementById('s-wait').innerHTML = `
+    <div style="padding:20px">
+      <div class="card" style="text-align:center;padding:30px 20px;border-color:rgba(6,182,212,0.4);background:rgba(6,182,212,0.05)">
+        <div style="font-size:64px;margin-bottom:16px">🔄</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--cyan);margin-bottom:16px">ПОДПИСКА ПРОДЛЕНА!</div>
+        <div style="color:var(--muted2);font-size:14px;line-height:1.8">
+          Дни успешно добавлены к твоей подписке.<br><br>
+          📅 Осталось: <b style="color:var(--green)">${left} дней</b><br>
+          📊 Всего: <b style="color:var(--purple2)">${total} дней</b><br><br>
+          <b style="color:var(--text)">Конфиг не изменился</b> — продолжай пользоваться VPN как раньше. Никаких дополнительных действий не нужно! ✅
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="nav('home')">🏠 На главную</button>
+      <button class="btn btn-secondary" style="margin-top:0" onclick="nav('sub')">📦 Моя подписка</button>
+    </div>
+  `;
+  showToast('🔄 Подписка продлена!');
 }
 
 // ─── CANCEL SUB ───
