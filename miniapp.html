@@ -688,13 +688,17 @@ async function submitPayment() {
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
 
+  // Сохраняем время СРАЗУ при нажатии кнопки
+  const nowTs = Math.floor(Date.now()/1000);
+  localStorage.setItem('vpn_submit_time', nowTs.toString());
+
   // 1. Получаем текущий end_date ПЕРЕД созданием заявки
   let endBefore = '';
   let statusBefore = 'inactive';
   try {
     if (MY_TG_ID) {
-      // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
-    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
+      // Передаём время отправки заявки чтобы API не показывал старые rejected
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       const d = await r.json();
       endBefore = d.end_date || '';
@@ -707,7 +711,7 @@ async function submitPayment() {
   localStorage.setItem('vpn_status_before', statusBefore);
   localStorage.setItem('vpn_pending', '1');
   localStorage.setItem('vpn_plan_label', planLabel);
-  localStorage.setItem('vpn_submit_time', Math.floor(Date.now()/1000).toString());
+  // vpn_submit_time уже сохранён выше
 
   // 2. Показываем экран ожидания
   showWaitScreen(planLabel);
@@ -773,8 +777,8 @@ async function checkConfirmation() {
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
 
   try {
-    // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
-    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
+    // Передаём время отправки заявки чтобы API не показывал старые rejected
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
@@ -1695,8 +1699,8 @@ async function submitPayment() {
   // 2. Сохраняем текущий end_date ДО открытия бота
   try {
     if (MY_TG_ID) {
-      // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
-    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
+      // Передаём время отправки заявки чтобы API не показывал старые rejected
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
       subBeforePayment = await r.json();
 
@@ -1734,8 +1738,8 @@ function stopPolling() {
 async function checkConfirmation() {
   if (!MY_TG_ID || !isPending) return;
   try {
-    // Берём время отправки заявки, если нет — используем текущее время минус 1 сек
-    const submitTime = localStorage.getItem('vpn_submit_time') || Math.floor(Date.now()/1000 - 1).toString();
+    // Передаём время отправки заявки чтобы API не показывал старые rejected
+    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
