@@ -746,6 +746,7 @@ async function checkConfirmation() {
     const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
+    // Отклонение
     if (d.status === 'rejected') {
       stopPolling(); isPending = false;
       setStatus('inactive','❌ ЗАЯВКА ОТКЛОНЕНА','Обратись в поддержку');
@@ -754,28 +755,23 @@ async function checkConfirmation() {
       return;
     }
 
+    const prevStatus = subBeforePayment?.status || 'inactive';
+    const prevTotal = subBeforePayment?.days_total || 0;
+    const newTotal = d.days_total || 0;
+
     if (d.status === 'active') {
-      const prevDaysLeft = subBeforePayment?.days_left || 0;
-      const prevStatus = subBeforePayment?.status;
-      const prevTotal = subBeforePayment?.days_total || 0;
-      const newDaysLeft = d.days_left || 0;
-      const newTotal = d.days_total || 0;
-      const isRenewal = prevStatus === 'active';
-
-      // Новая покупка: раньше не было подписки
-      // Продление: days_total увеличился (добавили дни)
-      const isNewSub = prevStatus !== 'active' && d.status === 'active';
-      const isRenewed = isRenewal && newTotal > prevTotal + 1;
-
-      if (isNewSub || isRenewed) {
+      if (prevStatus !== 'active') {
+        // Новая подписка подтверждена
         stopPolling(); isPending = false;
         renderSubActive(d);
-        if (isRenewed) {
-          showRenewed(d);
-        } else {
-          showConfirmed();
-        }
+        showConfirmed();
+      } else if (newTotal > prevTotal) {
+        // Продление подтверждено — days_total увеличился
+        stopPolling(); isPending = false;
+        renderSubActive(d);
+        showRenewed(d);
       }
+      // Иначе — days_total не изменился, продолжаем ждать
     }
   } catch(e) {}
 }
