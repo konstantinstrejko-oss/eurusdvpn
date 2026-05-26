@@ -776,9 +776,10 @@ async function checkConfirmation() {
     if (d.status === 'rejected') {
       stopPolling();
       localStorage.removeItem('vpn_pending');
-      setStatus('inactive','❌ ЗАЯВКА ОТКЛОНЕНА','Обратись в поддержку');
-      showToast('❌ Заявка отклонена');
-      nav('home');
+      localStorage.removeItem('vpn_end_before');
+      localStorage.removeItem('vpn_status_before');
+      const wasRenewal = statusBefore === 'active';
+      showRejected(wasRenewal);
       return;
     }
 
@@ -799,6 +800,27 @@ async function checkConfirmation() {
       // Если end_date не изменился — продолжаем ждать
     }
   } catch(e) {}
+}
+
+function showRejected(isRenewal) {
+  setStatus('inactive','❌ ЗАЯВКА ОТКЛОНЕНА','Обратись в поддержку');
+  document.getElementById('waitContent').innerHTML = `
+    <div class="card" style="text-align:center;padding:30px 20px;border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
+      <div style="font-size:64px;margin-bottom:16px">❌</div>
+      <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--red);margin-bottom:16px">
+        ${isRenewal ? 'ПРОДЛЕНИЕ ОТКЛОНЕНО' : 'ОПЛАТА ОТКЛОНЕНА'}
+      </div>
+      <div style="color:var(--muted2);font-size:14px;line-height:1.8">
+        ${isRenewal
+          ? 'Твоя заявка на продление была отклонена.<br>Текущая подписка продолжает работать.<br><br>Если ты оплатил — напиши в поддержку.'
+          : 'Твоя заявка на оплату была отклонена.<br><br>Если ты оплатил — напиши в поддержку.<br>Мы разберёмся и поможем.'
+        }
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Написать в поддержку</button>
+    <button class="btn btn-secondary" onclick="nav('home'); loadSub();">🏠 На главную</button>
+  `;
+  showToast('❌ Заявка отклонена');
 }
 
 function showConfirmed() {
@@ -1740,6 +1762,27 @@ async function checkConfirmation() {
       // end_date не изменился — продолжаем ждать
     }
   } catch(e) {}
+}
+
+function showRejected(isRenewal) {
+  setStatus('inactive','❌ ЗАЯВКА ОТКЛОНЕНА','Обратись в поддержку');
+  document.getElementById('waitContent').innerHTML = `
+    <div class="card" style="text-align:center;padding:30px 20px;border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
+      <div style="font-size:64px;margin-bottom:16px">❌</div>
+      <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--red);margin-bottom:16px">
+        ${isRenewal ? 'ПРОДЛЕНИЕ ОТКЛОНЕНО' : 'ОПЛАТА ОТКЛОНЕНА'}
+      </div>
+      <div style="color:var(--muted2);font-size:14px;line-height:1.8">
+        ${isRenewal
+          ? 'Твоя заявка на продление была отклонена.<br>Текущая подписка продолжает работать.<br><br>Если ты оплатил — напиши в поддержку.'
+          : 'Твоя заявка на оплату была отклонена.<br><br>Если ты оплатил — напиши в поддержку.<br>Мы разберёмся и поможем.'
+        }
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Написать в поддержку</button>
+    <button class="btn btn-secondary" onclick="nav('home'); loadSub();">🏠 На главную</button>
+  `;
+  showToast('❌ Заявка отклонена');
 }
 
 function showConfirmed() {
