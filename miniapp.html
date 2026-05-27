@@ -795,13 +795,12 @@ async function checkConfirmation() {
   if (!sinceTs) { stopPolling(); return; }
 
   try {
-    // Используем отдельный endpoint который проверяет заявку по времени создания
     const apiBase = API.replace('/api', '');
-    const r = await fetch(
-      apiBase + '/api/payment_status?tg_id=' + MY_TG_ID + '&since=' + sinceTs,
-      {signal: AbortSignal.timeout(5000)}
-    );
+    const url = apiBase + '/api/payment_status?tg_id=' + MY_TG_ID + '&since=' + sinceTs;
+    showToast('Проверка: tg_id=' + MY_TG_ID + ' since=' + sinceTs);
+    const r = await fetch(url, {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
+    showToast('Ответ: ' + JSON.stringify(d));
 
     if (d.status === 'rejected') {
       stopPolling();
