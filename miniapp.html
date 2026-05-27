@@ -766,7 +766,7 @@ function cancelWait() {
 // ─── POLLING ───
 function startPolling() {
   stopPolling();
-  // Первая проверка через 8 сек (ждём пока бот создаст заявку)
+  // Start after 8 sec
   setTimeout(() => {
     checkConfirmation();
     pollTimer = setInterval(checkConfirmation, 4000);
@@ -789,44 +789,43 @@ async function checkConfirmation() {
   if (!MY_TG_ID) return;
   if (localStorage.getItem('vpn_pending') !== '1') { stopPolling(); return; }
 
-  const sinceTs = parseInt(localStorage.getItem('vpn_submit_time') || '0');
+  const submitTime = parseInt(localStorage.getItem('vpn_submit_time') || '0');
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
   const endBefore = localStorage.getItem('vpn_end_before') || '';
-  if (!sinceTs) { stopPolling(); return; }
 
   try {
-    const apiBase = API.replace('/api', '');
-    const url = apiBase + '/api/payment_status?tg_id=' + MY_TG_ID + '&since=' + sinceTs;
-    showToast('Проверка: tg_id=' + MY_TG_ID + ' since=' + sinceTs);
-    const r = await fetch(url, {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(API + '?tg_id=' + MY_TG_ID, {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
-    showToast('Ответ: ' + JSON.stringify(d));
 
-    if (d.status === 'rejected') {
+    // Check rejection: last_rejected_at > submit time
+    const lastRejectedAt = d.last_rejected_at || 0;
+    if (submitTime > 0 && lastRejectedAt >= submitTime) {
       stopPolling();
       clearPendingStorage();
       showRejected(statusBefore === 'active');
       return;
     }
 
-    if (d.status === 'confirmed') {
-      stopPolling();
-      clearPendingStorage();
-      // Get updated sub info
-      try {
-        const r2 = await fetch(API + '?tg_id=' + MY_TG_ID, {signal: AbortSignal.timeout(5000)});
-        const subData = await r2.json();
-        if (subData.status === 'active') {
-          renderSubActive(subData);
-          if (statusBefore === 'active') showRenewed(subData);
-          else showConfirmed();
-        } else {
-          showConfirmed();
-        }
-      } catch(e) { showConfirmed(); }
-      return;
+    // Check confirmation
+    if (d.status === 'active') {
+      const endNow = d.end_date || '';
+      // New sub: was inactive before
+      if (statusBefore !== 'active') {
+        stopPolling();
+        clearPendingStorage();
+        renderSubActive(d);
+        showConfirmed();
+        return;
+      }
+      // Renewal: end_date changed
+      if (endNow && endBefore && endNow !== endBefore) {
+        stopPolling();
+        clearPendingStorage();
+        renderSubActive(d);
+        showRenewed(d);
+        return;
+      }
     }
-    // status === 'pending' or 'waiting' — keep polling
   } catch(e) {}
 }
 
