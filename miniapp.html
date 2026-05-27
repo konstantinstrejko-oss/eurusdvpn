@@ -771,6 +771,11 @@ function stopPolling() {
 
 async function checkConfirmation() {
   if (!MY_TG_ID) return;
+  // Only poll if we have a pending payment
+  if (localStorage.getItem('vpn_pending') !== '1') {
+    stopPolling();
+    return;
+  }
 
   const endBefore = localStorage.getItem('vpn_end_before') || '';
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
