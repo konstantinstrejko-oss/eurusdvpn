@@ -547,7 +547,15 @@ const urlParams = new URLSearchParams(window.location.search);
 const urlTgId = urlParams.get('tg_id') ? parseInt(urlParams.get('tg_id')) : null;
 const urlName = urlParams.get('name') ? decodeURIComponent(urlParams.get('name')) : null;
 const tgUser = tg?.initDataUnsafe?.user;
-const MY_TG_ID = tgUser?.id || urlTgId;
+
+// Save tg_id to localStorage so it persists when returning from bot
+let MY_TG_ID = tgUser?.id || urlTgId;
+if (MY_TG_ID) {
+  localStorage.setItem('vpn_tg_id', MY_TG_ID.toString());
+} else {
+  const stored = localStorage.getItem('vpn_tg_id');
+  if (stored) MY_TG_ID = parseInt(stored);
+}
 const MY_NAME = tgUser?.first_name || urlName || 'Гость';
 
 document.getElementById('hdrUser').textContent = MY_NAME;
