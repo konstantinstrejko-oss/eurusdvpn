@@ -786,14 +786,17 @@ async function checkConfirmation() {
     const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
     const d = await r.json();
 
-    if (d.status === 'rejected') {
+    const submitTime = parseInt(localStorage.getItem('vpn_submit_time') || '0');
+    const lastRejectedAt = d.last_rejected_at || 0;
+
+    // REJECTION: last_rejected_at is after submit time
+    if (lastRejectedAt > 0 && submitTime > 0 && lastRejectedAt > submitTime) {
       stopPolling();
       localStorage.removeItem('vpn_pending');
       localStorage.removeItem('vpn_end_before');
       localStorage.removeItem('vpn_status_before');
       localStorage.removeItem('vpn_submit_time');
-      const wasRenewal = statusBefore === 'active';
-      showRejected(wasRenewal);
+      showRejected(statusBefore === 'active');
       return;
     }
 
@@ -812,7 +815,7 @@ async function checkConfirmation() {
         if (isRenewed) showRenewed(d);
         else showConfirmed();
       }
-      // Если end_date не изменился — продолжаем ждать
+      // end_date не изменился — ждём
     }
   } catch(e) {}
 }
