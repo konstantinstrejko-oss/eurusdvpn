@@ -758,65 +758,68 @@ function cancelWait() {
 // ─── POLLING ───
 function startPolling() {
   stopPolling();
-  // Первая проверка через 10 сек (ждём пока бот создаст заявку)
+  // Первая проверка через 8 сек (ждём пока бот создаст заявку)
   setTimeout(() => {
     checkConfirmation();
     pollTimer = setInterval(checkConfirmation, 4000);
-  }, 10000);
+  }, 8000);
 }
 
 function stopPolling() {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
 }
 
+function clearPendingStorage() {
+  localStorage.removeItem('vpn_pending');
+  localStorage.removeItem('vpn_end_before');
+  localStorage.removeItem('vpn_status_before');
+  localStorage.removeItem('vpn_submit_time');
+  localStorage.removeItem('vpn_plan_label');
+}
+
 async function checkConfirmation() {
   if (!MY_TG_ID) return;
-  // Only poll if we have a pending payment
-  if (localStorage.getItem('vpn_pending') !== '1') {
-    stopPolling();
-    return;
-  }
+  if (localStorage.getItem('vpn_pending') !== '1') { stopPolling(); return; }
 
-  const endBefore = localStorage.getItem('vpn_end_before') || '';
+  const sinceTs = parseInt(localStorage.getItem('vpn_submit_time') || '0');
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
+  const endBefore = localStorage.getItem('vpn_end_before') || '';
+  if (!sinceTs) { stopPolling(); return; }
 
   try {
-    // Передаём время отправки заявки чтобы API не показывал старые rejected
-    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
-    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
+    // Используем отдельный endpoint который проверяет заявку по времени создания
+    const apiBase = API.replace('/api', '');
+    const r = await fetch(
+      apiBase + '/api/payment_status?tg_id=' + MY_TG_ID + '&since=' + sinceTs,
+      {signal: AbortSignal.timeout(5000)}
+    );
     const d = await r.json();
 
-    const submitTime = parseInt(localStorage.getItem('vpn_submit_time') || '0');
-    const lastRejectedAt = d.last_rejected_at || 0;
-
-    // REJECTION: last_rejected_at is after submit time
-    if (lastRejectedAt > 0 && submitTime > 0 && lastRejectedAt > submitTime) {
+    if (d.status === 'rejected') {
       stopPolling();
-      localStorage.removeItem('vpn_pending');
-      localStorage.removeItem('vpn_end_before');
-      localStorage.removeItem('vpn_status_before');
-      localStorage.removeItem('vpn_submit_time');
+      clearPendingStorage();
       showRejected(statusBefore === 'active');
       return;
     }
 
-    if (d.status === 'active') {
-      const endNow = d.end_date || '';
-      const isNewSub = statusBefore !== 'active';
-      const isRenewed = statusBefore === 'active' && endNow !== endBefore;
-
-      if (isNewSub || isRenewed) {
-        stopPolling();
-        localStorage.removeItem('vpn_pending');
-        localStorage.removeItem('vpn_end_before');
-        localStorage.removeItem('vpn_status_before');
-        localStorage.removeItem('vpn_submit_time');
-        renderSubActive(d);
-        if (isRenewed) showRenewed(d);
-        else showConfirmed();
-      }
-      // end_date не изменился — ждём
+    if (d.status === 'confirmed') {
+      stopPolling();
+      clearPendingStorage();
+      // Get updated sub info
+      try {
+        const r2 = await fetch(API + '?tg_id=' + MY_TG_ID, {signal: AbortSignal.timeout(5000)});
+        const subData = await r2.json();
+        if (subData.status === 'active') {
+          renderSubActive(subData);
+          if (statusBefore === 'active') showRenewed(subData);
+          else showConfirmed();
+        } else {
+          showConfirmed();
+        }
+      } catch(e) { showConfirmed(); }
+      return;
     }
+    // status === 'pending' or 'waiting' — keep polling
   } catch(e) {}
 }
 
