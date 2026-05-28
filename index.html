@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>EurUsdVPN — Абсолютная приватность</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -201,7 +202,7 @@ footer{padding:36px 0;border-top:1px solid rgba(255,255,255,.06);position:relati
     <p class="hero-sub">AES-256 шифрование военного класса. Нулевые логи. Ваша активность — только ваша.</p>
     <div class="btns">
       <a href="https://t.me/EurUsdVpnService_bot" class="btn-p"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.267l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.292z"/></svg>Подключиться</a>
-      <a href="https://t.me/EurUsdVpnService_bot/miniapp" class="btn-g" onclick="return handleCabinet(event)">📱 Личный кабинет</a>
+      <a href="https://t.me/EurUsdVpnService_bot/miniapp" class="btn-g" id="cabinetBtn" onclick="return openCabinet(event)">📱 Личный кабинет</a>
     </div>
     <div class="stats">
       <div class="st"><div class="sv" style="color:var(--cyan)">10 Gbps</div><div class="sl">Скорость</div></div>
@@ -337,7 +338,7 @@ footer{padding:36px 0;border-top:1px solid rgba(255,255,255,.06);position:relati
       <ul class="flinks">
         <li><a href="https://t.me/EurUsdVpnService_bot">Telegram бот</a></li>
         <li><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a></li>
-        <li><a href="https://t.me/EurUsdVpnService_bot/miniapp">Кабинет</a></li>
+        <li><a href="https://t.me/EurUsdVpnService_bot/miniapp" onclick="return openCabinet(event)">Кабинет</a></li>
       </ul>
       <div class="fcopy">© 2025 EurUsdVPN</div>
     </div>
@@ -381,19 +382,21 @@ function prevSlide(){slideIdx=(slideIdx-1+4)%4;goSlide(slideIdx)}
 /* ── FAQ ── */
 function toggleFaq(el){const o=el.classList.contains('op');document.querySelectorAll('.fi.op').forEach(f=>f.classList.remove('op'));if(!o)el.classList.add('op')}
 
-function handleCabinet(e) {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile) return true;
+function openCabinet(e) {
   e.preventDefault();
-  const btn = e.currentTarget;
-  const orig = btn.innerHTML;
-  btn.innerHTML = '📲 Откроется в Telegram';
-  btn.style.borderColor = 'rgba(74,158,255,.4)';
-  setTimeout(() => {
+  const tg = window.Telegram?.WebApp;
+  const tgUser = tg?.initDataUnsafe?.user;
+  const miniappBase = 'https://konstantinstrejko-oss.github.io/eurusdvpn/miniapp.html';
+
+  if (tgUser?.id) {
+    // Открыт внутри Telegram — передаём tg_id напрямую в miniapp
+    const name = encodeURIComponent(tgUser.first_name || '');
+    const url = miniappBase + '?tg_id=' + tgUser.id + '&name=' + name;
+    window.location.href = url;
+  } else {
+    // Открыт в обычном браузере — ведём в Telegram
     window.open('https://t.me/EurUsdVpnService_bot/miniapp', '_blank');
-    btn.innerHTML = orig;
-    btn.style.borderColor = '';
-  }, 600);
+  }
   return false;
 }
 </script>
