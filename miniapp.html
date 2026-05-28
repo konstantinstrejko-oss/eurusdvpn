@@ -654,10 +654,11 @@ function renderSubActive(d) {
   const used = Math.max(0, total - left);
   setStatus('active','🟢 VPN АКТИВЕН', left <= 1 ? 'Истекает сегодня' : 'Осталось '+left+' дн. из '+total);
   setProgress(used, total);
+  const endDate = d.end_date ? new Date(d.end_date).toLocaleDateString('ru-RU') : '—';
   document.getElementById('subContent').innerHTML = `
-    <div class="irow"><span class="irow-label">📦 Тариф</span><span class="irow-val hl">${d.plan||'—'}</span></div>
-    <div class="irow"><span class="irow-label">📅 Осталось</span><span class="irow-val green">${left} дней</span></div>
-    <div class="irow"><span class="irow-label">📊 Прогресс</span><span class="irow-val hl">${used}/${total} дн.</span></div>
+    <div class="irow"><span class="irow-label">📅 Активна до</span><span class="irow-val hl">${endDate}</span></div>
+    <div class="irow"><span class="irow-label">⏳ Осталось</span><span class="irow-val green">${left} дн. из ${total}</span></div>
+    <div class="irow"><span class="irow-label">📊 Использовано</span><span class="irow-val hl">${used}/${total} дн.</span></div>
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="openLink('${BOT}')">📎 Получить конфиг в боте</button>
     <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
