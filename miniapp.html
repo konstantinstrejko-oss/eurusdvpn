@@ -393,9 +393,10 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     <div class="screen" id="s-req">
       <div class="card">
         <div class="card-title"><span>💳</span> Оплата</div>
-        <div class="amount-big">
-          <div class="amount-num" id="reqAmountWrap"><span id="reqAmount">₽0</span></div>
-          <div class="amount-label" id="reqPlanName">—</div>
+        <div id="priceBlock" style="text-align:center;padding:20px 0">
+          <div id="priceOld" style="display:none;font-size:14px;color:rgba(150,140,180,0.7);text-decoration:line-through;margin-bottom:4px">₽0</div>
+          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;background:linear-gradient(135deg,#fff,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">₽0</div>
+          <div id="reqPlanName" style="color:var(--muted);font-size:14px;margin-top:6px">—</div>
         </div>
       </div>
       <div class="req-box">
@@ -697,7 +698,10 @@ function selectPlan(key, price, days) {
   selectedPlan = {key, price, days, discountedPrice: price};
   updatePriceDisplay();
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
-  document.getElementById('reqAmount').textContent = '₽' + price;
+  const pn = document.getElementById('priceNew');
+  if (pn) pn.textContent = '₽' + price;
+  const po = document.getElementById('priceOld');
+  if (po) po.style.display = 'none';
   document.getElementById('reqPlanName').textContent = (names[key]||key)+' · '+days+' дней';
   document.getElementById('digitsInput').value = '';
   document.getElementById('digitsHint').textContent = 'Введи 4 цифры чтобы продолжить';
@@ -989,17 +993,26 @@ function updatePriceDisplay() {
   if (activePromo && activePromo.percent > 0) {
     newPrice = Math.round(origPrice * (1 - activePromo.percent / 100));
   }
-  const amountEl = document.getElementById('reqAmount');
+  selectedPlan.discountedPrice = newPrice;
+  const oldEl = document.getElementById('priceOld');
+  const newEl = document.getElementById('priceNew');
   const planNameEl = document.getElementById('reqPlanName');
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const baseName = (names[selectedPlan.key]||selectedPlan.key);
-  const wrapEl = document.getElementById('reqAmountWrap');
-  if (wrapEl) {
+  if (newEl) newEl.textContent = '₽' + newPrice;
+  if (oldEl) {
     if (newPrice !== origPrice) {
-      wrapEl.innerHTML = '<span style="font-size:15px;color:rgba(150,150,180,0.6);text-decoration:line-through;display:block;margin-bottom:-4px;letter-spacing:1px">₽'+origPrice+'</span>'
-        + '<span id="reqAmount" style="color:var(--green)">₽'+newPrice+'</span>';
+      oldEl.style.display = 'block';
+      oldEl.textContent = '₽' + origPrice;
+      newEl.style.webkitTextFillColor = '#4ade80';
+      newEl.style.background = 'none';
+      newEl.style.color = '#4ade80';
     } else {
-      wrapEl.innerHTML = '<span id="reqAmount">₽'+newPrice+'</span>';
+      oldEl.style.display = 'none';
+      newEl.style.webkitTextFillColor = '';
+      newEl.style.background = 'linear-gradient(135deg,#fff,var(--purple2))';
+      newEl.style.webkitBackgroundClip = 'text';
+      newEl.style.color = '';
     }
   }
   if (planNameEl) {
@@ -1471,9 +1484,10 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     <div class="screen" id="s-req">
       <div class="card">
         <div class="card-title"><span>💳</span> Оплата</div>
-        <div class="amount-big">
-          <div class="amount-num" id="reqAmountWrap"><span id="reqAmount">₽0</span></div>
-          <div class="amount-label" id="reqPlanName">—</div>
+        <div id="priceBlock" style="text-align:center;padding:20px 0">
+          <div id="priceOld" style="display:none;font-size:14px;color:rgba(150,140,180,0.7);text-decoration:line-through;margin-bottom:4px">₽0</div>
+          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;background:linear-gradient(135deg,#fff,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">₽0</div>
+          <div id="reqPlanName" style="color:var(--muted);font-size:14px;margin-top:6px">—</div>
         </div>
       </div>
       <div class="req-box">
