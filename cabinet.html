@@ -136,6 +136,18 @@ canvas{position:fixed;inset:0;z-index:0}
         ⬇️ Скачать конфиг (.conf)
       </button>
 
+      <div id="configBlock" style="display:none;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:.5px">КОНФИГ</span>
+          <button onclick="copyConfig()" id="copyBtn" style="padding:6px 14px;border-radius:8px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s">📋 Копировать</button>
+        </div>
+        <pre id="configText" style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;font-size:11px;line-height:1.7;color:rgba(200,220,255,.7);overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-family:monospace;max-height:300px;overflow-y:auto"></pre>
+      </div>
+
+      <button onclick="toggleConfig()" style="display:block;width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);cursor:pointer;margin-top:10px;transition:all .2s;font-family:'Space Grotesk',sans-serif" id="toggleBtn">
+        👁 Показать конфиг текстом
+      </button>
+
       <div class="tg-card">
         📱 Для подключения используй <b style="color:var(--text)">AmneziaVPN</b><br>
         App Store / Google Play / <a href="https://amnezia.org" target="_blank">amnezia.org</a><br><br>
@@ -251,6 +263,35 @@ function showDashboard(d){
     document.getElementById('statusBadge').className = 'status-badge status-inactive';
     document.getElementById('statusText').textContent = 'Подписка истекла';
   }
+}
+
+function toggleConfig(){
+  const block = document.getElementById('configBlock');
+  const btn = document.getElementById('toggleBtn');
+  const pre = document.getElementById('configText');
+  if(block.style.display === 'none'){
+    pre.textContent = currentConfig;
+    block.style.display = 'block';
+    btn.textContent = '🙈 Скрыть конфиг';
+  } else {
+    block.style.display = 'none';
+    btn.textContent = '👁 Показать конфиг текстом';
+  }
+}
+
+function copyConfig(){
+  if(!currentConfig) return;
+  navigator.clipboard.writeText(currentConfig).then(()=>{
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Скопировано';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'rgba(74,222,128,.3)';
+    setTimeout(()=>{
+      btn.textContent = '📋 Копировать';
+      btn.style.color = 'var(--blue)';
+      btn.style.borderColor = 'rgba(74,158,255,.3)';
+    }, 2000);
+  });
 }
 
 function downloadConfig(){
