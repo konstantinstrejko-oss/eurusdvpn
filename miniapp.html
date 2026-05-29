@@ -959,7 +959,7 @@ async function checkPromo() {
   result.style.color='var(--muted)';
   result.textContent='⏳ Проверяем...';
   try {
-    const r = await fetch(API + '/promo?code=' + code, {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(API + '/promo?code=' + code + (MY_TG_ID ? '&tg_id=' + MY_TG_ID : ''), {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
     if (d.valid) {
       activePromo = {code, days: d.days || 0, percent: d.percent || 0};
