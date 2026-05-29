@@ -65,6 +65,11 @@ canvas{position:fixed;inset:0;z-index:0}
 .logout-btn{display:block;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:pointer;margin-top:10px;transition:all .2s;text-align:center}
 .logout-btn:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.07)}
 
+.plan-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
+.plan-item:hover{background:rgba(74,158,255,.08);border-color:rgba(74,158,255,.3)}
+.plan-item.selected{background:rgba(74,158,255,.12);border-color:rgba(74,158,255,.5)}
+.plan-name{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;margin-bottom:4px}
+.plan-price{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--blue)}
 .tg-card{background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:14px;padding:16px;margin-top:12px;font-size:13px;color:var(--muted);line-height:1.7}
 .tg-card a{color:var(--blue);text-decoration:none;font-weight:500}
 
@@ -157,17 +162,55 @@ canvas{position:fixed;inset:0;z-index:0}
       <button class="logout-btn" onclick="logout()">Выйти</button>
     </div>
 
-    <div class="card" style="text-align:center;padding:20px">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Продлить подписку или получить новый конфиг:</div>
-      <a href="https://t.me/EurUsdVpnService_bot" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--blue);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(74,158,255,.25)'" onmouseout="this.style.background='rgba(74,158,255,.15)'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.267l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.292z"/></svg>
-        Открыть бота
-      </a>
+    <!-- RENEWAL -->
+    <div class="card" id="renewCard">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">🔄 Продлить подписку</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px" id="planGrid">
+        <div class="plan-item" onclick="selectPlan('3d',30,3)" data-key="3d">
+          <div class="plan-name">🔹 3 дня</div>
+          <div class="plan-price">30₽</div>
+        </div>
+        <div class="plan-item" onclick="selectPlan('7d',50,7)" data-key="7d">
+          <div class="plan-name">🔸 7 дней</div>
+          <div class="plan-price">50₽</div>
+        </div>
+        <div class="plan-item" onclick="selectPlan('1m',119,30)" data-key="1m">
+          <div class="plan-name">⭐ 1 месяц</div>
+          <div class="plan-price">119₽</div>
+        </div>
+        <div class="plan-item selected" onclick="selectPlan('3m',249,90)" data-key="3m">
+          <div class="plan-name">💎 3 месяца</div>
+          <div class="plan-price">249₽</div>
+          <div style="font-size:10px;color:var(--cyan);margin-top:2px">Выгодно</div>
+        </div>
+      </div>
+
+      <!-- Реквизиты -->
+      <div id="renewReqs" style="display:none">
+        <div style="background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:14px;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Переведи <span id="renewAmount" style="color:var(--text);font-weight:700">—</span> на:</div>
+          <div class="info-row"><span class="info-label">📱 Номер</span><span class="info-val blue" style="cursor:pointer" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
+          <div class="info-row"><span class="info-label">🏦 Банк</span><span class="info-val">Т-БАНК</span></div>
+          <div class="info-row" style="border:none"><span class="info-label">👤 Получатель</span><span class="info-val">EurUsdVpnService</span></div>
+          <div style="font-size:12px;color:rgba(255,200,0,.7);margin-top:10px">⚠️ В комментарии ничего не пиши!</div>
+        </div>
+        <label class="label">Последние 4 цифры карты/телефона отправителя</label>
+        <div class="input-wrap" style="margin-bottom:10px">
+          <input class="input" id="renewDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
+          <button class="btn btn-p" onclick="submitRenewal()" id="renewBtn">Отправить заявку</button>
+        </div>
+        <div class="error" id="renewError"></div>
+        <div id="renewSuccess" style="display:none;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:12px;padding:14px;font-size:14px;color:#86efac;margin-top:10px">
+          ✅ Заявка отправлена! Ожидай подтверждения (обычно до 30 мин). Конфиг обновится автоматически.
+        </div>
+      </div>
+
+      <button class="btn btn-p" id="renewStartBtn" onclick="showRenewReqs()" style="width:100%;margin-top:4px">Продлить</button>
     </div>
   </div>
 
   <div class="footer">
-    <a href="/">← Главная</a> &nbsp;·&nbsp;
+    <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/">← Главная</a> &nbsp;·&nbsp;
     <a href="https://t.me/eurusdvpnservicemanager">Поддержка</a> &nbsp;·&nbsp;
     © 2025 EurUsdVPN
   </div>
@@ -263,6 +306,68 @@ function showDashboard(d){
     document.getElementById('statusBadge').className = 'status-badge status-inactive';
     document.getElementById('statusText').textContent = 'Подписка истекла';
   }
+}
+
+let selectedRenewPlan = {key:'3m', price:249, days:90};
+
+function selectPlan(key, price, days){
+  selectedRenewPlan = {key, price, days};
+  document.querySelectorAll('.plan-item').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.key === key);
+  });
+  document.getElementById('renewAmount').textContent = price + '₽';
+}
+
+function showRenewReqs(){
+  document.getElementById('renewReqs').style.display = 'block';
+  document.getElementById('renewStartBtn').style.display = 'none';
+  document.getElementById('renewAmount').textContent = selectedRenewPlan.price + '₽';
+}
+
+async function submitRenewal(){
+  const digits = document.getElementById('renewDigits').value.trim();
+  if(digits.length !== 4){
+    document.getElementById('renewError').textContent = '❌ Введи ровно 4 цифры';
+    document.getElementById('renewError').style.display = 'block';
+    return;
+  }
+  document.getElementById('renewError').style.display = 'none';
+  const btn = document.getElementById('renewBtn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    const r = await fetch(`${API}/buy`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token: currentToken,
+        plan: selectedRenewPlan.key,
+        digits: digits,
+        amount: selectedRenewPlan.price
+      }),
+      signal: AbortSignal.timeout(8000)
+    });
+    const d = await r.json();
+    if(d.status === 'ok'){
+      document.getElementById('renewSuccess').style.display = 'block';
+      document.getElementById('renewDigits').value = '';
+    } else {
+      document.getElementById('renewError').textContent = '❌ ' + (d.msg || 'Ошибка');
+      document.getElementById('renewError').style.display = 'block';
+    }
+  } catch(e){
+    document.getElementById('renewError').textContent = '❌ Ошибка соединения';
+    document.getElementById('renewError').style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Отправить заявку';
+}
+
+function copyText(el, text){
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = el.textContent;
+    el.textContent = '✅ Скопировано';
+    setTimeout(()=>el.textContent = orig, 2000);
+  });
 }
 
 function toggleConfig(){
