@@ -178,13 +178,17 @@ draw();
 
 // Format token
 function formatToken(el){
+  // Убираем всё кроме букв и цифр
   let v = el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  // Убираем префикс EVPN если уже есть
+  if(v.startsWith('EVPN')) v = v.slice(4);
+  // Берём только 12 символов (3 группы по 4)
+  v = v.slice(0,12);
   let parts = [];
   if(v.length > 0) parts.push(v.slice(0,4));
   if(v.length > 4) parts.push(v.slice(4,8));
   if(v.length > 8) parts.push(v.slice(8,12));
-  if(v.length > 12) parts.push(v.slice(12,16));
-  el.value = (v.length > 0 ? 'EVPN-' : '') + parts.join('-');
+  el.value = parts.length > 0 ? 'EVPN-' + parts.join('-') : '';
 }
 
 // Auto-fill from URL
