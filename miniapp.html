@@ -995,7 +995,7 @@ function updatePriceDisplay() {
   const baseName = (names[selectedPlan.key]||selectedPlan.key);
   if (amountEl) {
     if (newPrice !== origPrice) {
-      amountEl.innerHTML = '<span style="text-decoration:line-through;color:var(--muted2);font-size:0.7em">'+origPrice+'</span><span style="color:white;font-size:0.8em;margin:0 8px;font-weight:700">→</span><span style="color:var(--green)">'+newPrice+'</span>';
+      amountEl.innerHTML = '<span style="color:var(--muted2);font-size:0.5em;display:block;text-decoration:line-through;letter-spacing:1px">было ' + origPrice + '</span>' + newPrice;
     } else {
       amountEl.textContent = newPrice;
     }
