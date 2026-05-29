@@ -995,9 +995,11 @@ function updatePriceDisplay() {
   const baseName = (names[selectedPlan.key]||selectedPlan.key);
   if (amountEl) {
     if (newPrice !== origPrice) {
-      amountEl.innerHTML = '<span style="color:var(--muted2);font-size:0.5em;display:block;text-decoration:line-through;letter-spacing:1px">было ' + origPrice + '</span>' + newPrice;
+      amountEl.innerHTML = '<span id="origPriceSpan" style="font-size:14px;color:var(--muted);text-decoration:line-through;display:block;margin-bottom:2px">₽'+origPrice+'</span>'+newPrice;
+      amountEl.style.color = 'var(--green)';
     } else {
       amountEl.textContent = newPrice;
+      amountEl.style.color = '';
     }
   }
   if (planNameEl) {
