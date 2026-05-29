@@ -166,6 +166,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
 .req-val.phone { font-family:'Orbitron',monospace; font-size:13px; color:var(--cyan); cursor:pointer; display:flex; align-items:center; gap:6px; }
 .amount-big { text-align:center; padding:20px; }
 .amount-num { font-family:'Orbitron',monospace; font-size:56px; font-weight:900;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
   background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
 .amount-label { color:var(--muted); font-size:14px; margin-top:6px; }
 .digits-input { width:100%; padding:16px 20px; background:var(--bg3); border:2px solid var(--border);
@@ -573,6 +574,7 @@ const NAV_SCREENS = ['home','sub','buy','support'];
 const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки' };
 let navHistory = [];
 let selectedPlan = null;
+let activePromo = null; // {code, days, percent}
 let pollTimer = null;
 
 // ─── NAVIGATION ───
@@ -692,7 +694,8 @@ function renderSubInactive() {
 
 // ─── PAYMENT ───
 function selectPlan(key, price, days) {
-  selectedPlan = {key, price, days};
+  selectedPlan = {key, price, days, discountedPrice: price};
+  updatePriceDisplay();
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   document.getElementById('reqAmount').textContent = price;
   document.getElementById('reqPlanName').textContent = (names[key]||key)+' · '+days+' дней';
@@ -724,7 +727,8 @@ async function submitPayment() {
   const digits = document.getElementById('digitsInput').value;
   if (!digits || digits.length !== 4 || !selectedPlan) return;
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
-  const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+selectedPlan.price+'₽';
+  const finalPrice = selectedPlan.discountedPrice || selectedPlan.price;
+  const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+finalPrice+'₽'+(activePromo ? ' ['+activePromo.code+']' : '');
 
   // Сохраняем время СРАЗУ при нажатии кнопки
   const nowTs = Math.floor(Date.now()/1000);
@@ -756,7 +760,8 @@ async function submitPayment() {
 
   // 3. Открываем бота
     const promoCode = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim().toUpperCase() : '';
-  const url = 'https://t.me/EurUsdVpnService_bot?start=pay_'+selectedPlan.key+'_'+digits+(promoCode ? '_'+promoCode : '');
+  const finalPrice2 = selectedPlan.discountedPrice || selectedPlan.price;
+  const url = 'https://t.me/EurUsdVpnService_bot?start=pay_'+selectedPlan.key+'_'+digits+(promoCode ? '_'+promoCode : '')+'_'+finalPrice2;
   if (tg) tg.openTelegramLink(url);
   else window.open(url,'_blank');
 
@@ -944,7 +949,12 @@ async function confirmCancel() {
 async function checkPromo() {
   const code = document.getElementById('promoInput').value.trim().toUpperCase();
   const result = document.getElementById('promoResult');
-  if (!code) { result.style.display='none'; return; }
+  if (!code) {
+    result.style.display='none';
+    activePromo = null;
+    updatePriceDisplay();
+    return;
+  }
   result.style.display='block';
   result.style.color='var(--muted)';
   result.textContent='⏳ Проверяем...';
@@ -952,16 +962,54 @@ async function checkPromo() {
     const r = await fetch(API + '/promo?code=' + code, {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
     if (d.valid) {
+      activePromo = {code, days: d.days || 0, percent: d.percent || 0};
       result.style.color='var(--green)';
-      result.textContent = '✅ Промокод активен! ' + (d.days > 0 ? '+' + d.days + ' дней бесплатно' : '') + (d.percent > 0 ? 'Скидка ' + d.percent + '%' : '');
+      let txt = '✅ Промокод активен!';
+      if (d.days > 0) txt += ' +' + d.days + ' дней бесплатно';
+      if (d.percent > 0) txt += ' Скидка ' + d.percent + '%';
+      result.textContent = txt;
+      updatePriceDisplay();
     } else {
+      activePromo = null;
       result.style.color='var(--red)';
       result.textContent = '❌ ' + (d.msg || 'Промокод недействителен');
+      updatePriceDisplay();
     }
   } catch(e) {
+    activePromo = null;
     result.style.color='var(--red)';
     result.textContent = '❌ Ошибка проверки';
   }
+}
+
+function updatePriceDisplay() {
+  if (!selectedPlan) return;
+  const origPrice = selectedPlan.price;
+  let newPrice = origPrice;
+  if (activePromo && activePromo.percent > 0) {
+    newPrice = Math.round(origPrice * (1 - activePromo.percent / 100));
+  }
+  const amountEl = document.getElementById('reqAmount');
+  const planNameEl = document.getElementById('reqPlanName');
+  const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  const baseName = (names[selectedPlan.key]||selectedPlan.key);
+  if (amountEl) {
+    if (newPrice !== origPrice) {
+      amountEl.innerHTML = '<span style="text-decoration:line-through;opacity:.4;font-size:0.7em">'+origPrice+'</span> ' + newPrice;
+    } else {
+      amountEl.textContent = newPrice;
+    }
+  }
+  if (planNameEl) {
+    let label = baseName + ' · ' + newPrice + '₽';
+    if (activePromo) {
+      if (activePromo.percent > 0) label += ' <span style="color:var(--green);font-size:0.85em">-' + activePromo.percent + '%</span>';
+      if (activePromo.days > 0) label += ' <span style="color:var(--cyan);font-size:0.85em">+' + activePromo.days + 'д</span>';
+    }
+    planNameEl.innerHTML = label;
+  }
+  // Обновляем selectedPlan.price для submitPayment
+  selectedPlan.discountedPrice = newPrice;
 }
 
 function copyPhone() {
@@ -1194,6 +1242,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
 .req-val.phone { font-family:'Orbitron',monospace; font-size:13px; color:var(--cyan); cursor:pointer; display:flex; align-items:center; gap:6px; }
 .amount-big { text-align:center; padding:20px; }
 .amount-num { font-family:'Orbitron',monospace; font-size:56px; font-weight:900;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
   background:linear-gradient(135deg,#fff,var(--purple2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
 .amount-label { color:var(--muted); font-size:14px; margin-top:6px; }
 .digits-input { width:100%; padding:16px 20px; background:var(--bg3); border:2px solid var(--border);
