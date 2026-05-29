@@ -395,7 +395,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
         <div class="card-title"><span>💳</span> Оплата</div>
         <div id="priceBlock" style="text-align:center;padding:20px 0">
           <div id="priceOld" style="display:none;font-size:14px;color:rgba(150,140,180,0.7);text-decoration:line-through;margin-bottom:4px">₽0</div>
-          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;background:linear-gradient(135deg,#fff,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">₽0</div>
+          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;color:#f0f0ff;line-height:1">₽0</div>
           <div id="reqPlanName" style="color:var(--muted);font-size:14px;margin-top:6px">—</div>
         </div>
       </div>
@@ -1009,10 +1009,7 @@ function updatePriceDisplay() {
       newEl.style.color = '#4ade80';
     } else {
       oldEl.style.display = 'none';
-      newEl.style.webkitTextFillColor = '';
-      newEl.style.background = 'linear-gradient(135deg,#fff,var(--purple2))';
-      newEl.style.webkitBackgroundClip = 'text';
-      newEl.style.color = '';
+      newEl.style.color = '#f0f0ff';
     }
   }
   if (planNameEl) {
@@ -1486,7 +1483,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
         <div class="card-title"><span>💳</span> Оплата</div>
         <div id="priceBlock" style="text-align:center;padding:20px 0">
           <div id="priceOld" style="display:none;font-size:14px;color:rgba(150,140,180,0.7);text-decoration:line-through;margin-bottom:4px">₽0</div>
-          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;background:linear-gradient(135deg,#fff,var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">₽0</div>
+          <div id="priceNew" style="font-family:'Orbitron',monospace;font-size:56px;font-weight:900;color:#f0f0ff;line-height:1">₽0</div>
           <div id="reqPlanName" style="color:var(--muted);font-size:14px;margin-top:6px">—</div>
         </div>
       </div>
