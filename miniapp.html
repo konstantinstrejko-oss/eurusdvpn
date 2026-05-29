@@ -394,7 +394,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
       <div class="card">
         <div class="card-title"><span>💳</span> Оплата</div>
         <div class="amount-big">
-          <div class="amount-num">₽<span id="reqAmount">0</span></div>
+          <div class="amount-num" id="reqAmountWrap">₽<span id="reqAmount">0</span></div>
           <div class="amount-label" id="reqPlanName">—</div>
         </div>
       </div>
@@ -993,13 +993,13 @@ function updatePriceDisplay() {
   const planNameEl = document.getElementById('reqPlanName');
   const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
   const baseName = (names[selectedPlan.key]||selectedPlan.key);
-  if (amountEl) {
+  const wrapEl = document.getElementById('reqAmountWrap');
+  if (wrapEl) {
     if (newPrice !== origPrice) {
-      amountEl.innerHTML = '<span id="origPriceSpan" style="font-size:14px;color:var(--muted);text-decoration:line-through;display:block;margin-bottom:2px">₽'+origPrice+'</span>'+newPrice;
-      amountEl.style.color = 'var(--green)';
+      wrapEl.innerHTML = '<span style="font-size:15px;color:rgba(150,150,180,0.6);text-decoration:line-through;display:block;margin-bottom:-6px">₽'+origPrice+'</span>'
+        + '<span style="color:var(--green)">₽'+newPrice+'</span>';
     } else {
-      amountEl.textContent = newPrice;
-      amountEl.style.color = '';
+      wrapEl.innerHTML = '₽<span id="reqAmount">'+newPrice+'</span>';
     }
   }
   if (planNameEl) {
@@ -1472,7 +1472,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
       <div class="card">
         <div class="card-title"><span>💳</span> Оплата</div>
         <div class="amount-big">
-          <div class="amount-num">₽<span id="reqAmount">0</span></div>
+          <div class="amount-num" id="reqAmountWrap">₽<span id="reqAmount">0</span></div>
           <div class="amount-label" id="reqPlanName">—</div>
         </div>
       </div>
