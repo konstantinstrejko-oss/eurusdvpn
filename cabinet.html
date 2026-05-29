@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EurUsdVPN — Личный кабинет</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060810;--bg2:#0a0d1a;--blue:#4a9eff;--cyan:#00d4ff;--green:#4ade80;--red:#ef4444;--text:#eef4ff;--muted:rgba(180,210,255,.5);--border:rgba(255,255,255,.08);--card:rgba(255,255,255,.04)}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+canvas{position:fixed;inset:0;z-index:0}
+.wrap{position:relative;z-index:1;width:100%;max-width:480px}
+
+/* Header */
+.header{text-align:center;margin-bottom:40px}
+.logo{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+.header p{color:var(--muted);font-size:14px}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:16px}
+
+/* Login form */
+.label{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;display:block}
+.input-wrap{display:flex;gap:10px}
+.input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:14px 18px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;outline:none;transition:border-color .2s}
+.input:focus{border-color:rgba(74,158,255,.4)}
+.input::placeholder{color:rgba(255,255,255,.2);letter-spacing:1px;font-size:13px;font-weight:400}
+.btn{padding:14px 22px;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-p{background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;box-shadow:0 4px 20px rgba(74,158,255,.3)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(74,158,255,.4)}
+.btn-p:active{transform:scale(.97)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
+.hint a{color:var(--blue);text-decoration:none}
+
+/* Error */
+.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:14px 18px;font-size:14px;color:#fca5a5;display:none;margin-top:12px}
+
+/* Dashboard */
+.dashboard{display:none}
+.status-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:50px;font-size:13px;font-weight:600;margin-bottom:20px}
+.status-active{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green)}
+.status-inactive{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:13px;color:var(--muted)}
+.info-val{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
+.info-val.green{color:var(--green)}
+.info-val.blue{color:var(--blue)}
+
+.prog-wrap{background:rgba(255,255,255,.05);border-radius:6px;height:6px;margin:16px 0 6px;overflow:hidden}
+.prog-bar{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1s cubic-bezier(.4,0,.2,1)}
+.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+
+.download-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:14px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;cursor:pointer;border:none;margin-top:20px;transition:all .2s;box-shadow:0 4px 20px rgba(74,158,255,.3)}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(74,158,255,.4)}
+.download-btn:active{transform:scale(.97)}
+
+.logout-btn{display:block;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:pointer;margin-top:10px;transition:all .2s;text-align:center}
+.logout-btn:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.07)}
+
+.tg-card{background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:14px;padding:16px;margin-top:12px;font-size:13px;color:var(--muted);line-height:1.7}
+.tg-card a{color:var(--blue);text-decoration:none;font-weight:500}
+
+/* Footer */
+.footer{text-align:center;margin-top:24px;font-size:12px;color:rgba(255,255,255,.2)}
+.footer a{color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s}
+.footer a:hover{color:rgba(255,255,255,.6)}
+
+@media(max-width:480px){
+  .card{padding:24px 20px}
+  .input-wrap{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div class="wrap">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      EurUsdVPN
+    </div>
+    <p>Личный кабинет</p>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <label class="label">Введи ключ доступа</label>
+    <div class="input-wrap">
+      <input class="input" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
+      <button class="btn btn-p" id="loginBtn" onclick="login()">Войти</button>
+    </div>
+    <div class="hint">
+      Ключ доступа был выслан тебе в Telegram боте вместе с конфигом.<br>
+      Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.
+    </div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <div class="card">
+      <div class="status-badge status-active" id="statusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">VPN активен</span>
+      </div>
+
+      <div id="subInfo">
+        <div class="info-row">
+          <span class="info-label">📅 Активна до</span>
+          <span class="info-val green" id="endDate">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">⏳ Осталось</span>
+          <span class="info-val" id="daysLeft">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🌐 IP адрес</span>
+          <span class="info-val blue" id="clientIp">—</span>
+        </div>
+      </div>
+
+      <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+      <div class="prog-labels"><span id="progUsed"></span><span id="progLeft"></span></div>
+
+      <button class="download-btn" onclick="downloadConfig()">
+        ⬇️ Скачать конфиг (.conf)
+      </button>
+
+      <div class="tg-card">
+        📱 Для подключения используй <b style="color:var(--text)">AmneziaVPN</b><br>
+        App Store / Google Play / <a href="https://amnezia.org" target="_blank">amnezia.org</a><br><br>
+        AmneziaVPN → <b style="color:var(--text)">+</b> → <b style="color:var(--text)">Импортировать конфиг</b> → выбери файл ✅
+      </div>
+
+      <button class="logout-btn" onclick="logout()">Выйти</button>
+    </div>
+
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Продлить подписку или получить новый конфиг:</div>
+      <a href="https://t.me/EurUsdVpnService_bot" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--blue);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;text-decoration:none;transition:all .2s" onmouseover="this.style.background='rgba(74,158,255,.25)'" onmouseout="this.style.background='rgba(74,158,255,.15)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.267l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.958.292z"/></svg>
+        Открыть бота
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/">← Главная</a> &nbsp;·&nbsp;
+    <a href="https://t.me/eurusdvpnservicemanager">Поддержка</a> &nbsp;·&nbsp;
+    © 2025 EurUsdVPN
+  </div>
+</div>
+
+<script>
+const API = 'https://prep-logical-diane-url.trycloudflare.com/api';
+let currentConfig = '';
+let currentToken = '';
+
+// Particle canvas
+const cvs = document.getElementById('canvas');
+const ctx = cvs.getContext('2d');
+let W, H, pts;
+function resize(){W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;pts=Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,pulse:Math.random()*Math.PI*2}))}
+resize();
+window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(resize,200)});
+function draw(){ctx.clearRect(0,0,W,H);pts.forEach((p,i)=>{p.pulse+=.008;p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;pts.slice(i+1).forEach(b=>{const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<120){ctx.strokeStyle=`rgba(74,158,255,${(1-d/120)*.2})`;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(b.x,b.y);ctx.stroke()}});ctx.fillStyle=`rgba(74,158,255,${.3+Math.sin(p.pulse)*.15})`;ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,Math.PI*2);ctx.fill()});requestAnimationFrame(draw)}
+draw();
+
+// Format token
+function formatToken(el){
+  let v = el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  let parts = [];
+  if(v.length > 0) parts.push(v.slice(0,4));
+  if(v.length > 4) parts.push(v.slice(4,8));
+  if(v.length > 8) parts.push(v.slice(8,12));
+  if(v.length > 12) parts.push(v.slice(12,16));
+  el.value = (v.length > 0 ? 'EVPN-' : '') + parts.join('-');
+}
+
+// Auto-fill from URL
+const urlToken = new URLSearchParams(window.location.search).get('token');
+if(urlToken){document.getElementById('tokenInput').value = urlToken; login();}
+
+// Restore session
+const saved = localStorage.getItem('evpn_token');
+if(saved){document.getElementById('tokenInput').value = saved; login();}
+
+async function login(){
+  const raw = document.getElementById('tokenInput').value.trim();
+  const token = raw.replace(/[^A-Z0-9]/g,'');
+  if(token.length < 12){showError('Введи полный ключ доступа'); return;}
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  hideError();
+
+  try {
+    const r = await fetch(`${API}/cabinet?token=${raw}`, {signal: AbortSignal.timeout(8000)});
+    const d = await r.json();
+
+    if(d.status !== 'ok'){
+      showError(d.msg || 'Ключ не найден');
+      btn.disabled = false;
+      btn.textContent = 'Войти';
+      return;
+    }
+
+    currentConfig = d.config;
+    currentToken = raw;
+    localStorage.setItem('evpn_token', raw);
+    showDashboard(d);
+
+  } catch(e){
+    showError('Ошибка соединения. Попробуй позже.');
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  }
+}
+
+function showDashboard(d){
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('endDate').textContent = d.end_date;
+  document.getElementById('daysLeft').textContent = d.days_left + ' дней';
+  document.getElementById('clientIp').textContent = d.client_ip || '—';
+
+  // Progress bar
+  const planDays = {'3d':3,'7d':7,'1m':30,'3m':90}[d.plan] || 30;
+  const used = Math.max(0, planDays - d.days_left);
+  const pct = Math.round(used/planDays*100);
+  setTimeout(()=>document.getElementById('progBar').style.width = pct+'%', 300);
+  document.getElementById('progUsed').textContent = used + ' дн. использовано';
+  document.getElementById('progLeft').textContent = d.days_left + ' дн. осталось';
+
+  if(d.days_left <= 0){
+    document.getElementById('statusBadge').className = 'status-badge status-inactive';
+    document.getElementById('statusText').textContent = 'Подписка истекла';
+  }
+}
+
+function downloadConfig(){
+  if(!currentConfig){return;}
+  const blob = new Blob([currentConfig], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eurusdvpn_${currentToken}.conf`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function logout(){
+  localStorage.removeItem('evpn_token');
+  currentConfig = '';
+  currentToken = '';
+  document.getElementById('loginCard').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('tokenInput').value = '';
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = false;
+  btn.textContent = 'Войти';
+}
+
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+function hideError(){
+  document.getElementById('errorMsg').style.display = 'none';
+}
+</script>
+</body>
+</html>
