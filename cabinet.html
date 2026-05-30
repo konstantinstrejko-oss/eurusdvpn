@@ -1,521 +1,626 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EurUsdVPN — Личный кабинет</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#060810;--bg2:#0a0d1a;--blue:#4a9eff;--cyan:#00d4ff;--green:#4ade80;--red:#ef4444;--text:#eef4ff;--muted:rgba(180,210,255,.5);--border:rgba(255,255,255,.08);--card:rgba(255,255,255,.04)}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-canvas{position:fixed;inset:0;z-index:0}
-.wrap{position:relative;z-index:1;width:100%;max-width:480px}
 
-/* Header */
-.header{text-align:center;margin-bottom:40px}
-.logo{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
-.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:pulse 2.5s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
-.header p{color:var(--muted);font-size:14px}
+/* ── TOKENS ── */
+:root{
+  --ease-out:cubic-bezier(0,0,.2,1);
+  --ease-in:cubic-bezier(.4,0,1,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r24:24px;
+}
+[data-theme="dark"]{
+  --bg:#070a12;--bg2:#0d1120;--bg3:#131826;
+  --border:rgba(255,255,255,.07);--border2:rgba(99,179,255,.2);
+  --text:#f0f4ff;--text2:#8899bb;--text3:rgba(255,255,255,.35);
+  --blue:#4a9eff;--cyan:#00d4ff;--green:#34d399;--amber:#fbbf24;--red:#f87171;
+  --card:rgba(255,255,255,.03);--card2:rgba(255,255,255,.06);
+  --shadow:rgba(0,0,0,.5);
+}
+[data-theme="light"]{
+  --bg:#f4f6fb;--bg2:#ffffff;--bg3:#eef1f8;
+  --border:rgba(0,0,0,.08);--border2:rgba(42,130,220,.25);
+  --text:#0d1120;--text2:#4a5572;--text3:rgba(0,0,0,.35);
+  --blue:#2a6fd8;--cyan:#0099cc;--green:#059669;--amber:#d97706;--red:#dc2626;
+  --card:rgba(0,0,0,.02);--card2:rgba(0,0,0,.04);
+  --shadow:rgba(0,0,0,.1);
+}
 
-/* Card */
-.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:16px}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Manrope',sans-serif;font-size:14px;line-height:1.6;
+  min-height:100vh;transition:background .3s var(--ease-out),color .3s var(--ease-out);
+}
 
-/* Login form */
-.label{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;display:block}
-.input-wrap{display:flex;gap:10px}
-.input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;padding:14px 18px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;outline:none;transition:border-color .2s}
-.input:focus{border-color:rgba(74,158,255,.4)}
-.input::placeholder{color:rgba(255,255,255,.2);letter-spacing:1px;font-size:13px;font-weight:400}
-.btn{padding:14px 22px;border-radius:12px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.btn-p{background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;box-shadow:0 4px 20px rgba(74,158,255,.3)}
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(74,158,255,.4)}
-.btn-p:active{transform:scale(.97)}
-.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* ── CANVAS ── */
+#canvas{position:fixed;inset:0;z-index:0;opacity:.6;pointer-events:none}
 
-.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
+/* ── LAYOUT ── */
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 48px}
+.wrap{width:100%;max-width:480px}
+
+/* ── NAV ── */
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:var(--r8);background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 16px rgba(74,158,255,.3)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--text)}
+.nav-actions{display:flex;gap:8px;align-items:center}
+
+/* Theme toggle */
+.theme-btn{width:36px;height:36px;border-radius:var(--r8);background:var(--card2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s var(--ease-out);color:var(--text2)}
+.theme-btn:hover{background:var(--border);transform:translateY(-1px)}
+.theme-btn:active{transform:scale(.97)}
+
+.home-link{font-size:13px;color:var(--text3);text-decoration:none;padding:6px 12px;border-radius:var(--r8);transition:all .2s;border:1px solid transparent}
+.home-link:hover{color:var(--text2);background:var(--card2);border-color:var(--border)}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r24);padding:24px;margin-bottom:12px;transition:all .3s var(--ease-out)}
+[data-theme="light"] .card{box-shadow:0 2px 16px var(--shadow)}
+
+/* ── LOGIN ── */
+.login-hero{text-align:center;margin-bottom:32px;animation:enter .5s var(--ease-out) both}
+.login-icon{width:64px;height:64px;border-radius:var(--r16);background:linear-gradient(135deg,rgba(74,158,255,.15),rgba(0,212,255,.1));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px}
+.login-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:6px}
+.login-sub{color:var(--text2);font-size:14px}
+
+.field-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;display:block}
+.field-row{display:flex;gap:8px}
+.inp{flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r12);padding:13px 16px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;outline:none;transition:border-color .2s var(--ease-out),box-shadow .2s var(--ease-out)}
+.inp::placeholder{color:var(--text3);letter-spacing:0;font-size:12px;font-weight:400}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(74,158,255,.12)}
+.btn{padding:13px 20px;border-radius:var(--r12);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s var(--ease-out);white-space:nowrap}
+.btn:active{transform:scale(.97);transition-duration:.1s}
+.btn-primary{background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;box-shadow:0 4px 16px rgba(74,158,255,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(74,158,255,.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:var(--card2);border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-danger{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+.btn-danger:hover{background:rgba(248,113,113,.2)}
+.btn-warn{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--amber)}
+.btn-warn:hover{background:rgba(251,191,36,.15)}
+.btn-block{width:100%;display:block;text-align:center;margin-top:8px}
+
+.hint{font-size:12px;color:var(--text3);margin-top:10px;line-height:1.7}
 .hint a{color:var(--blue);text-decoration:none}
+.hint a:hover{text-decoration:underline}
+.err-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:var(--r12);padding:12px 14px;font-size:13px;color:var(--red);display:none;margin-top:10px;animation:enter .2s var(--ease-out)}
+.ok-box{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:var(--r12);padding:12px 14px;font-size:13px;color:var(--green);display:none;margin-top:10px;animation:enter .2s var(--ease-out)}
 
-/* Error */
-.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:14px 18px;font-size:14px;color:#fca5a5;display:none;margin-top:12px}
+/* ── DASHBOARD ── */
+.dash{display:none;animation:enter .4s var(--ease-out) both}
 
-/* Dashboard */
-.dashboard{display:none}
-.status-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:50px;font-size:13px;font-weight:600;margin-bottom:20px}
-.status-active{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green)}
-.status-inactive{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red)}
-.status-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+/* Status badge */
+.status-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:50px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.3px;margin-bottom:18px}
+.status-active{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--green)}
+.status-expired{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+.pulse{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dot-pulse 2s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.info-row:last-child{border-bottom:none}
-.info-label{font-size:13px;color:var(--muted)}
-.info-val{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600}
-.info-val.green{color:var(--green)}
-.info-val.blue{color:var(--blue)}
+/* Countdown timer */
+.countdown{text-align:center;padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.cd-label{font-size:11px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.cd-digits{display:flex;justify-content:center;align-items:center;gap:8px}
+.cd-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r12);padding:12px 16px;min-width:64px;text-align:center}
+.cd-num{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;color:var(--text);line-height:1;display:block}
+.cd-unit{font-size:10px;font-family:'Syne',sans-serif;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-top:4px;display:block}
+.cd-sep{font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text3);margin-bottom:16px}
 
-.prog-wrap{background:rgba(255,255,255,.05);border-radius:6px;height:6px;margin:16px 0 6px;overflow:hidden}
-.prog-bar{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1s cubic-bezier(.4,0,.2,1)}
-.prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+/* Info rows */
+.irow{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.irow:last-child{border:none}
+.il{font-size:13px;color:var(--text2)}
+.iv{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--text)}
+.iv.green{color:var(--green)}
+.iv.blue{color:var(--blue)}
 
-.download-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:14px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;cursor:pointer;border:none;margin-top:20px;transition:all .2s;box-shadow:0 4px 20px rgba(74,158,255,.3)}
-.download-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(74,158,255,.4)}
-.download-btn:active{transform:scale(.97)}
+/* Progress */
+.prog-wrap{background:var(--bg3);border-radius:99px;height:5px;margin:18px 0 6px;overflow:hidden}
+.prog-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3)}
 
-.logout-btn{display:block;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:pointer;margin-top:10px;transition:all .2s;text-align:center}
-.logout-btn:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.07)}
+/* Download btn */
+.dl-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:var(--r16);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;cursor:pointer;border:none;margin-top:20px;transition:all .2s var(--ease-out);box-shadow:0 4px 20px rgba(74,158,255,.25)}
+.dl-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(74,158,255,.4)}
+.dl-btn:active{transform:scale(.97);transition-duration:.1s}
 
-.plan-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center}
-.plan-item:hover{background:rgba(74,158,255,.08);border-color:rgba(74,158,255,.3)}
-.plan-item.selected{background:rgba(74,158,255,.12);border-color:rgba(74,158,255,.5)}
-.plan-name{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;margin-bottom:4px}
-.plan-price{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--blue)}
-.tg-card{background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:14px;padding:16px;margin-top:12px;font-size:13px;color:var(--muted);line-height:1.7}
-.tg-card a{color:var(--blue);text-decoration:none;font-weight:500}
+/* Config text */
+.config-block{display:none;margin-top:12px;animation:enter .25s var(--ease-out)}
+.config-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.config-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.config-pre{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r12);padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:var(--text2);overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto}
+
+/* History */
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.hist-item:last-child{border:none}
+.hist-left{display:flex;align-items:center;gap:12px}
+.hist-icon{width:36px;height:36px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.hist-icon.ok{background:rgba(52,211,153,.1)}
+.hist-icon.fail{background:rgba(248,113,113,.1)}
+.hist-name{font-weight:600;font-size:13px;color:var(--text)}
+.hist-date{font-size:11px;color:var(--text3);margin-top:1px}
+.hist-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text2)}
+
+/* Plans grid */
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.plan-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r12);padding:14px;cursor:pointer;transition:all .2s var(--ease-out);text-align:center}
+.plan-card:hover{border-color:rgba(74,158,255,.3);transform:translateY(-1px)}
+.plan-card:active{transform:scale(.97)}
+.plan-card.sel{background:rgba(74,158,255,.08);border-color:rgba(74,158,255,.5)}
+.plan-n{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.plan-p{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--blue)}
+.plan-badge{font-size:10px;color:var(--cyan);margin-top:2px;font-family:'Syne',sans-serif;font-weight:700}
+
+/* Req box */
+.req-box{background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.15);border-radius:var(--r12);padding:16px;margin-bottom:14px}
+.req-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.req-row:last-child{border:none}
+.req-l{font-size:12px;color:var(--text2)}
+.req-v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:color .15s}
+.req-v:hover{color:var(--blue)}
+.req-warn{font-size:11px;color:rgba(251,191,36,.7);margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}
+
+/* Section titles */
+.sec-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:16px;color:var(--text)}
+
+/* Logout */
+.logout-row{text-align:center;margin-top:8px}
+.logout-link{font-size:13px;color:var(--text3);cursor:pointer;transition:color .15s;background:none;border:none;font-family:'Manrope',sans-serif}
+.logout-link:hover{color:var(--text2)}
 
 /* Footer */
-.footer{text-align:center;margin-top:24px;font-size:12px;color:rgba(255,255,255,.2)}
-.footer a{color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s}
-.footer a:hover{color:rgba(255,255,255,.6)}
+.footer{text-align:center;margin-top:32px;font-size:12px;color:var(--text3)}
+.footer a{color:var(--text3);text-decoration:none;transition:color .15s}
+.footer a:hover{color:var(--text2)}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:4px 0 12px}
+
+/* Animations */
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--card2) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--r8)}
 
 @media(max-width:480px){
-  .card{padding:24px 20px}
-  .input-wrap{flex-direction:column}
+  .card{padding:20px 16px}
+  .field-row{flex-direction:column}
   .btn{width:100%}
+  .plans-grid{grid-template-columns:1fr 1fr}
+  .cd-num{font-size:22px}
+  .cd-block{min-width:52px;padding:10px 12px}
 }
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
 
+<div class="page">
 <div class="wrap">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-dot"></div>
-      EurUsdVPN
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/" class="logo">
+    <div class="logo-mark">🛡</div>
+    <span class="logo-name">EurUsdVPN</span>
+  </a>
+  <div class="nav-actions">
+    <button class="theme-btn" onclick="toggleTheme()" title="Переключить тему" id="themeBtn">🌙</button>
+    <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/" class="home-link">← Главная</a>
+  </div>
+</nav>
+
+<!-- LOGIN -->
+<div id="loginView">
+  <div class="login-hero">
+    <div class="login-icon">🔐</div>
+    <h1 class="login-title">Личный кабинет</h1>
+    <p class="login-sub">Введи ключ доступа для входа</p>
+  </div>
+  <div class="card">
+    <label class="field-label">Ключ доступа</label>
+    <div class="field-row">
+      <input class="inp" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
+      <button class="btn btn-primary" id="loginBtn" onclick="login()">Войти</button>
     </div>
-    <p>Личный кабинет</p>
+    <div class="hint">Ключ был выслан в Telegram вместе с конфигом.<br>Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.</div>
+    <div class="err-box" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dash" id="dashView">
+
+  <!-- STATUS CARD -->
+  <div class="card" style="animation-delay:0ms">
+    <div class="status-pill status-active" id="statusPill">
+      <span class="pulse"></span>
+      <span id="statusText">VPN активен</span>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="countdown">
+      <div class="cd-label">До окончания подписки</div>
+      <div class="cd-digits">
+        <div class="cd-block"><span class="cd-num" id="cdDays">--</span><span class="cd-unit">дней</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-block"><span class="cd-num" id="cdH">--</span><span class="cd-unit">часов</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-block"><span class="cd-num" id="cdM">--</span><span class="cd-unit">минут</span></div>
+        <span class="cd-sep">:</span>
+        <div class="cd-block"><span class="cd-num" id="cdS">--</span><span class="cd-unit">секунд</span></div>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="irow"><span class="il">📅 Активна до</span><span class="iv green" id="endDate">—</span></div>
+    <div class="irow"><span class="il">🌐 IP адрес</span><span class="iv blue" id="clientIp">—</span></div>
+    <div class="irow"><span class="il">📦 Тариф</span><span class="iv" id="planName">—</span></div>
+
+    <!-- PROGRESS -->
+    <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    <div class="prog-meta"><span id="progUsed"></span><span id="progLeft"></span></div>
+
+    <!-- ACTIONS -->
+    <button class="dl-btn" onclick="downloadConfig()">⬇️ Скачать конфиг (.conf)</button>
+
+    <div class="config-block" id="configBlock">
+      <div class="config-header">
+        <span class="config-label">Конфиг</span>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="copyConfig()" id="copyBtn">📋 Копировать</button>
+      </div>
+      <pre class="config-pre" id="configText"></pre>
+    </div>
+    <button class="btn btn-ghost btn-block" style="margin-top:10px" onclick="toggleConfig()" id="toggleConfigBtn">👁 Показать конфиг текстом</button>
   </div>
 
-  <!-- LOGIN -->
-  <div class="card" id="loginCard">
-    <label class="label">Введи ключ доступа</label>
-    <div class="input-wrap">
-      <input class="input" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
-      <button class="btn btn-p" id="loginBtn" onclick="login()">Войти</button>
-    </div>
-    <div class="hint">
-      Ключ доступа был выслан тебе в Telegram боте вместе с конфигом.<br>
-      Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.
-    </div>
-    <div class="error" id="errorMsg"></div>
+  <!-- HISTORY CARD -->
+  <div class="card" id="histCard" style="animation-delay:50ms">
+    <div class="sec-title">📋 История платежей</div>
+    <div id="histList"><div style="color:var(--text3);font-size:13px">Загрузка...</div></div>
   </div>
 
-  <!-- DASHBOARD -->
-  <div class="dashboard" id="dashboard">
-    <div class="card">
-      <div class="status-badge status-active" id="statusBadge">
-        <span class="status-dot"></span>
-        <span id="statusText">VPN активен</span>
+  <!-- RECREATE CARD -->
+  <div class="card" style="animation-delay:100ms">
+    <div class="sec-title">⚠️ Проблемы с VPN?</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Если конфиг перестал работать — пересоздай его. Срок подписки <strong>не продлевается</strong>, только ключи обновятся.</p>
+    <button class="btn btn-warn btn-block" onclick="showRecreate()" id="recreateShowBtn">🔄 Пересоздать конфиг</button>
+    <div id="recreateBlock" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--amber);margin-bottom:12px">⚠️ Старый конфиг перестанет работать немедленно. Ты уверен?</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-danger" style="flex:1" onclick="doRecreate()" id="recreateBtn">Подтвердить</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="hideRecreate()">Отмена</button>
       </div>
-
-      <div id="subInfo">
-        <div class="info-row">
-          <span class="info-label">📅 Активна до</span>
-          <span class="info-val green" id="endDate">—</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">⏳ Осталось</span>
-          <span class="info-val" id="daysLeft">—</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">🌐 IP адрес</span>
-          <span class="info-val blue" id="clientIp">—</span>
-        </div>
-      </div>
-
-      <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
-      <div class="prog-labels"><span id="progUsed"></span><span id="progLeft"></span></div>
-
-      <button class="download-btn" onclick="downloadConfig()">
-        ⬇️ Скачать конфиг (.conf)
-      </button>
-
-      <div id="configBlock" style="display:none;margin-top:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:12px;color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:.5px">КОНФИГ</span>
-          <button onclick="copyConfig()" id="copyBtn" style="padding:6px 14px;border-radius:8px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s">📋 Копировать</button>
-        </div>
-        <pre id="configText" style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;font-size:11px;line-height:1.7;color:rgba(200,220,255,.7);overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-family:monospace;max-height:300px;overflow-y:auto"></pre>
-      </div>
-
-      <button onclick="toggleConfig()" style="display:block;width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:500;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);cursor:pointer;margin-top:10px;transition:all .2s;font-family:'Space Grotesk',sans-serif" id="toggleBtn">
-        👁 Показать конфиг текстом
-      </button>
-
-      <div class="tg-card">
-        📱 Для подключения используй <b style="color:var(--text)">AmneziaVPN</b><br>
-        App Store / Google Play / <a href="https://amnezia.org" target="_blank">amnezia.org</a><br><br>
-        AmneziaVPN → <b style="color:var(--text)">+</b> → <b style="color:var(--text)">Импортировать конфиг</b> → выбери файл ✅
-      </div>
-
-      <button onclick="toggleRecreate()" id="recreateToggleBtn" style="display:block;width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:500;background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.15);color:rgba(255,200,0,.7);cursor:pointer;margin-top:10px;transition:all .2s;font-family:'Space Grotesk',sans-serif">
-        ⚠️ Конфиг не работает — пересоздать
-      </button>
-
-      <div id="recreateBlock" style="display:none;margin-top:12px;background:rgba(255,200,0,.04);border:1px solid rgba(255,200,0,.15);border-radius:14px;padding:16px">
-        <div style="font-size:13px;color:rgba(255,220,100,.8);margin-bottom:12px;line-height:1.6">
-          ⚠️ <b style="color:rgba(255,220,100,.9)">Внимание!</b> Старый конфиг перестанет работать.<br>
-          Срок подписки <b style="color:rgba(255,220,100,.9)">не продлевается</b> — только конфиг пересоздаётся.<br>
-          Скачай новый конфиг и импортируй в AmneziaVPN.
-        </div>
-        <button onclick="doRecreate()" id="recreateBtn" class="btn btn-p" style="width:100%;background:rgba(255,150,0,.2);border:1px solid rgba(255,150,0,.4);color:rgba(255,200,100,.9)">
-          🔄 Подтвердить пересоздание
-        </button>
-        <div id="recreateError" style="display:none;color:#fca5a5;font-size:13px;margin-top:8px"></div>
-        <div id="recreateSuccess" style="display:none;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:10px;padding:12px;font-size:13px;color:#86efac;margin-top:8px"></div>
-      </div>
-
-      <button class="logout-btn" onclick="logout()">Выйти</button>
-    </div>
-
-    <!-- RENEWAL -->
-    <div class="card" id="renewCard">
-      <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">🔄 Продлить подписку</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px" id="planGrid">
-        <div class="plan-item" onclick="selectPlan('3d',30,3)" data-key="3d">
-          <div class="plan-name">🔹 3 дня</div>
-          <div class="plan-price">30₽</div>
-        </div>
-        <div class="plan-item" onclick="selectPlan('7d',50,7)" data-key="7d">
-          <div class="plan-name">🔸 7 дней</div>
-          <div class="plan-price">50₽</div>
-        </div>
-        <div class="plan-item" onclick="selectPlan('1m',119,30)" data-key="1m">
-          <div class="plan-name">⭐ 1 месяц</div>
-          <div class="plan-price">119₽</div>
-        </div>
-        <div class="plan-item selected" onclick="selectPlan('3m',249,90)" data-key="3m">
-          <div class="plan-name">💎 3 месяца</div>
-          <div class="plan-price">249₽</div>
-          <div style="font-size:10px;color:var(--cyan);margin-top:2px">Выгодно</div>
-        </div>
-      </div>
-
-      <!-- Реквизиты -->
-      <div id="renewReqs" style="display:none">
-        <div style="background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:14px;padding:16px;margin-bottom:14px">
-          <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Переведи <span id="renewAmount" style="color:var(--text);font-weight:700">—</span> на:</div>
-          <div class="info-row"><span class="info-label">📱 Номер</span><span class="info-val blue" style="cursor:pointer" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
-          <div class="info-row"><span class="info-label">🏦 Банк</span><span class="info-val">Т-БАНК</span></div>
-          <div class="info-row" style="border:none"><span class="info-label">👤 Получатель</span><span class="info-val">EurUsdVpnService</span></div>
-          <div style="font-size:12px;color:rgba(255,200,0,.7);margin-top:10px">⚠️ В комментарии ничего не пиши!</div>
-        </div>
-        <label class="label">Последние 4 цифры карты/телефона отправителя</label>
-        <div class="input-wrap" style="margin-bottom:10px">
-          <input class="input" id="renewDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
-          <button class="btn btn-p" onclick="submitRenewal()" id="renewBtn">Отправить заявку</button>
-        </div>
-        <div class="error" id="renewError"></div>
-        <div id="renewSuccess" style="display:none;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:12px;padding:14px;font-size:14px;color:#86efac;margin-top:10px">
-          ✅ Заявка отправлена! Ожидай подтверждения (обычно до 30 мин). Конфиг обновится автоматически.
-        </div>
-      </div>
-
-      <button class="btn btn-p" id="renewStartBtn" onclick="showRenewReqs()" style="width:100%;margin-top:4px">Продлить</button>
+      <div class="err-box" id="recreateErr"></div>
+      <div class="ok-box" id="recreateOk"></div>
     </div>
   </div>
 
-  <div class="footer">
-    <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/">← Главная</a> &nbsp;·&nbsp;
-    <a href="https://t.me/eurusdvpnservicemanager">Поддержка</a> &nbsp;·&nbsp;
-    © 2025 EurUsdVPN
+  <!-- RENEWAL CARD -->
+  <div class="card" style="animation-delay:150ms">
+    <div class="sec-title">🔄 Продлить подписку</div>
+    <div class="plans-grid">
+      <div class="plan-card" onclick="selPlan('3d',30,3)" data-k="3d"><div class="plan-n">3 дня</div><div class="plan-p">30₽</div></div>
+      <div class="plan-card" onclick="selPlan('7d',50,7)" data-k="7d"><div class="plan-n">7 дней</div><div class="plan-p">50₽</div></div>
+      <div class="plan-card" onclick="selPlan('1m',119,30)" data-k="1m"><div class="plan-n">1 месяц</div><div class="plan-p">119₽</div></div>
+      <div class="plan-card sel" onclick="selPlan('3m',249,90)" data-k="3m"><div class="plan-n">3 месяца</div><div class="plan-p">249₽</div><div class="plan-badge">Выгодно</div></div>
+    </div>
+    <div id="renewBlock" style="display:none;animation:enter .25s var(--ease-out)">
+      <div class="req-box">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Переведи <strong id="renewAmt" style="color:var(--text)">—</strong> на:</div>
+        <div class="req-row"><span class="req-l">📱 Номер</span><span class="req-v" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
+        <div class="req-row"><span class="req-l">🏦 Банк</span><span class="req-v">Т-БАНК</span></div>
+        <div class="req-row"><span class="req-l">👤 Получатель</span><span class="req-v">EurUsdVpnService</span></div>
+        <div class="req-warn">⚠️ В комментарии к переводу ничего не пиши!</div>
+      </div>
+      <label class="field-label">Последние 4 цифры карты/телефона</label>
+      <div class="field-row" style="margin-bottom:10px">
+        <input class="inp" id="renewDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
+        <button class="btn btn-primary" onclick="submitRenew()" id="renewBtn">Отправить</button>
+      </div>
+      <div class="err-box" id="renewErr"></div>
+      <div class="ok-box" id="renewOk"></div>
+    </div>
+    <button class="btn btn-ghost btn-block" onclick="toggleRenew()" id="renewToggle">💳 Оплатить и продлить</button>
   </div>
+
+  <!-- SUPPORT -->
+  <div class="card" style="animation-delay:200ms;text-align:center;padding:20px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Нужна помощь или возникли вопросы?</div>
+    <a href="https://t.me/eurusdvpnservicemanager" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--r12);background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.25);color:var(--blue);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s var(--ease-out)" onmouseover="this.style.background='rgba(74,158,255,.2)'" onmouseout="this.style.background='rgba(74,158,255,.1)'">
+      💬 Написать в поддержку
+    </a>
+    <a href="https://t.me/EurUsdVpnService_bot" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--r12);background:var(--card2);border:1px solid var(--border);color:var(--text2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s var(--ease-out);margin-left:8px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--card2)'">
+      🤖 Открыть бота
+    </a>
+  </div>
+
+  <div class="logout-row">
+    <button class="logout-link" onclick="logout()">Выйти из кабинета</button>
+  </div>
+</div>
+
+<footer class="footer">
+  © 2025 EurUsdVPN &nbsp;·&nbsp;
+  <a href="https://t.me/eurusdvpnservicemanager">Поддержка</a>
+</footer>
+</div>
 </div>
 
 <script>
 const API = 'https://prep-logical-diane-url.trycloudflare.com/api';
-let currentConfig = '';
-let currentToken = '';
+const PLANS_MAP = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+let currentConfig = '', currentToken = '', endDateTs = 0, countdownTimer = null;
+let selPlanData = {key:'3m',price:249,days:90};
+let renewVisible = false;
 
-// Particle canvas
+// ── THEME ──
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('evpn_theme', isDark ? 'light' : 'dark');
+}
+(function(){
+  const t = localStorage.getItem('evpn_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '🌙' : '☀️';
+})();
+
+// ── CANVAS ──
 const cvs = document.getElementById('canvas');
 const ctx = cvs.getContext('2d');
-let W, H, pts;
-function resize(){W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;pts=Array.from({length:50},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,pulse:Math.random()*Math.PI*2}))}
+let W,H,pts;
+function resize(){
+  W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight;
+  const n = W < 600 ? 30 : 50;
+  pts=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,p:Math.random()*Math.PI*2}));
+}
 resize();
 window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(resize,200)});
-function draw(){ctx.clearRect(0,0,W,H);pts.forEach((p,i)=>{p.pulse+=.008;p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;pts.slice(i+1).forEach(b=>{const d=Math.hypot(p.x-b.x,p.y-b.y);if(d<120){ctx.strokeStyle=`rgba(74,158,255,${(1-d/120)*.2})`;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(b.x,b.y);ctx.stroke()}});ctx.fillStyle=`rgba(74,158,255,${.3+Math.sin(p.pulse)*.15})`;ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,Math.PI*2);ctx.fill()});requestAnimationFrame(draw)}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const color = isDark ? '74,158,255' : '42,105,210';
+  pts.forEach((p,i)=>{
+    p.p+=.006;p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    pts.slice(i+1).forEach(b=>{
+      const d=Math.hypot(p.x-b.x,p.y-b.y);
+      if(d<110){ctx.strokeStyle=`rgba(${color},${(1-d/110)*.15})`;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(b.x,b.y);ctx.stroke()}
+    });
+    ctx.fillStyle=`rgba(${color},${.25+Math.sin(p.p)*.12})`;
+    ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,Math.PI*2);ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
 draw();
 
-// Format token
+// ── TOKEN FORMAT ──
 function formatToken(el){
-  // Убираем всё кроме букв и цифр
-  let v = el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
-  // Убираем префикс EVPN если уже есть
-  if(v.startsWith('EVPN')) v = v.slice(4);
-  // Берём только 12 символов (3 группы по 4)
-  v = v.slice(0,12);
-  let parts = [];
-  if(v.length > 0) parts.push(v.slice(0,4));
-  if(v.length > 4) parts.push(v.slice(4,8));
-  if(v.length > 8) parts.push(v.slice(8,12));
-  el.value = parts.length > 0 ? 'EVPN-' + parts.join('-') : '';
+  let v=el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if(v.startsWith('EVPN'))v=v.slice(4);
+  v=v.slice(0,12);
+  let parts=[];
+  if(v.length>0)parts.push(v.slice(0,4));
+  if(v.length>4)parts.push(v.slice(4,8));
+  if(v.length>8)parts.push(v.slice(8,12));
+  el.value=parts.length>0?'EVPN-'+parts.join('-'):'';
 }
 
-// Auto-fill from URL
-const urlToken = new URLSearchParams(window.location.search).get('token');
-if(urlToken){document.getElementById('tokenInput').value = urlToken; login();}
-
-// Restore session
-const saved = localStorage.getItem('evpn_token');
-if(saved){document.getElementById('tokenInput').value = saved; login();}
+// Auto-login
+const urlToken=new URLSearchParams(location.search).get('token');
+if(urlToken){document.getElementById('tokenInput').value=urlToken;login();}
+else{const s=localStorage.getItem('evpn_token');if(s){document.getElementById('tokenInput').value=s;login();}}
 
 async function login(){
-  const raw = document.getElementById('tokenInput').value.trim();
-  const token = raw.replace(/[^A-Z0-9]/g,'');
-  if(token.length < 12){showError('Введи полный ключ доступа'); return;}
+  const raw=document.getElementById('tokenInput').value.trim();
+  if(raw.replace(/[^A-Z0-9]/g,'').length<12){showErr('loginErr','Введи полный ключ доступа');return;}
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.textContent='...';
+  hideErr('loginErr');
+  try{
+    const r=await fetch(`${API}/cabinet?token=${raw}`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status!=='ok'){showErr('loginErr',d.msg||'Ключ не найден');btn.disabled=false;btn.textContent='Войти';return;}
+    currentConfig=d.config;currentToken=raw;
+    localStorage.setItem('evpn_token',raw);
+    showDash(d);
+  }catch(e){showErr('loginErr','Ошибка соединения. Попробуй позже.');btn.disabled=false;btn.textContent='Войти';}
+}
 
-  const btn = document.getElementById('loginBtn');
-  btn.disabled = true;
-  btn.textContent = '...';
-  hideError();
+function showDash(d){
+  document.getElementById('loginView').style.display='none';
+  const dash=document.getElementById('dashView');
+  dash.style.display='block';
 
-  try {
-    const r = await fetch(`${API}/cabinet?token=${raw}`, {signal: AbortSignal.timeout(8000)});
-    const d = await r.json();
+  // Parse end date
+  const [day,mon,yr]=d.end_date.split('.');
+  endDateTs=new Date(`${yr}-${mon}-${day}T23:59:59`).getTime();
 
-    if(d.status !== 'ok'){
-      showError(d.msg || 'Ключ не найден');
-      btn.disabled = false;
-      btn.textContent = 'Войти';
-      return;
-    }
-
-    currentConfig = d.config;
-    currentToken = raw;
-    localStorage.setItem('evpn_token', raw);
-    showDashboard(d);
-
-  } catch(e){
-    showError('Ошибка соединения. Попробуй позже.');
-    btn.disabled = false;
-    btn.textContent = 'Войти';
+  // Status
+  if(d.days_left<=0){
+    document.getElementById('statusPill').className='status-pill status-expired';
+    document.getElementById('statusText').textContent='Подписка истекла';
   }
+
+  // Fields
+  document.getElementById('endDate').textContent=d.end_date;
+  document.getElementById('clientIp').textContent=d.client_ip||'—';
+  document.getElementById('planName').textContent=PLANS_MAP[d.plan]||d.plan;
+
+  // Progress
+  const planDays={'3d':3,'7d':7,'1m':30,'3m':90}[d.plan]||30;
+  const used=Math.max(0,planDays-d.days_left);
+  const pct=Math.round(used/planDays*100);
+  setTimeout(()=>document.getElementById('progBar').style.width=pct+'%',400);
+  document.getElementById('progUsed').textContent=used+' дн. использовано';
+  document.getElementById('progLeft').textContent=d.days_left+' дн. осталось';
+
+  // Countdown
+  startCountdown();
+
+  // Load history
+  loadHistory(d);
 }
 
-function showDashboard(d){
-  document.getElementById('loginCard').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('endDate').textContent = d.end_date;
-  document.getElementById('daysLeft').textContent = d.days_left + ' дней';
-  document.getElementById('clientIp').textContent = d.client_ip || '—';
-
-  // Progress bar
-  const planDays = {'3d':3,'7d':7,'1m':30,'3m':90}[d.plan] || 30;
-  const used = Math.max(0, planDays - d.days_left);
-  const pct = Math.round(used/planDays*100);
-  setTimeout(()=>document.getElementById('progBar').style.width = pct+'%', 300);
-  document.getElementById('progUsed').textContent = used + ' дн. использовано';
-  document.getElementById('progLeft').textContent = d.days_left + ' дн. осталось';
-
-  if(d.days_left <= 0){
-    document.getElementById('statusBadge').className = 'status-badge status-inactive';
-    document.getElementById('statusText').textContent = 'Подписка истекла';
+// ── COUNTDOWN ──
+function startCountdown(){
+  if(countdownTimer)clearInterval(countdownTimer);
+  function tick(){
+    const diff=endDateTs-Date.now();
+    if(diff<=0){document.getElementById('cdDays').textContent='0';document.getElementById('cdH').textContent='00';document.getElementById('cdM').textContent='00';document.getElementById('cdS').textContent='00';return;}
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor((diff%86400000)/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    document.getElementById('cdDays').textContent=d;
+    document.getElementById('cdH').textContent=String(h).padStart(2,'0');
+    document.getElementById('cdM').textContent=String(m).padStart(2,'0');
+    document.getElementById('cdS').textContent=String(s).padStart(2,'0');
   }
+  tick();
+  countdownTimer=setInterval(tick,1000);
 }
 
-let selectedRenewPlan = {key:'3m', price:249, days:90};
-
-function selectPlan(key, price, days){
-  selectedRenewPlan = {key, price, days};
-  document.querySelectorAll('.plan-item').forEach(el=>{
-    el.classList.toggle('selected', el.dataset.key === key);
-  });
-  document.getElementById('renewAmount').textContent = price + '₽';
+// ── HISTORY ──
+async function loadHistory(subData){
+  const histList=document.getElementById('histList');
+  // Показываем текущий платёж как единственный доступный
+  const statusIcons={'confirmed':'✅','extended':'🔄','expired':'💀','cancelled':'🚫','rejected':'❌'};
+  const planName=PLANS_MAP[subData.plan]||subData.plan;
+  histList.innerHTML=`
+    <div class="hist-item">
+      <div class="hist-left">
+        <div class="hist-icon ok">✅</div>
+        <div>
+          <div class="hist-name">${planName}</div>
+          <div class="hist-date">Активна до ${subData.end_date}</div>
+        </div>
+      </div>
+      <div class="hist-amt" style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text2)">Активна</div>
+    </div>`;
 }
 
-function showRenewReqs(){
-  document.getElementById('renewReqs').style.display = 'block';
-  document.getElementById('renewStartBtn').style.display = 'none';
-  document.getElementById('renewAmount').textContent = selectedRenewPlan.price + '₽';
-}
-
-async function submitRenewal(){
-  const digits = document.getElementById('renewDigits').value.trim();
-  if(digits.length !== 4){
-    document.getElementById('renewError').textContent = '❌ Введи ровно 4 цифры';
-    document.getElementById('renewError').style.display = 'block';
-    return;
-  }
-  document.getElementById('renewError').style.display = 'none';
-  const btn = document.getElementById('renewBtn');
-  btn.disabled = true; btn.textContent = '...';
-
-  try {
-    const r = await fetch(`${API}/buy`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        token: currentToken,
-        plan: selectedRenewPlan.key,
-        digits: digits,
-        amount: selectedRenewPlan.price
-      }),
-      signal: AbortSignal.timeout(8000)
-    });
-    const d = await r.json();
-    if(d.status === 'ok'){
-      document.getElementById('renewSuccess').style.display = 'block';
-      document.getElementById('renewDigits').value = '';
-    } else {
-      document.getElementById('renewError').textContent = '❌ ' + (d.msg || 'Ошибка');
-      document.getElementById('renewError').style.display = 'block';
-    }
-  } catch(e){
-    document.getElementById('renewError').textContent = '❌ Ошибка соединения';
-    document.getElementById('renewError').style.display = 'block';
-  }
-  btn.disabled = false; btn.textContent = 'Отправить заявку';
-}
-
-function copyText(el, text){
-  navigator.clipboard.writeText(text).then(()=>{
-    const orig = el.textContent;
-    el.textContent = '✅ Скопировано';
-    setTimeout(()=>el.textContent = orig, 2000);
-  });
-}
-
-function toggleRecreate(){
-  const block = document.getElementById('recreateBlock');
-  const btn = document.getElementById('recreateToggleBtn');
-  if(block.style.display === 'none'){
-    block.style.display = 'block';
-    btn.textContent = '✕ Отмена';
-  } else {
-    block.style.display = 'none';
-    btn.textContent = '⚠️ Конфиг не работает — пересоздать';
-  }
-}
-
-async function doRecreate(){
-  const btn = document.getElementById('recreateBtn');
-  const errEl = document.getElementById('recreateError');
-  const okEl = document.getElementById('recreateSuccess');
-  btn.disabled = true; btn.textContent = '⏳ Пересоздаю...';
-  errEl.style.display = 'none'; okEl.style.display = 'none';
-
-  try {
-    const r = await fetch(`${API}/recreate`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({token: currentToken}),
-      signal: AbortSignal.timeout(15000)
-    });
-    const d = await r.json();
-    if(d.status === 'ok'){
-      currentConfig = d.config;
-      document.getElementById('clientIp').textContent = d.ip;
-      // Обновляем конфиг в блоке текста
-      const ct = document.getElementById('configText');
-      if(ct) ct.textContent = d.config;
-      okEl.innerHTML = '✅ Конфиг пересоздан!';
-      okEl.style.display = 'block';
-      btn.textContent = '✅ Готово';
-      // Показываем конфиг текстом и прокручиваем
-      setTimeout(()=>{
-        // Открываем блок с текстом конфига
-        const block = document.getElementById('configBlock');
-        const pre = document.getElementById('configText');
-        const toggleBtn = document.getElementById('toggleBtn');
-        if(block && pre){
-          pre.textContent = d.config;
-          block.style.display = 'block';
-          if(toggleBtn) toggleBtn.textContent = '🙈 Скрыть конфиг';
-        }
-        // Подсвечиваем кнопку скачивания
-        const dlBtn = document.querySelector('.download-btn');
-        dlBtn.style.background = 'linear-gradient(135deg,#16a34a,#4ade80)';
-        dlBtn.textContent = '⬇️ Скачать НОВЫЙ конфиг (.conf)';
-        setTimeout(()=>{
-          dlBtn.style.background = '';
-          dlBtn.textContent = '⬇️ Скачать конфиг (.conf)';
-        }, 5000);
-        // Прокручиваем к конфигу
-        block.scrollIntoView({behavior:'smooth'});
-      }, 300);
-    } else {
-      errEl.textContent = '❌ ' + (d.msg || 'Ошибка');
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = '🔄 Подтвердить пересоздание';
-    }
-  } catch(e){
-    errEl.textContent = '❌ Ошибка соединения';
-    errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = '🔄 Подтвердить пересоздание';
-  }
-}
-
+// ── CONFIG ──
 function toggleConfig(){
-  const block = document.getElementById('configBlock');
-  const btn = document.getElementById('toggleBtn');
-  const pre = document.getElementById('configText');
-  if(block.style.display === 'none'){
-    pre.textContent = currentConfig;
-    block.style.display = 'block';
-    btn.textContent = '🙈 Скрыть конфиг';
-  } else {
-    block.style.display = 'none';
-    btn.textContent = '👁 Показать конфиг текстом';
+  const block=document.getElementById('configBlock');
+  const btn=document.getElementById('toggleConfigBtn');
+  const pre=document.getElementById('configText');
+  if(block.style.display==='none'||!block.style.display){
+    pre.textContent=currentConfig;
+    block.style.display='block';
+    btn.textContent='🙈 Скрыть конфиг';
+  }else{
+    block.style.display='none';
+    btn.textContent='👁 Показать конфиг текстом';
   }
-}
-
-function copyConfig(){
-  if(!currentConfig) return;
-  navigator.clipboard.writeText(currentConfig).then(()=>{
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ Скопировано';
-    btn.style.color = 'var(--green)';
-    btn.style.borderColor = 'rgba(74,222,128,.3)';
-    setTimeout(()=>{
-      btn.textContent = '📋 Копировать';
-      btn.style.color = 'var(--blue)';
-      btn.style.borderColor = 'rgba(74,158,255,.3)';
-    }, 2000);
-  });
 }
 
 function downloadConfig(){
-  if(!currentConfig){return;}
-  const blob = new Blob([currentConfig], {type:'text/plain'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `eurusdvpn_${currentToken}.conf`;
-  a.click();
+  if(!currentConfig)return;
+  const blob=new Blob([currentConfig],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`eurusdvpn_${currentToken}.conf`;a.click();
   URL.revokeObjectURL(url);
 }
 
-function logout(){
-  localStorage.removeItem('evpn_token');
-  currentConfig = '';
-  currentToken = '';
-  document.getElementById('loginCard').style.display = 'block';
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('tokenInput').value = '';
-  const btn = document.getElementById('loginBtn');
-  btn.disabled = false;
-  btn.textContent = 'Войти';
+function copyConfig(){
+  navigator.clipboard.writeText(currentConfig).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✅ Скопировано';
+    setTimeout(()=>btn.textContent='📋 Копировать',2000);
+  });
 }
 
-function showError(msg){
-  const el = document.getElementById('errorMsg');
-  el.textContent = '❌ ' + msg;
-  el.style.display = 'block';
+// ── RECREATE ──
+function showRecreate(){
+  document.getElementById('recreateBlock').style.display='block';
+  document.getElementById('recreateShowBtn').style.display='none';
 }
-function hideError(){
-  document.getElementById('errorMsg').style.display = 'none';
+function hideRecreate(){
+  document.getElementById('recreateBlock').style.display='none';
+  document.getElementById('recreateShowBtn').style.display='block';
+}
+async function doRecreate(){
+  const btn=document.getElementById('recreateBtn');
+  btn.disabled=true;btn.textContent='⏳...';
+  hideErr('recreateErr');
+  try{
+    const r=await fetch(`${API}/recreate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken}),signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      currentConfig=d.config;
+      document.getElementById('clientIp').textContent=d.ip;
+      const pre=document.getElementById('configText');
+      if(pre)pre.textContent=d.config;
+      // Показываем конфиг текстом
+      document.getElementById('configBlock').style.display='block';
+      document.getElementById('toggleConfigBtn').textContent='🙈 Скрыть конфиг';
+      document.getElementById('configText').textContent=d.config;
+      document.getElementById('recreateOk').textContent='✅ Конфиг пересоздан! Скачай новый файл.';
+      document.getElementById('recreateOk').style.display='block';
+      btn.textContent='✅ Готово';
+      setTimeout(()=>{downloadConfig();document.getElementById('configBlock').scrollIntoView({behavior:'smooth'})},400);
+    }else{showErr('recreateErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Подтвердить';}
+  }catch(e){showErr('recreateErr','Ошибка соединения');btn.disabled=false;btn.textContent='Подтвердить';}
+}
+
+// ── RENEWAL ──
+function selPlan(k,p,d){
+  selPlanData={key:k,price:p,days:d};
+  document.querySelectorAll('.plan-card').forEach(el=>el.classList.toggle('sel',el.dataset.k===k));
+  document.getElementById('renewAmt').textContent=p+'₽';
+  if(renewVisible)document.getElementById('renewBlock').style.display='block';
+}
+function toggleRenew(){
+  renewVisible=!renewVisible;
+  document.getElementById('renewBlock').style.display=renewVisible?'block':'none';
+  document.getElementById('renewToggle').textContent=renewVisible?'✕ Свернуть':'💳 Оплатить и продлить';
+  if(renewVisible)document.getElementById('renewAmt').textContent=selPlanData.price+'₽';
+}
+async function submitRenew(){
+  const digits=document.getElementById('renewDigits').value.trim();
+  if(digits.length!==4){showErr('renewErr','Введи ровно 4 цифры');return;}
+  hideErr('renewErr');
+  const btn=document.getElementById('renewBtn');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const r=await fetch(`${API}/buy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,plan:selPlanData.key,digits,amount:selPlanData.price}),signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      document.getElementById('renewOk').textContent='✅ Заявка отправлена! Ожидай подтверждения (до 30 мин).';
+      document.getElementById('renewOk').style.display='block';
+      document.getElementById('renewDigits').value='';
+      btn.textContent='✅ Отправлено';
+    }else{showErr('renewErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Отправить';}
+  }catch(e){showErr('renewErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить';}
+}
+
+// ── UTILS ──
+function copyText(el,text){
+  navigator.clipboard.writeText(text).then(()=>{const o=el.textContent;el.textContent='✅ Скопировано';setTimeout(()=>el.textContent=o,1800);});
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent='❌ '+msg;el.style.display='block';}
+function hideErr(id){document.getElementById(id).style.display='none';}
+function logout(){
+  localStorage.removeItem('evpn_token');
+  clearInterval(countdownTimer);
+  currentConfig='';currentToken='';endDateTs=0;
+  document.getElementById('dashView').style.display='none';
+  document.getElementById('loginView').style.display='block';
+  document.getElementById('tokenInput').value='';
+  const btn=document.getElementById('loginBtn');btn.disabled=false;btn.textContent='Войти';
 }
 </script>
 </body>
