@@ -159,6 +159,23 @@ canvas{position:fixed;inset:0;z-index:0}
         AmneziaVPN → <b style="color:var(--text)">+</b> → <b style="color:var(--text)">Импортировать конфиг</b> → выбери файл ✅
       </div>
 
+      <button onclick="toggleRecreate()" id="recreateToggleBtn" style="display:block;width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:500;background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.15);color:rgba(255,200,0,.7);cursor:pointer;margin-top:10px;transition:all .2s;font-family:'Space Grotesk',sans-serif">
+        ⚠️ Конфиг не работает — пересоздать
+      </button>
+
+      <div id="recreateBlock" style="display:none;margin-top:12px;background:rgba(255,200,0,.04);border:1px solid rgba(255,200,0,.15);border-radius:14px;padding:16px">
+        <div style="font-size:13px;color:rgba(255,220,100,.8);margin-bottom:12px;line-height:1.6">
+          ⚠️ <b style="color:rgba(255,220,100,.9)">Внимание!</b> Старый конфиг перестанет работать.<br>
+          Срок подписки <b style="color:rgba(255,220,100,.9)">не продлевается</b> — только конфиг пересоздаётся.<br>
+          Скачай новый конфиг и импортируй в AmneziaVPN.
+        </div>
+        <button onclick="doRecreate()" id="recreateBtn" class="btn btn-p" style="width:100%;background:rgba(255,150,0,.2);border:1px solid rgba(255,150,0,.4);color:rgba(255,200,100,.9)">
+          🔄 Подтвердить пересоздание
+        </button>
+        <div id="recreateError" style="display:none;color:#fca5a5;font-size:13px;margin-top:8px"></div>
+        <div id="recreateSuccess" style="display:none;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:10px;padding:12px;font-size:13px;color:#86efac;margin-top:8px"></div>
+      </div>
+
       <button class="logout-btn" onclick="logout()">Выйти</button>
     </div>
 
@@ -368,6 +385,54 @@ function copyText(el, text){
     el.textContent = '✅ Скопировано';
     setTimeout(()=>el.textContent = orig, 2000);
   });
+}
+
+function toggleRecreate(){
+  const block = document.getElementById('recreateBlock');
+  const btn = document.getElementById('recreateToggleBtn');
+  if(block.style.display === 'none'){
+    block.style.display = 'block';
+    btn.textContent = '✕ Отмена';
+  } else {
+    block.style.display = 'none';
+    btn.textContent = '⚠️ Конфиг не работает — пересоздать';
+  }
+}
+
+async function doRecreate(){
+  const btn = document.getElementById('recreateBtn');
+  const errEl = document.getElementById('recreateError');
+  const okEl = document.getElementById('recreateSuccess');
+  btn.disabled = true; btn.textContent = '⏳ Пересоздаю...';
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+
+  try {
+    const r = await fetch(`${API}/recreate`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({token: currentToken}),
+      signal: AbortSignal.timeout(15000)
+    });
+    const d = await r.json();
+    if(d.status === 'ok'){
+      currentConfig = d.config;
+      document.getElementById('clientIp').textContent = d.ip;
+      document.getElementById('configText').textContent = d.config;
+      okEl.textContent = '✅ Конфиг пересоздан! Скачай новый файл ниже.';
+      okEl.style.display = 'block';
+      btn.textContent = '✅ Готово';
+      // Предлагаем скачать
+      setTimeout(()=>downloadConfig(), 500);
+    } else {
+      errEl.textContent = '❌ ' + (d.msg || 'Ошибка');
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = '🔄 Подтвердить пересоздание';
+    }
+  } catch(e){
+    errEl.textContent = '❌ Ошибка соединения';
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '🔄 Подтвердить пересоздание';
+  }
 }
 
 function toggleConfig(){

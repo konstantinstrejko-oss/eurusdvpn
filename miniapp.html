@@ -672,6 +672,8 @@ function renderSubActive(d) {
     <button class="btn btn-primary" style="margin-top:12px" onclick="openLink('${BOT}')">📎 Получить конфиг в боте</button>
     <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
     <button class="btn btn-danger" style="margin-top:4px" onclick="nav('cancel')">❌ Отменить подписку</button>
+    <button class="btn" style="background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:rgba(255,220,100,.9);margin-top:4px" onclick="showRecreateConfirm()">⚠️ Конфиг не работает</button>
+    <div id="recreateConfirm" style="display:none;background:rgba(255,150,0,.08);border:1px solid rgba(255,150,0,.2);border-radius:12px;padding:14px;margin-top:8px;font-size:13px;color:rgba(255,220,100,.8);line-height:1.6">Старый конфиг перестанет работать.<br>Срок подписки <b>не продлевается</b>.<br><br><button class="btn btn-primary" style="background:rgba(255,100,0,.3);border-color:rgba(255,100,0,.5)" onclick="doRecreateMiniapp()" id="recreateMiniBtn">🔄 Пересоздать конфиг</button></div>
   `;
   document.getElementById('buyTitle').innerHTML = '<span>🔄</span> Продление подписки';
   document.getElementById('buyInfo').innerHTML = '✅ Дни добавятся к текущей подписке<br>✅ Ключ и IP не изменятся<br>✅ Конфиг менять не нужно<br><span style="color:var(--cyan);font-size:13px">Сейчас активно: '+left+' дн.</span>';
@@ -792,6 +794,35 @@ function showWaitScreen(planLabel) {
   `;
   nav('wait');
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
+}
+
+function showRecreateConfirm(){
+  const el = document.getElementById('recreateConfirm');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function doRecreateMiniapp(){
+  const btn = document.getElementById('recreateMiniBtn');
+  btn.disabled = true; btn.textContent = '⏳ Пересоздаю...';
+  try {
+    const r = await fetch(API+'/recreate_tg', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({tg_id: MY_TG_ID}),
+      signal: AbortSignal.timeout(15000)
+    });
+    const d = await r.json();
+    if(d.status === 'ok'){
+      btn.textContent = '✅ Готово! Получи новый конфиг в боте';
+      document.getElementById('recreateConfirm').style.backgroundColor = 'rgba(74,222,128,.08)';
+    } else {
+      btn.textContent = '❌ ' + (d.msg || 'Ошибка');
+      btn.disabled = false;
+    }
+  } catch(e){
+    btn.textContent = '❌ Ошибка соединения';
+    btn.disabled = false;
+  }
 }
 
 function cancelWait() {
