@@ -417,12 +417,34 @@ async function doRecreate(){
     if(d.status === 'ok'){
       currentConfig = d.config;
       document.getElementById('clientIp').textContent = d.ip;
-      document.getElementById('configText').textContent = d.config;
-      okEl.textContent = '✅ Конфиг пересоздан! Скачай новый файл ниже.';
+      // Обновляем конфиг в блоке текста
+      const ct = document.getElementById('configText');
+      if(ct) ct.textContent = d.config;
+      okEl.innerHTML = '✅ Конфиг пересоздан!';
       okEl.style.display = 'block';
       btn.textContent = '✅ Готово';
-      // Предлагаем скачать
-      setTimeout(()=>downloadConfig(), 500);
+      // Показываем конфиг текстом и прокручиваем
+      setTimeout(()=>{
+        // Открываем блок с текстом конфига
+        const block = document.getElementById('configBlock');
+        const pre = document.getElementById('configText');
+        const toggleBtn = document.getElementById('toggleBtn');
+        if(block && pre){
+          pre.textContent = d.config;
+          block.style.display = 'block';
+          if(toggleBtn) toggleBtn.textContent = '🙈 Скрыть конфиг';
+        }
+        // Подсвечиваем кнопку скачивания
+        const dlBtn = document.querySelector('.download-btn');
+        dlBtn.style.background = 'linear-gradient(135deg,#16a34a,#4ade80)';
+        dlBtn.textContent = '⬇️ Скачать НОВЫЙ конфиг (.conf)';
+        setTimeout(()=>{
+          dlBtn.style.background = '';
+          dlBtn.textContent = '⬇️ Скачать конфиг (.conf)';
+        }, 5000);
+        // Прокручиваем к конфигу
+        block.scrollIntoView({behavior:'smooth'});
+      }, 300);
     } else {
       errEl.textContent = '❌ ' + (d.msg || 'Ошибка');
       errEl.style.display = 'block';
