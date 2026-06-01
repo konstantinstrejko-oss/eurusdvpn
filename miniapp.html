@@ -124,6 +124,9 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
 
 /* PLAN CARDS */
 .plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.dev-count-btn{padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Orbitron',monospace}
+.dev-count-btn.active{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.6);color:#fff}
+.dev-count-btn:active{transform:scale(.95)}
 .plan-card { background:var(--bg3); border:1px solid var(--border); border-radius:14px;
   padding:18px 14px; text-align:center; cursor:pointer; transition:all 0.25s;
   position:relative; overflow:hidden; }
@@ -362,23 +365,39 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     <div class="screen" id="s-buy">
       <div class="card">
         <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
+        <!-- Выбор устройств -->
+        <div id="devSelectBlock" style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 Количество устройств:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="setDevCount(1)" id="dBtn1" class="dev-count-btn active">1</button>
+            <button onclick="setDevCount(2)" id="dBtn2" class="dev-count-btn">2</button>
+            <button onclick="setDevCount(3)" id="dBtn3" class="dev-count-btn">3</button>
+            <button onclick="setDevCount(4)" id="dBtn4" class="dev-count-btn">4</button>
+            <button onclick="setDevCount(5)" id="dBtn5" class="dev-count-btn">5</button>
+          </div>
+          <div id="devPriceHint" style="font-size:11px;color:var(--muted);margin-top:6px">1 устройство — базовая цена</div>
+        </div>
         <div class="plans-grid">
-          <div class="plan-card" onclick="selectPlan('3d',30,3)">
-            <span class="plan-emoji">🔹</span><div class="plan-name">3 ДНЯ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>30</div><div class="plan-days">Пробный</div>
-          </div>
-          <div class="plan-card" onclick="selectPlan('7d',50,7)">
+          <div class="plan-card" onclick="selectPlanDev('7d',89,7)">
             <span class="plan-emoji">🔸</span><div class="plan-name">7 ДНЕЙ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>50</div><div class="plan-days">Неделя</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_7d">89</span></div><div class="plan-days">Неделя</div>
           </div>
-          <div class="plan-card hot" onclick="selectPlan('1m',119,30)">
+          <div class="plan-card hot" onclick="selectPlanDev('1m',169,30)">
             <div class="plan-hot-badge">🔥 HIT</div>
             <span class="plan-emoji">⭐</span><div class="plan-name">1 МЕСЯЦ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>119</div><div class="plan-days">Популярный</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1m">169</span></div><div class="plan-days">Популярный</div>
           </div>
-          <div class="plan-card" onclick="selectPlan('3m',249,90)">
+          <div class="plan-card" onclick="selectPlanDev('3m',529,90)">
             <span class="plan-emoji">💎</span><div class="plan-name">3 МЕСЯЦА</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>249</div><div class="plan-days">Выгодно</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_3m">529</span></div><div class="plan-days">Выгодно</div>
+          </div>
+          <div class="plan-card" onclick="selectPlanDev('6m',829,180)">
+            <span class="plan-emoji">👑</span><div class="plan-name">6 МЕСЯЦЕВ</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_6m">829</span></div><div class="plan-days">Экономия</div>
+          </div>
+          <div class="plan-card" onclick="selectPlanDev('1y',2000,365)" style="grid-column:span 2">
+            <span class="plan-emoji">🏆</span><div class="plan-name">1 ГОД</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1y">2000</span></div><div class="plan-days">Максимум</div>
           </div>
         </div>
       </div>
@@ -709,10 +728,58 @@ function renderSubInactive() {
 }
 
 // ─── PAYMENT ───
+// Базовые цены тарифов
+const BASE_PRICES = {'7d':89,'1m':169,'3m':529,'6m':829,'1y':2000};
+const BASE_DAYS = {'7d':7,'1m':30,'3m':90,'6m':180,'1y':365};
+let selectedDevCount = 1;
+
+function calcPrice(basePrice, devCount){
+  return Math.round(basePrice * (1 + 0.55 * (devCount - 1)));
+}
+
+function setDevCount(n){
+  selectedDevCount = n;
+  // Обновляем кнопки
+  for(let i=1;i<=5;i++){
+    const btn = document.getElementById(`dBtn${i}`);
+    if(btn) btn.className = 'dev-count-btn' + (i===n?' active':'');
+  }
+  // Обновляем цены в тарифах
+  Object.keys(BASE_PRICES).forEach(key=>{
+    const el = document.getElementById(`pp_${key}`);
+    if(el) el.textContent = calcPrice(BASE_PRICES[key], n);
+  });
+  // Обновляем хинт
+  const hint = document.getElementById('devPriceHint');
+  if(hint){
+    if(n===1) hint.textContent = '1 устройство — базовая цена';
+    else hint.textContent = `${n} устройства — цена ×${(1+0.55*(n-1)).toFixed(2)}`;
+  }
+  // Пересчитываем если план уже выбран
+  if(selectedPlan){
+    const newPrice = calcPrice(BASE_PRICES[selectedPlan.key]||selectedPlan.price, n);
+    selectedPlan.price = newPrice;
+    selectedPlan.discountedPrice = newPrice;
+    selectedPlan.devices = n;
+    const pn = document.getElementById('priceNew');
+    if(pn) pn.textContent = '₽' + newPrice;
+    const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
+    const rp = document.getElementById('reqPlanName');
+    if(rp) rp.textContent = (names[selectedPlan.key]||selectedPlan.key) + ' · ' + selectedPlan.days + ' дней' + (n>1 ? ` · ${n} устр.` : '');
+  }
+}
+
+function selectPlanDev(key, basePrice, days){
+  const price = calcPrice(basePrice, selectedDevCount);
+  selectPlan(key, price, days);
+  // Добавляем кол-во устройств в selectedPlan
+  if(selectedPlan) selectedPlan.devices = selectedDevCount;
+}
+
 function selectPlan(key, price, days) {
   selectedPlan = {key, price, days, discountedPrice: price};
   updatePriceDisplay();
-  const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
   const pn = document.getElementById('priceNew');
   if (pn) pn.textContent = '₽' + price;
   const po = document.getElementById('priceOld');
@@ -745,8 +812,9 @@ function onDigits(el) {
 async function submitPayment() {
   const digits = document.getElementById('digitsInput').value;
   if (!digits || digits.length !== 4 || !selectedPlan) return;
-  const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
   const finalPrice = selectedPlan.discountedPrice || selectedPlan.price;
+  const devicesCount = selectedPlan.devices || selectedDevCount || 1;
   const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+finalPrice+'₽'+(activePromo ? ' ['+activePromo.code+']' : '');
 
   // Сохраняем время СРАЗУ при нажатии кнопки
@@ -780,7 +848,7 @@ async function submitPayment() {
   // 3. Открываем бота
     const promoCode = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim().toUpperCase() : '';
   const finalPrice2 = selectedPlan.discountedPrice || selectedPlan.price;
-  const url = 'https://t.me/EurUsdVpnService_bot?start=pay_'+selectedPlan.key+'_'+digits+(promoCode ? '_'+promoCode : '')+'_'+finalPrice2;
+  const url = 'https://t.me/EurUsdVpnService_bot?start=pay_'+selectedPlan.key+'_'+digits+(promoCode ? '_'+promoCode : '')+'_'+finalPrice2+'_'+devicesCount;
   if (tg) tg.openTelegramLink(url);
   else window.open(url,'_blank');
 
@@ -1161,7 +1229,7 @@ function updatePriceDisplay() {
   const oldEl = document.getElementById('priceOld');
   const newEl = document.getElementById('priceNew');
   const planNameEl = document.getElementById('reqPlanName');
-  const names = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
+  const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
   const baseName = (names[selectedPlan.key]||selectedPlan.key);
   if (newEl) newEl.textContent = '₽' + newPrice;
   if (oldEl) {
@@ -1614,23 +1682,39 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     <div class="screen" id="s-buy">
       <div class="card">
         <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
+        <!-- Выбор устройств -->
+        <div id="devSelectBlock" style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 Количество устройств:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="setDevCount(1)" id="dBtn1" class="dev-count-btn active">1</button>
+            <button onclick="setDevCount(2)" id="dBtn2" class="dev-count-btn">2</button>
+            <button onclick="setDevCount(3)" id="dBtn3" class="dev-count-btn">3</button>
+            <button onclick="setDevCount(4)" id="dBtn4" class="dev-count-btn">4</button>
+            <button onclick="setDevCount(5)" id="dBtn5" class="dev-count-btn">5</button>
+          </div>
+          <div id="devPriceHint" style="font-size:11px;color:var(--muted);margin-top:6px">1 устройство — базовая цена</div>
+        </div>
         <div class="plans-grid">
-          <div class="plan-card" onclick="selectPlan('3d',30,3)">
-            <span class="plan-emoji">🔹</span><div class="plan-name">3 ДНЯ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>30</div><div class="plan-days">Пробный</div>
-          </div>
-          <div class="plan-card" onclick="selectPlan('7d',50,7)">
+          <div class="plan-card" onclick="selectPlanDev('7d',89,7)">
             <span class="plan-emoji">🔸</span><div class="plan-name">7 ДНЕЙ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>50</div><div class="plan-days">Неделя</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_7d">89</span></div><div class="plan-days">Неделя</div>
           </div>
-          <div class="plan-card hot" onclick="selectPlan('1m',119,30)">
+          <div class="plan-card hot" onclick="selectPlanDev('1m',169,30)">
             <div class="plan-hot-badge">🔥 HIT</div>
             <span class="plan-emoji">⭐</span><div class="plan-name">1 МЕСЯЦ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>119</div><div class="plan-days">Популярный</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1m">169</span></div><div class="plan-days">Популярный</div>
           </div>
-          <div class="plan-card" onclick="selectPlan('3m',249,90)">
+          <div class="plan-card" onclick="selectPlanDev('3m',529,90)">
             <span class="plan-emoji">💎</span><div class="plan-name">3 МЕСЯЦА</div>
-            <div class="plan-price"><span class="plan-rub">₽</span>249</div><div class="plan-days">Выгодно</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_3m">529</span></div><div class="plan-days">Выгодно</div>
+          </div>
+          <div class="plan-card" onclick="selectPlanDev('6m',829,180)">
+            <span class="plan-emoji">👑</span><div class="plan-name">6 МЕСЯЦЕВ</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_6m">829</span></div><div class="plan-days">Экономия</div>
+          </div>
+          <div class="plan-card" onclick="selectPlanDev('1y',2000,365)" style="grid-column:span 2">
+            <span class="plan-emoji">🏆</span><div class="plan-name">1 ГОД</div>
+            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1y">2000</span></div><div class="plan-days">Максимум</div>
           </div>
         </div>
       </div>
