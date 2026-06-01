@@ -839,6 +839,7 @@ function renderDevicesMini(devices, maxDev, count){
             <div style="font-size:11px;color:var(--muted);font-family:monospace">${d.ip||'—'}</div>
           </div>
           <div style="display:flex;gap:6px">
+            <button onclick="copyDevMini(${d.id})" id="copybtn-${d.id}" style="padding:6px 10px;border-radius:8px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34d399;font-size:12px;cursor:pointer">📋</button>
             <button onclick="downloadDevMini(${d.id})" style="padding:6px 10px;border-radius:8px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--cyan);font-size:12px;cursor:pointer">⬇️</button>
             <button onclick="showRenameMini(${d.id},'${d.name}')" style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:12px;cursor:pointer">✏️</button>
             <button onclick="deleteDevMini(${d.id},'${d.name}')" style="padding:6px 10px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;font-size:12px;cursor:pointer">🗑</button>
@@ -881,6 +882,18 @@ async function deleteDevMini(id, name){
     const d = await r.json();
     if(d.status==='ok') loadDevicesMini();
   }catch(e){}
+}
+
+async function copyDevMini(id){
+  try{
+    const r=await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'config',device_id:id})});
+    const d=await r.json();
+    if(d.status==='ok'){
+      await navigator.clipboard.writeText(d.config);
+      const btn=document.getElementById(`copybtn-${id}`);
+      if(btn){const o=btn.textContent;btn.textContent='✅';setTimeout(()=>btn.textContent=o,2000);}
+    }
+  }catch(e){console.error('copy',e);}
 }
 
 async function downloadDevMini(id){

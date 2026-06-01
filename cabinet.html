@@ -581,6 +581,7 @@ function renderDevices(devices, maxDev, count){
         </div>
       </div>
       <div class="device-actions">
+         <button class="dev-btn" onclick="copyDevConfig(${d.id})" title="Копировать конфиг">📋</button>
         <button class="dev-btn" onclick="downloadDevConfig(${d.id})" title="Скачать конфиг">⬇️</button>
         <button class="dev-btn" onclick="showRenameRow(${d.id})" title="Переименовать">✏️</button>
         <button class="dev-btn danger" onclick="confirmDeleteDev(${d.id},'${d.name}')" title="Удалить">🗑</button>
@@ -628,6 +629,23 @@ async function confirmDeleteDev(id, name){
       await loadDevices();
     }
   }catch(e){console.error('delete',e);}
+}
+
+async function copyDevConfig(id){
+  try{
+    const r=await fetch(`${API}/device/config?token=${currentToken}&device_id=${id}`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      await navigator.clipboard.writeText(d.config);
+      // Показываем feedback на кнопке
+      const btns = document.querySelectorAll(`#dev-${id} .dev-btn`);
+      const copyBtn = btns[0];
+      const orig = copyBtn.textContent;
+      copyBtn.textContent='✅';
+      copyBtn.style.color='var(--green)';
+      setTimeout(()=>{copyBtn.textContent=orig;copyBtn.style.color='';},2000);
+    }
+  }catch(e){console.error('copy',e);}
 }
 
 async function downloadDevConfig(id){
