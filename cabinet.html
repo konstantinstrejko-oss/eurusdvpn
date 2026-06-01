@@ -150,6 +150,18 @@ body{
 
 /* Plans grid */
 .plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.device-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.device-item:last-child{border:none}
+.device-left{display:flex;align-items:center;gap:10px}
+.device-icon{width:36px;height:36px;border-radius:var(--r8);background:rgba(74,158,255,.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.device-name{font-weight:600;font-size:13px;color:var(--text)}
+.device-ip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px}
+.device-actions{display:flex;gap:6px}
+.dev-btn{width:30px;height:30px;border-radius:var(--r8);border:1px solid var(--border);background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;color:var(--text2)}
+.dev-btn:hover{background:var(--bg3);transform:translateY(-1px)}
+.dev-btn:active{transform:scale(.95)}
+.dev-btn.danger:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red)}
+.rename-row{display:flex;gap:6px;margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r8);border:1px solid var(--border)}
 .plan-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r12);padding:14px;cursor:pointer;transition:all .2s var(--ease-out);text-align:center}
 .plan-card:hover{border-color:rgba(74,158,255,.3);transform:translateY(-1px)}
 .plan-card:active{transform:scale(.97)}
@@ -280,6 +292,24 @@ body{
       <pre class="config-pre" id="configText"></pre>
     </div>
     <button class="btn btn-ghost btn-block" style="margin-top:10px" onclick="toggleConfig()" id="toggleConfigBtn">👁 Показать конфиг текстом</button>
+  </div>
+
+  <!-- DEVICES CARD -->
+  <div class="card" id="devicesCard" style="animation-delay:50ms;display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="sec-title" style="margin:0">📱 Мои устройства</div>
+      <span id="devCount" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">0/1</span>
+    </div>
+    <div id="devicesList"></div>
+    <div id="addDevBlock" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <label class="field-label">Название нового устройства</label>
+      <div class="field-row">
+        <input class="inp" id="newDevName" type="text" placeholder="iPhone, Ноутбук..." maxlength="32" onkeydown="if(event.key==='Enter')addDevice()">
+        <button class="btn btn-primary" onclick="addDevice()" id="addDevBtn">Добавить</button>
+      </div>
+      <div class="err-box" id="addDevErr"></div>
+    </div>
+    <button class="btn btn-ghost btn-block" id="addDevToggle" onclick="toggleAddDev()" style="margin-top:10px;display:none">➕ Добавить устройство</button>
   </div>
 
   <!-- HISTORY CARD -->
@@ -471,6 +501,8 @@ function showDash(d){
 
   // Load history
   loadHistory(d);
+  // Load devices
+  loadDevices();
 }
 
 // ── COUNTDOWN ──
@@ -512,6 +544,137 @@ async function loadHistory(subData){
 }
 
 // ── CONFIG ──
+// ── DEVICES ──
+async function loadDevices(){
+  if(!currentToken) return;
+  try{
+    const r = await fetch(`${API}/devices?token=${currentToken}`,{signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if(d.status!=='ok') return;
+    renderDevices(d.devices, d.max_devices, d.count);
+  }catch(e){console.error('loadDevices',e);}
+}
+
+function renderDevices(devices, maxDev, count){
+  const card = document.getElementById('devicesCard');
+  const list = document.getElementById('devicesList');
+  const countEl = document.getElementById('devCount');
+  const addToggle = document.getElementById('addDevToggle');
+  card.style.display = 'block';
+  countEl.textContent = `${count}/${maxDev}`;
+  addToggle.style.display = count < maxDev ? 'block' : 'none';
+
+  if(devices.length === 0){
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Нет устройств</div>';
+    return;
+  }
+
+  list.innerHTML = devices.map(d => `
+    <div class="device-item" id="dev-${d.id}">
+      <div class="device-left">
+        <div class="device-icon">📱</div>
+        <div>
+          <div class="device-name" id="devname-${d.id}">${d.name}</div>
+          <div class="device-ip">${d.ip||'—'}</div>
+        </div>
+      </div>
+      <div class="device-actions">
+        <button class="dev-btn" onclick="downloadDevConfig(${d.id})" title="Скачать конфиг">⬇️</button>
+        <button class="dev-btn" onclick="showRenameRow(${d.id})" title="Переименовать">✏️</button>
+        <button class="dev-btn danger" onclick="confirmDeleteDev(${d.id},'${d.name}')" title="Удалить">🗑</button>
+      </div>
+    </div>
+    <div id="rename-row-${d.id}" class="rename-row" style="display:none">
+      <input class="inp" style="flex:1;padding:8px 12px;font-size:13px" id="rename-inp-${d.id}" type="text" value="${d.name}" maxlength="32" onkeydown="if(event.key==='Enter')renameDevice(${d.id})">
+      <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" onclick="renameDevice(${d.id})">OK</button>
+      <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px" onclick="hideRenameRow(${d.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function showRenameRow(id){
+  document.getElementById(`rename-row-${id}`).style.display='flex';
+  document.getElementById(`rename-inp-${id}`).focus();
+}
+function hideRenameRow(id){
+  document.getElementById(`rename-row-${id}`).style.display='none';
+}
+
+async function renameDevice(id){
+  const inp = document.getElementById(`rename-inp-${id}`);
+  const name = inp.value.trim();
+  if(!name) return;
+  try{
+    const r = await fetch(`${API}/device/rename`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,device_id:id,name}),signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      document.getElementById(`devname-${id}`).textContent=name;
+      hideRenameRow(id);
+    }
+  }catch(e){console.error('rename',e);}
+}
+
+async function confirmDeleteDev(id, name){
+  if(!confirm(`Удалить устройство "${name}"?
+Подключение будет отозвано немедленно.`)) return;
+  try{
+    const r = await fetch(`${API}/device/delete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,device_id:id}),signal:AbortSignal.timeout(10000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      document.getElementById(`dev-${id}`)?.remove();
+      document.getElementById(`rename-row-${id}`)?.remove();
+      await loadDevices();
+    }
+  }catch(e){console.error('delete',e);}
+}
+
+async function downloadDevConfig(id){
+  try{
+    const r = await fetch(`${API}/device/config?token=${currentToken}&device_id=${id}`,{signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      const blob = new Blob([d.config],{type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=`eurusdvpn_${d.name.replace(/\s/g,'_')}.conf`; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }catch(e){console.error('config',e);}
+}
+
+function toggleAddDev(){
+  const block = document.getElementById('addDevBlock');
+  const btn = document.getElementById('addDevToggle');
+  const visible = block.style.display!=='none';
+  block.style.display = visible?'none':'block';
+  btn.textContent = visible?'➕ Добавить устройство':'✕ Отмена';
+  if(!visible) document.getElementById('newDevName').focus();
+}
+
+async function addDevice(){
+  const name = document.getElementById('newDevName').value.trim();
+  if(!name){showErr('addDevErr','Введи название');return;}
+  const btn = document.getElementById('addDevBtn');
+  btn.disabled=true; btn.textContent='⏳...';
+  hideErr('addDevErr');
+  try{
+    const r = await fetch(`${API}/device/add`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,name}),signal:AbortSignal.timeout(15000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      document.getElementById('newDevName').value='';
+      toggleAddDev();
+      // Скачиваем конфиг нового устройства
+      const blob = new Blob([d.config],{type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=`eurusdvpn_${name.replace(/\s/g,'_')}.conf`; a.click();
+      URL.revokeObjectURL(url);
+      await loadDevices();
+    }else{showErr('addDevErr',d.msg||'Ошибка');}
+  }catch(e){showErr('addDevErr','Ошибка соединения');}
+  btn.disabled=false; btn.textContent='Добавить';
+}
+
 function toggleConfig(){
   const block=document.getElementById('configBlock');
   const btn=document.getElementById('toggleConfigBtn');
