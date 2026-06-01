@@ -1679,49 +1679,6 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     </div>
 
     <!-- BUY -->
-    <div class="screen" id="s-buy">
-      <div class="card">
-        <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
-        <!-- Выбор устройств -->
-        <div id="devSelectBlock" style="margin-bottom:14px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 Количество устройств:</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="setDevCount(1)" id="dBtn1" class="dev-count-btn active">1</button>
-            <button onclick="setDevCount(2)" id="dBtn2" class="dev-count-btn">2</button>
-            <button onclick="setDevCount(3)" id="dBtn3" class="dev-count-btn">3</button>
-            <button onclick="setDevCount(4)" id="dBtn4" class="dev-count-btn">4</button>
-            <button onclick="setDevCount(5)" id="dBtn5" class="dev-count-btn">5</button>
-          </div>
-          <div id="devPriceHint" style="font-size:11px;color:var(--muted);margin-top:6px">1 устройство — базовая цена</div>
-        </div>
-        <div class="plans-grid">
-          <div class="plan-card" onclick="selectPlanDev('7d',89,7)">
-            <span class="plan-emoji">🔸</span><div class="plan-name">7 ДНЕЙ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_7d">89</span></div><div class="plan-days">Неделя</div>
-          </div>
-          <div class="plan-card hot" onclick="selectPlanDev('1m',169,30)">
-            <div class="plan-hot-badge">🔥 HIT</div>
-            <span class="plan-emoji">⭐</span><div class="plan-name">1 МЕСЯЦ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1m">169</span></div><div class="plan-days">Популярный</div>
-          </div>
-          <div class="plan-card" onclick="selectPlanDev('3m',529,90)">
-            <span class="plan-emoji">💎</span><div class="plan-name">3 МЕСЯЦА</div>
-            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_3m">529</span></div><div class="plan-days">Выгодно</div>
-          </div>
-          <div class="plan-card" onclick="selectPlanDev('6m',829,180)">
-            <span class="plan-emoji">👑</span><div class="plan-name">6 МЕСЯЦЕВ</div>
-            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_6m">829</span></div><div class="plan-days">Экономия</div>
-          </div>
-          <div class="plan-card" onclick="selectPlanDev('1y',2000,365)" style="grid-column:span 2">
-            <span class="plan-emoji">🏆</span><div class="plan-name">1 ГОД</div>
-            <div class="plan-price"><span class="plan-rub">₽</span><span id="pp_1y">2000</span></div><div class="plan-days">Максимум</div>
-          </div>
-        </div>
-      </div>
-      <div class="card" id="buyInfo" style="font-size:13px;color:var(--muted);line-height:1.8">
-        ✅ Безлимитный трафик<br>✅ AES-256 шифрование<br>✅ Европейский сервер<br>✅ Конфиг автоматически
-      </div>
-    </div>
 
     <!-- REQUISITES -->
     <div class="screen" id="s-req">
