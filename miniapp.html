@@ -455,6 +455,16 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     </div>
 
     <!-- CANCEL CONFIRM -->
+    <div class="screen" id="s-devices">
+      <div id="devicesContent" style="padding-bottom:8px"></div>
+      <div id="addDevSection" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Название нового устройства:</div>
+        <input id="newDevNameMini" type="text" placeholder="iPhone, Ноутбук..." maxlength="32" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;outline:none;margin-bottom:8px">
+        <button class="btn btn-primary" onclick="addDeviceMini()" id="addDevBtnMini">➕ Добавить</button>
+        <div id="addDevErrMini" style="display:none;color:#f87171;font-size:12px;margin-top:6px"></div>
+      </div>
+    </div>
+
     <div class="screen" id="s-cancel">
       <div class="card" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
         <div style="text-align:center;padding:20px 0">
@@ -570,7 +580,7 @@ document.getElementById('hdrUser').textContent = MY_NAME;
 
 // ─── STATE ───
 const NAV_SCREENS = ['home','sub','buy','support'];
-const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки' };
+const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки', devices:'Мои устройства' };
 let navHistory = [];
 let selectedPlan = null;
 let activePromo = null; // {code, days, percent}
@@ -578,6 +588,7 @@ let pollTimer = null;
 
 // ─── NAVIGATION ───
 function nav(id) {
+  if(id==='devices') setTimeout(loadDevicesMini, 100);
   const cur = document.querySelector('.screen.active');
   const curId = cur?.id.replace('s-','');
   if (curId === id) return;
@@ -671,6 +682,7 @@ function renderSubActive(d) {
     <div class="prog-wrap" style="margin:12px 0"><div class="prog-bar" style="width:${Math.round(used/total*100)}%"></div></div>
     <button class="btn btn-primary" style="margin-top:12px" onclick="openLink('${BOT}')">📎 Получить конфиг в боте</button>
     <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
+    <button class="btn" style="background:rgba(74,158,255,.1);border-color:rgba(74,158,255,.3);color:var(--cyan);margin-top:4px" onclick="nav('devices')">📱 Мои устройства</button>
     <button class="btn btn-danger" style="margin-top:4px" onclick="nav('cancel')">❌ Отменить подписку</button>
     <button class="btn" style="background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:rgba(255,220,100,.9);margin-top:4px" onclick="showRecreateConfirm()">⚠️ Конфиг не работает</button>
     <div id="recreateConfirm" style="display:none;background:rgba(255,150,0,.08);border:1px solid rgba(255,150,0,.2);border-radius:12px;padding:14px;margin-top:8px;font-size:13px;color:rgba(255,220,100,.8);line-height:1.6">Старый конфиг перестанет работать.<br>Срок подписки <b>не продлевается</b>.<br><br><button class="btn btn-primary" style="background:rgba(255,100,0,.3);border-color:rgba(255,100,0,.5)" onclick="doRecreateMiniapp()" id="recreateMiniBtn">🔄 Пересоздать конфиг</button></div>
@@ -794,6 +806,113 @@ function showWaitScreen(planLabel) {
   `;
   nav('wait');
   showToast('Заявка отправлена! Ожидай подтверждения ⏳');
+}
+
+// ── DEVICES MINIAPP ──
+async function loadDevicesMini(){
+  try{
+    const r = await fetch(API+'/devices_tg?tg_id='+MY_TG_ID,{signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    renderDevicesMini(d.devices||[], d.max_devices||1, d.count||0);
+  }catch(e){
+    document.getElementById('devicesContent').innerHTML='<div style="color:var(--muted);font-size:13px">Ошибка загрузки устройств</div>';
+  }
+}
+
+function renderDevicesMini(devices, maxDev, count){
+  const addSec = document.getElementById('addDevSection');
+  addSec.style.display = count < maxDev ? 'block' : 'none';
+  if(!devices.length){
+    document.getElementById('devicesContent').innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">Нет устройств</div>';
+    return;
+  }
+  document.getElementById('devicesContent').innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${count} из ${maxDev} устройств</div>
+    ${devices.map(d=>`
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;font-size:13px" id="dmn-${d.id}">${d.name}</div>
+            <div style="font-size:11px;color:var(--muted);font-family:monospace">${d.ip||'—'}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="downloadDevMini(${d.id})" style="padding:6px 10px;border-radius:8px;background:rgba(74,158,255,.15);border:1px solid rgba(74,158,255,.3);color:var(--cyan);font-size:12px;cursor:pointer">⬇️</button>
+            <button onclick="showRenameMini(${d.id},'${d.name}')" style="padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:12px;cursor:pointer">✏️</button>
+            <button onclick="deleteDevMini(${d.id},'${d.name}')" style="padding:6px 10px;border-radius:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;font-size:12px;cursor:pointer">🗑</button>
+          </div>
+        </div>
+        <div id="rename-mini-${d.id}" style="display:none;margin-top:8px;display:none">
+          <input id="rinp-${d.id}" type="text" value="${d.name}" maxlength="32" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;outline:none;margin-bottom:6px">
+          <div style="display:flex;gap:6px">
+            <button onclick="renameMini(${d.id})" class="btn btn-primary" style="flex:1;padding:8px">OK</button>
+            <button onclick="hideRenameMini(${d.id})" class="btn" style="flex:1;padding:8px">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function showRenameMini(id, name){
+  const el = document.getElementById(`rename-mini-${id}`);
+  el.style.display = el.style.display==='none'?'block':'none';
+}
+function hideRenameMini(id){
+  document.getElementById(`rename-mini-${id}`).style.display='none';
+}
+
+async function renameMini(id){
+  const name = document.getElementById(`rinp-${id}`).value.trim();
+  if(!name) return;
+  try{
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'rename',device_id:id,name})});
+    const d = await r.json();
+    if(d.status==='ok'){document.getElementById(`dmn-${id}`).textContent=name;hideRenameMini(id);}
+  }catch(e){}
+}
+
+async function deleteDevMini(id, name){
+  if(!confirm(`Удалить "${name}"?`)) return;
+  try{
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'delete',device_id:id})});
+    const d = await r.json();
+    if(d.status==='ok') loadDevicesMini();
+  }catch(e){}
+}
+
+async function downloadDevMini(id){
+  try{
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'config',device_id:id})});
+    const d = await r.json();
+    if(d.status==='ok'){
+      const blob = new Blob([d.config],{type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=`eurusdvpn_${d.name.replace(/\s/g,'_')}.conf`; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }catch(e){}
+}
+
+async function addDeviceMini(){
+  const name = document.getElementById('newDevNameMini').value.trim();
+  if(!name){document.getElementById('addDevErrMini').textContent='Введи название';document.getElementById('addDevErrMini').style.display='block';return;}
+  const btn = document.getElementById('addDevBtnMini');
+  btn.disabled=true; btn.textContent='⏳...';
+  try{
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'add',name}),signal:AbortSignal.timeout(15000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      document.getElementById('newDevNameMini').value='';
+      const blob = new Blob([d.config],{type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download=`eurusdvpn_${name.replace(/\s/g,'_')}.conf`; a.click();
+      URL.revokeObjectURL(url);
+      await loadDevicesMini();
+    }else{document.getElementById('addDevErrMini').textContent=d.msg||'Ошибка';document.getElementById('addDevErrMini').style.display='block';}
+  }catch(e){document.getElementById('addDevErrMini').textContent='Ошибка соединения';document.getElementById('addDevErrMini').style.display='block';}
+  btn.disabled=false; btn.textContent='➕ Добавить';
 }
 
 function showRecreateConfirm(){
@@ -1572,6 +1691,16 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     </div>
 
     <!-- CANCEL CONFIRM -->
+    <div class="screen" id="s-devices">
+      <div id="devicesContent" style="padding-bottom:8px"></div>
+      <div id="addDevSection" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Название нового устройства:</div>
+        <input id="newDevNameMini" type="text" placeholder="iPhone, Ноутбук..." maxlength="32" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;outline:none;margin-bottom:8px">
+        <button class="btn btn-primary" onclick="addDeviceMini()" id="addDevBtnMini">➕ Добавить</button>
+        <div id="addDevErrMini" style="display:none;color:#f87171;font-size:12px;margin-top:6px"></div>
+      </div>
+    </div>
+
     <div class="screen" id="s-cancel">
       <div class="card" style="border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05)">
         <div style="text-align:center;padding:20px 0">
