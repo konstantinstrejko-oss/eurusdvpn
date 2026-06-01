@@ -689,6 +689,8 @@ async function loadSub() {
 
 function renderSubActive(d) {
   const left = d.days_left || 0;
+  currentPlanMini = d.plan || '1m';
+  currentDaysLeftMini = left;
   const total = d.days_total || 1;
   const used = Math.max(0, total - left);
   setStatus('active','🟢 VPN АКТИВЕН', left <= 1 ? 'Истекает сегодня' : 'Осталось '+left+' дн. из '+total);
