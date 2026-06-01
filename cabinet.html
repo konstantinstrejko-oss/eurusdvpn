@@ -310,6 +310,28 @@ body{
       <div class="err-box" id="addDevErr"></div>
     </div>
     <button class="btn btn-ghost btn-block" id="addDevToggle" onclick="toggleAddDev()" style="margin-top:10px;display:none">➕ Добавить устройство</button>
+    <div id="buySlotBlock" style="display:none;margin-top:8px">
+      <button class="btn btn-warn btn-block" onclick="toggleBuySlot()" id="buySlotToggle">💳 Докупить слот устройства</button>
+      <div id="buySlotForm" style="display:none;margin-top:10px;padding:14px;background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.15);border-radius:var(--r12)">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+          💳 Доплата: <strong id="addonPrice" style="color:var(--text)">—</strong><br>
+          <span style="font-size:11px;color:var(--text3)">Пропорционально оставшимся дням подписки</span>
+        </div>
+        <div style="background:rgba(74,158,255,.06);border:1px solid rgba(74,158,255,.15);border-radius:var(--r8);padding:12px;margin-bottom:12px">
+          <div class="req-row"><span class="req-l">📱 Номер</span><span class="req-v" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
+          <div class="req-row"><span class="req-l">🏦 Банк</span><span class="req-v">Т-БАНК</span></div>
+          <div class="req-row" style="border:none"><span class="req-l">👤 Получатель</span><span class="req-v">EurUsdVpnService</span></div>
+          <div style="font-size:11px;color:rgba(251,191,36,.7);margin-top:8px">⚠️ В комментарии ничего не пиши!</div>
+        </div>
+        <label class="field-label">Последние 4 цифры карты/телефона</label>
+        <div class="field-row" style="margin-bottom:10px">
+          <input class="inp" id="addonDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
+          <button class="btn btn-primary" onclick="submitAddon()" id="addonBtn">Отправить</button>
+        </div>
+        <div class="err-box" id="addonErr"></div>
+        <div class="ok-box" id="addonOk"></div>
+      </div>
+    </div>
   </div>
 
   <!-- HISTORY CARD -->
@@ -390,7 +412,7 @@ body{
 <script>
 const API = 'https://prep-logical-diane-url.trycloudflare.com/api';
 const PLANS_MAP = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
-let currentConfig = '', currentToken = '', endDateTs = 0, countdownTimer = null;
+let currentConfig = '', currentToken = '', endDateTs = 0, countdownTimer = null, currentPlan = '1m', currentDaysLeft = 0;
 let selPlanData = {key:'3m',price:249,days:90};
 let renewVisible = false;
 
@@ -489,6 +511,8 @@ function showDash(d){
   document.getElementById('endDate').textContent=d.end_date;
   document.getElementById('clientIp').textContent=d.client_ip||'—';
   document.getElementById('planName').textContent=PLANS_MAP[d.plan]||d.plan;
+  currentPlan = d.plan;
+  currentDaysLeft = d.days_left;
 
   // Progress
   const planDays={'3d':3,'7d':7,'1m':30,'3m':90}[d.plan]||30;
@@ -565,6 +589,8 @@ function renderDevices(devices, maxDev, count){
   card.style.display = 'block';
   countEl.textContent = `${count}/${maxDev}`;
   addToggle.style.display = count < maxDev ? 'block' : 'none';
+  // Проверяем докупку
+  checkBuySlot(count, maxDev, currentDaysLeft || 0, currentPlan || '1m');
 
   if(devices.length === 0){
     list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Нет устройств</div>';
@@ -660,6 +686,50 @@ async function downloadDevConfig(id){
       URL.revokeObjectURL(url);
     }
   }catch(e){console.error('config',e);}
+}
+
+let addonPriceVal = 0;
+
+async function checkBuySlot(devCount, maxDev, daysLeft, plan){
+  const block = document.getElementById('buySlotBlock');
+  if(devCount >= maxDev && maxDev < 5){
+    // Считаем цену
+    const planPrices = {'7d':89,'1m':169,'3m':529,'6m':829,'1y':2000};
+    const planDays = {'7d':7,'1m':30,'3m':90,'6m':180,'1y':365};
+    const base = planPrices[plan] || 169;
+    const total = planDays[plan] || 30;
+    addonPriceVal = Math.max(9, Math.round(base * 0.55 * (daysLeft / total) / 10) * 10);
+    document.getElementById('addonPrice').textContent = addonPriceVal + '₽';
+    block.style.display = 'block';
+  } else {
+    block.style.display = 'none';
+  }
+}
+
+function toggleBuySlot(){
+  const form = document.getElementById('buySlotForm');
+  const btn = document.getElementById('buySlotToggle');
+  const visible = form.style.display !== 'none';
+  form.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '💳 Докупить слот устройства' : '✕ Отмена';
+}
+
+async function submitAddon(){
+  const digits = document.getElementById('addonDigits').value.trim();
+  if(digits.length !== 4){showErr('addonErr','Введи ровно 4 цифры');return;}
+  hideErr('addonErr');
+  const btn = document.getElementById('addonBtn');
+  btn.disabled=true; btn.textContent='...';
+  try{
+    const r = await fetch(`${API}/buy_addon`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,digits,amount:addonPriceVal}),signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      document.getElementById('addonOk').textContent='✅ Заявка отправлена! Ожидай подтверждения (до 30 мин).';
+      document.getElementById('addonOk').style.display='block';
+      document.getElementById('addonDigits').value='';
+      btn.textContent='✅ Отправлено';
+    }else{showErr('addonErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Отправить';}
+  }catch(e){showErr('addonErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить';}
 }
 
 function toggleAddDev(){
