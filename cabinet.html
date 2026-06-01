@@ -322,11 +322,13 @@ body{
   <div class="card" style="animation-delay:100ms">
     <div class="sec-title">⚠️ Проблемы с VPN?</div>
     <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Если конфиг перестал работать — пересоздай его. Срок подписки <strong>не продлевается</strong>, только ключи обновятся.</p>
-    <button class="btn btn-warn btn-block" onclick="showRecreate()" id="recreateShowBtn">🔄 Пересоздать конфиг</button>
+    <button class="btn btn-warn btn-block" onclick="showRecreate()" id="recreateShowBtn">🔄 Пересоздать конфиг устройства</button>
     <div id="recreateBlock" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <p style="font-size:12px;color:var(--amber);margin-bottom:12px">⚠️ Старый конфиг перестанет работать немедленно. Ты уверен?</p>
+      <label class="field-label" style="margin-bottom:10px">Выбери устройство</label>
+      <div id="recreateDevList" style="margin-bottom:14px"></div>
+      <p style="font-size:12px;color:var(--amber);margin-bottom:12px">⚠️ Старый конфиг этого устройства перестанет работать немедленно.</p>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-danger" style="flex:1" onclick="doRecreate()" id="recreateBtn">Подтвердить</button>
+        <button class="btn btn-danger" style="flex:1" onclick="doRecreate()" id="recreateBtn" disabled>Подтвердить</button>
         <button class="btn btn-ghost" style="flex:1" onclick="hideRecreate()">Отмена</button>
       </div>
       <div class="err-box" id="recreateErr"></div>
@@ -707,9 +709,73 @@ function copyConfig(){
 }
 
 // ── RECREATE ──
+let selectedRecreateDevId = null;
+
 function showRecreate(){
   document.getElementById('recreateBlock').style.display='block';
   document.getElementById('recreateShowBtn').style.display='none';
+  selectedRecreateDevId=null;
+  document.getElementById('recreateBtn').disabled=true;
+  loadRecreateDevices();
+}
+function hideRecreate(){
+  document.getElementById('recreateBlock').style.display='none';
+  document.getElementById('recreateShowBtn').style.display='block';
+  selectedRecreateDevId=null;
+}
+async function loadRecreateDevices(){
+  const list=document.getElementById('recreateDevList');
+  list.innerHTML='<div style="color:var(--text3);font-size:13px">Загрузка...</div>';
+  try{
+    const r=await fetch(`${API}/devices?token=${currentToken}`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'&&d.devices.length>0){
+      list.innerHTML=d.devices.map(dev=>`
+        <div onclick="selectRecreateDev(${dev.id})" id="rdev-${dev.id}"
+          style="padding:10px 14px;border-radius:var(--r8);border:1.5px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">${dev.name}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:monospace">${dev.ip||"—"}</div></div>
+          <div style="font-size:18px;opacity:0" id="rdev-check-${dev.id}">✅</div>
+        </div>`).join('');
+    }else{list.innerHTML='<div style="color:var(--text3);font-size:13px">Нет устройств</div>';}
+  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:13px">Ошибка загрузки</div>';}
+}
+function selectRecreateDev(id){
+  document.querySelectorAll('[id^="rdev-"]').forEach(el=>{
+    if(!el.id.includes('check')){el.style.borderColor='var(--border)';el.style.background='transparent';}
+  });
+  document.querySelectorAll('[id^="rdev-check-"]').forEach(el=>el.style.opacity='0');
+  const el=document.getElementById(`rdev-${id}`);
+  if(el){el.style.borderColor='rgba(74,158,255,.5)';el.style.background='rgba(74,158,255,.08)';}
+  const check=document.getElementById(`rdev-check-${id}`);
+  if(check)check.style.opacity='1';
+  selectedRecreateDevId=id;
+  document.getElementById('recreateBtn').disabled=false;
+}
+async function doRecreate(){
+  if(!selectedRecreateDevId){showErr('recreateErr','Выбери устройство');return;}
+  const btn=document.getElementById('recreateBtn');
+  const errEl=document.getElementById('recreateErr');
+  const okEl=document.getElementById('recreateOk');
+  btn.disabled=true;btn.textContent='⏳ Пересоздаю...';
+  errEl.style.display='none';okEl.style.display='none';
+  try{
+    const r=await fetch(`${API}/recreate_device`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,device_id:selectedRecreateDevId}),signal:AbortSignal.timeout(15000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      okEl.textContent='✅ Конфиг пересоздан! Скачиваем...';
+      okEl.style.display='block';
+      btn.textContent='✅ Готово';
+      setTimeout(()=>{
+        const blob=new Blob([d.config],{type:'text/plain'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download=`eurusdvpn_device_${selectedRecreateDevId}.conf`;a.click();
+        URL.revokeObjectURL(url);
+        loadDevices();
+      },300);
+    }else{showErr('recreateErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Подтвердить';}
+  }catch(e){showErr('recreateErr','Ошибка соединения');btn.disabled=false;btn.textContent='Подтвердить';}
 }
 function hideRecreate(){
   document.getElementById('recreateBlock').style.display='none';
