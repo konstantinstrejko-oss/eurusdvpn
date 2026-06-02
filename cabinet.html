@@ -362,10 +362,11 @@ body{
   <div class="card" style="animation-delay:150ms">
     <div class="sec-title">🔄 Продлить подписку</div>
     <div class="plans-grid">
-      <div class="plan-card" onclick="selPlan('3d',30,3)" data-k="3d"><div class="plan-n">3 дня</div><div class="plan-p">30₽</div></div>
-      <div class="plan-card" onclick="selPlan('7d',50,7)" data-k="7d"><div class="plan-n">7 дней</div><div class="plan-p">50₽</div></div>
-      <div class="plan-card" onclick="selPlan('1m',119,30)" data-k="1m"><div class="plan-n">1 месяц</div><div class="plan-p">119₽</div></div>
-      <div class="plan-card sel" onclick="selPlan('3m',249,90)" data-k="3m"><div class="plan-n">3 месяца</div><div class="plan-p">249₽</div><div class="plan-badge">Выгодно</div></div>
+      <div class="plan-card" onclick="selPlan('7d',89,7)" data-k="7d"><div class="plan-n">7 дней</div><div class="plan-p">89₽</div></div>
+      <div class="plan-card hot" onclick="selPlan('1m',169,30)" data-k="1m"><div class="plan-n">1 месяц</div><div class="plan-p">169₽</div><div class="plan-badge">🔥 HIT</div></div>
+      <div class="plan-card" onclick="selPlan('3m',529,90)" data-k="3m"><div class="plan-n">3 месяца</div><div class="plan-p">529₽</div></div>
+      <div class="plan-card" onclick="selPlan('6m',829,180)" data-k="6m"><div class="plan-n">6 месяцев</div><div class="plan-p">829₽</div><div class="plan-badge">Выгодно</div></div>
+      <div class="plan-card sel" onclick="selPlan('1y',2000,365)" data-k="1y"><div class="plan-n">1 год</div><div class="plan-p">2000₽</div><div class="plan-badge">Максимум</div></div>
     </div>
     <div id="renewBlock" style="display:none;animation:enter .25s var(--ease-out)">
       <div class="req-box">
@@ -486,8 +487,9 @@ async function login(){
     const r=await fetch(`${API}/cabinet?token=${raw}`,{signal:AbortSignal.timeout(8000)});
     const d=await r.json();
     if(d.status!=='ok'){showErr('loginErr',d.msg||'Ключ не найден');btn.disabled=false;btn.textContent='Войти';return;}
-    currentConfig=d.config;currentToken=raw;
+    currentToken=raw;
     localStorage.setItem('evpn_token',raw);
+    if(d.config) currentConfig=d.config;
     showDash(d);
   }catch(e){showErr('loginErr','Ошибка соединения. Попробуй позже.');btn.disabled=false;btn.textContent='Войти';}
 }
@@ -496,6 +498,41 @@ function showDash(d){
   document.getElementById('loginView').style.display='none';
   const dash=document.getElementById('dashView');
   dash.style.display='block';
+
+  // Нет подписки
+  if(d.no_sub){
+    document.getElementById('statusPill').className='status-pill status-expired';
+    document.getElementById('statusText').textContent='Нет активной подписки';
+    document.getElementById('endDate').textContent='—';
+    document.getElementById('clientIp').textContent='—';
+    document.getElementById('planName').textContent='—';
+    document.getElementById('progUsed').textContent='Подписки нет';
+    document.getElementById('progLeft').textContent='';
+    document.getElementById('progBar').style.width='0%';
+    document.getElementById('devicesCard').style.display='none';
+    document.getElementById('configBlock').style.display='none';
+    document.getElementById('toggleConfigBtn').style.display='none';
+    document.querySelector('.dl-btn').style.display='none';
+    document.getElementById('cdDays').textContent='—';
+    document.getElementById('cdH').textContent='——';
+    document.getElementById('cdM').textContent='——';
+    document.getElementById('cdS').textContent='——';
+    // Показываем кнопку покупки
+    const buyCard = document.createElement('div');
+    buyCard.className = 'card';
+    buyCard.style.textAlign = 'center';
+    buyCard.style.padding = '24px';
+    buyCard.innerHTML = `
+      <div style="font-size:32px;margin-bottom:12px">🛒</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px">Нет активной подписки</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Купи подписку в Telegram боте чтобы начать пользоваться VPN</div>
+      <a href="https://t.me/EurUsdVpnService_bot" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:var(--r12);background:linear-gradient(135deg,#2979d4,var(--blue));color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-decoration:none">
+        🛒 Купить VPN
+      </a>
+    `;
+    document.getElementById('dashView').insertBefore(buyCard, document.getElementById('dashView').firstChild.nextSibling);
+    return;
+  }
 
   // Parse end date
   const [day,mon,yr]=d.end_date.split('.');
