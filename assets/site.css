@@ -162,15 +162,15 @@ section{position:relative;z-index:2;padding:90px 0;scroll-margin-top:84px}
 /* Reviews — плывущая лента отзывов */
 .reviews{position:relative;overflow:hidden;padding-top:0}
 .rev-vp{position:relative;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
-.rev-row{display:flex;width:max-content;padding:8px 0;will-change:transform}
+.rev-row{display:flex;align-items:stretch;width:max-content;padding:8px 0;will-change:transform}
 .rev-row.r1{animation:marq 46s linear infinite}
 .rev-row.r2{margin-top:18px;animation:marq 58s linear infinite reverse}
 .reviews:hover .rev-row{animation-play-state:paused}
 @keyframes marq{to{transform:translateX(-50%)}}
-.rev-card{flex:0 0 320px;width:320px;margin-right:18px;padding:24px 24px 22px}
+.rev-card{flex:0 0 320px;width:320px;margin-right:18px;padding:24px 24px 22px;display:flex;flex-direction:column;min-height:188px}
 .rev-stars{color:#ffcb5c;font-size:14px;letter-spacing:2px;margin-bottom:12px}
-.rev-text{color:var(--text);font-size:14.5px;line-height:1.65;margin-bottom:16px}
-.rev-who{display:flex;align-items:center;gap:11px}
+.rev-text{color:var(--text);font-size:14.5px;line-height:1.6;margin-bottom:18px;flex:1 0 auto}
+.rev-who{display:flex;align-items:center;gap:11px;margin-top:auto}
 .rev-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#05060c;background:var(--grad)}
 .rev-nm{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;line-height:1.2}
 .rev-rl{color:var(--mute);font-size:12px}
