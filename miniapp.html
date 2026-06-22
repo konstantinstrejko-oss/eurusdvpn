@@ -547,6 +547,68 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
       </div>
     </div>
 
+    <!-- REFERRAL -->
+    <div class="screen" id="s-ref">
+      <div class="card">
+        <div class="card-title"><span>👥</span> Пригласить друга</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px">
+          🎁 Поделись ссылкой — когда друг купит подписку, вы <b style="color:#fff">оба получите +3 дня</b> бесплатно.
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#fff" id="refTotal">0</div>
+            <div style="font-size:11px;color:var(--muted)">Приглашено</div>
+          </div>
+          <div style="flex:1;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#34d399" id="refPaid">0</div>
+            <div style="font-size:11px;color:var(--muted)">Бонусов</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Твоя ссылка:</div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-size:12px;font-family:monospace;word-break:break-all;color:var(--cyan);margin-bottom:10px" id="refLink">—</div>
+        <button class="btn btn-primary" style="width:100%" onclick="shareRefMini()">📤 Поделиться ссылкой</button>
+        <button class="btn" style="width:100%;margin-top:8px" onclick="copyText(document.getElementById('refLink').textContent)">📋 Скопировать</button>
+      </div>
+    </div>
+
+    <!-- INSTRUCTION -->
+    <div class="screen" id="s-instr">
+      <div class="card">
+        <div class="card-title"><span>📖</span> Как подключиться</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Выбери своё устройство:</div>
+        <div class="faq-list">
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q"><span class="faq-icon">📱</span><span>Android</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">
+              1️⃣ Установи <b>AmneziaVPN</b> (Google Play или amnezia.org)<br>
+              2️⃣ В разделе <b>📱 Мои устройства</b> нажми 📋 — конфиг скопируется<br>
+              3️⃣ Открой <b>AmneziaVPN</b> → <b>+</b> → вставь текст → <b>Подключиться</b> ✅<br>
+              <span style="color:var(--muted)">Не вставляется? Нажми ⬇️ — скачается файл .conf, импортируй его.</span>
+            </div>
+          </div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q"><span class="faq-icon">🍏</span><span>iPhone — AmneziaVPN доступна</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">
+              Если AmneziaVPN открывается в твоём App Store (или сменён регион).<br>
+              1️⃣ Установи <b><a href="https://apps.apple.com/app/amneziavpn/id1600529900" style="color:var(--cyan)">AmneziaVPN</a></b><br>
+              2️⃣ В <b>📱 Мои устройства</b> нажми 📋 (копировать конфиг)<br>
+              3️⃣ <b>AmneziaVPN</b> → <b>+</b> → вставь текст → разреши VPN → <b>Подключиться</b> ✅
+            </div>
+          </div>
+          <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q"><span class="faq-icon">🇷🇺</span><span>iPhone — Россия (DefaultVPN)</span><span class="faq-arr">›</span></div>
+            <div class="faq-a">
+              В России AmneziaVPN убрали из App Store — используй бесплатный <b>DefaultVPN</b>.<br>
+              1️⃣ Установи <b><a href="https://apps.apple.com/ru/app/defaultvpn/id6744725017" style="color:var(--cyan)">DefaultVPN</a></b><br>
+              2️⃣ В <b>📱 Мои устройства</b> нажми 📋 (копировать конфиг)<br>
+              3️⃣ <b>DefaultVPN</b> → <b>+</b> → вставь текст → разреши VPN → включи переключатель ✅<br>
+              <span style="color:var(--muted)">Не вставляется? Нажми ⬇️ (файл .conf) → открой в DefaultVPN.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="bnav" id="bnav">
@@ -587,11 +649,23 @@ if (MY_TG_ID) {
 }
 const MY_NAME = tgUser?.first_name || urlName || 'Гость';
 
+// Подписанные данные Telegram для безопасной авторизации на сервере (initData)
+const MY_INIT = (tg && tg.initData) ? tg.initData : '';
+// Добавляет авторизацию к GET-URL
+function withAuth(url){
+  const sep = url.includes('?') ? '&' : '?';
+  return url + sep + 'init_data=' + encodeURIComponent(MY_INIT);
+}
+// Копирование текста в буфер (с уведомлением)
+function copyText(txt){
+  try{ navigator.clipboard.writeText(txt); if(typeof showToast==='function') showToast('✅ Скопировано'); }catch(e){}
+}
+
 document.getElementById('hdrUser').textContent = MY_NAME;
 
 // ─── STATE ───
 const NAV_SCREENS = ['home','sub','buy','support'];
-const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки', devices:'Мои устройства' };
+const SCREEN_TITLES = { home:null, sub:'Подписка', buy:'Тарифы', support:'Поддержка', req:'Оплата', wait:'Статус заявки', cancel:'Отмена подписки', devices:'Мои устройства', ref:'Пригласить друга', instr:'Инструкция' };
 let navHistory = [];
 let selectedPlan = null;
 let activePromo = null; // {code, days, percent}
@@ -600,6 +674,7 @@ let pollTimer = null;
 // ─── NAVIGATION ───
 function nav(id) {
   if(id==='devices') setTimeout(loadDevicesMini, 100);
+  if(id==='ref') setTimeout(loadReferralMini, 100);
   const cur = document.querySelector('.screen.active');
   const curId = cur?.id.replace('s-','');
   if (curId === id) return;
@@ -665,12 +740,14 @@ function setProgress(used, total) {
 }
 
 // ─── LOAD SUBSCRIPTION ───
+let trialAvailable = false;
 async function loadSub() {
   if (!MY_TG_ID) { setStatus('inactive','🔒 НЕТ ПОДПИСКИ','Открой через Telegram бот'); return; }
   setStatus('inactive','⟳ ЗАГРУЗКА...','Проверяем подписку...');
   try {
-    const r = await fetch(API+'?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(8000)});
+    const r = await fetch(withAuth(API+'?tg_id='+MY_TG_ID), {signal:AbortSignal.timeout(8000)});
     const d = await r.json();
+    trialAvailable = !!d.trial_available;
     if (d.status === 'active') renderSubActive(d);
     else if (d.status === 'pending') setStatus('pending','⏳ ОЖИДАНИЕ','Платёж на проверке');
     else renderSubInactive();
@@ -699,6 +776,8 @@ function renderSubActive(d) {
     <button class="btn btn-primary" style="margin-top:12px" onclick="openLink('${BOT}')">📎 Получить конфиг в боте</button>
     <button class="btn btn-cyan" onclick="nav('buy')">🔄 Продлить подписку</button>
     <button class="btn" style="background:rgba(74,158,255,.1);border-color:rgba(74,158,255,.3);color:var(--cyan);margin-top:4px" onclick="nav('devices')">📱 Мои устройства</button>
+    <button class="btn" style="margin-top:4px" onclick="nav('instr')">📖 Инструкция по подключению</button>
+    <button class="btn" style="margin-top:4px" onclick="nav('ref')">👥 Пригласить друга (+3 дня)</button>
     <button class="btn btn-danger" style="margin-top:4px" onclick="nav('cancel')">❌ Отменить подписку</button>
     <button class="btn" style="background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.3);color:rgba(255,220,100,.9);margin-top:4px" onclick="showRecreateConfirm()">⚠️ Конфиг не работает</button>
     <div id="recreateConfirm" style="display:none;background:rgba(255,150,0,.08);border:1px solid rgba(255,150,0,.2);border-radius:12px;padding:14px;margin-top:8px;font-size:13px;color:rgba(255,220,100,.8);line-height:1.6">
@@ -720,10 +799,59 @@ function renderSubInactive() {
       <div style="font-size:40px;margin-bottom:12px">📭</div>
       <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--muted2)">Нет активной подписки</div>
     </div>
+    ${trialAvailable ? `
+    <div style="margin-top:14px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);border-radius:12px;padding:14px;text-align:center">
+      <div style="font-size:14px;font-weight:700;color:#34d399;margin-bottom:4px">🎁 Попробуй бесплатно</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">3 дня · 2 устройства · без оплаты</div>
+      <button class="btn btn-primary" style="width:100%;background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.45);color:#fff" onclick="activateTrialMini()" id="trialBtnMini">🎁 Активировать пробные 3 дня</button>
+    </div>` : ''}
     <button class="btn btn-primary" style="margin-top:16px" onclick="nav('buy')">🛒 Купить VPN</button>
+    <button class="btn" style="margin-top:8px" onclick="nav('instr')">📖 Инструкция по подключению</button>
+    <button class="btn" style="margin-top:4px" onclick="nav('ref')">👥 Пригласить друга (+3 дня)</button>
   `;
   document.getElementById('buyTitle').innerHTML = '<span>🛒</span> Выбери тариф';
   document.getElementById('buyInfo').innerHTML = '✅ Безлимитный трафик<br>✅ AES-256 шифрование<br>✅ Европейский сервер<br>✅ Конфиг автоматически';
+}
+
+let refLinkMini = '';
+async function loadReferralMini(){
+  try{
+    const r = await fetch(withAuth(API+'/referral'),{signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      refLinkMini = d.link || '';
+      document.getElementById('refLink').textContent = d.link || '—';
+      document.getElementById('refTotal').textContent = d.total || 0;
+      document.getElementById('refPaid').textContent = d.paid || 0;
+    }
+  }catch(e){}
+}
+function shareRefMini(){
+  const text = 'Подключайся к EurUsdVPN — быстрый VPN без логов 🚀';
+  const url = refLinkMini || ('https://t.me/EurUsdVpnService_bot?start=ref_'+MY_TG_ID);
+  const share = 'https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text);
+  if(tg && tg.openTelegramLink) tg.openTelegramLink(share);
+  else window.open(share,'_blank');
+}
+
+async function activateTrialMini(){
+  const btn = document.getElementById('trialBtnMini');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Активирую...'; }
+  try{
+    const r = await fetch(API+'/trial',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({init_data:MY_INIT}),signal:AbortSignal.timeout(25000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      showToast('🎉 Пробный период активирован! Конфиги придут в чат бота');
+      await loadSub();
+    } else {
+      if(btn){ btn.disabled=false; btn.textContent='🎁 Активировать пробные 3 дня'; }
+      showToast('❌ '+(d.msg||'Не удалось активировать'));
+    }
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='🎁 Активировать пробные 3 дня'; }
+    showToast('❌ Ошибка соединения');
+  }
 }
 
 // ─── PAYMENT ───
@@ -817,45 +945,49 @@ async function submitPayment() {
   if (!digits || digits.length !== 4 || !selectedPlan) return;
   const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
   const finalPrice = selectedPlan.discountedPrice || selectedPlan.price;
-  const devicesCount = selectedPlan.devices || selectedDevCount || 1;
   const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+finalPrice+'₽'+(activePromo ? ' ['+activePromo.code+']' : '');
+  const promoCode = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim().toUpperCase() : '';
 
-  // Сохраняем время СРАЗУ при нажатии кнопки
+  const payBtn = document.getElementById('submitBtn');
+  if (payBtn) { payBtn.disabled = true; payBtn.textContent = '⏳ Отправляю...'; }
+
+  // 1. Текущий end_date ПЕРЕД созданием заявки (для сравнения при поллинге)
   const nowTs = Math.floor(Date.now()/1000);
   localStorage.setItem('vpn_submit_time', nowTs.toString());
-
-  // 1. Получаем текущий end_date ПЕРЕД созданием заявки
-  let endBefore = '';
-  let statusBefore = 'inactive';
+  let endBefore = '', statusBefore = 'inactive';
   try {
-    if (MY_TG_ID) {
-      // Передаём время отправки заявки чтобы API не показывал старые rejected
-    const submitTime = localStorage.getItem('vpn_submit_time') || '0';
-    const r = await fetch(API+'?tg_id='+MY_TG_ID+'&after='+submitTime, {signal:AbortSignal.timeout(5000)});
-      const d = await r.json();
-      endBefore = d.end_date || '';
-      statusBefore = d.status || 'inactive';
-    }
+    const r0 = await fetch(withAuth(API+'?tg_id='+MY_TG_ID+'&after='+nowTs), {signal:AbortSignal.timeout(5000)});
+    const d0 = await r0.json();
+    endBefore = d0.end_date || '';
+    statusBefore = d0.status || 'inactive';
   } catch(e) {}
 
-  // Сохраняем в localStorage (переживёт перезагрузку WebView)
+  // 2. Создаём заявку напрямую (мини-апп сам инициирует оплату — без перехода в чат)
+  try {
+    const r = await fetch(API+'/buy', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({init_data:MY_INIT, plan:selectedPlan.key, digits, promo:promoCode}),
+      signal:AbortSignal.timeout(12000)
+    });
+    const d = await r.json();
+    if (d.status !== 'ok') {
+      if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Подтвердить оплату'; }
+      showToast('❌ ' + (d.msg || 'Не удалось создать заявку'));
+      return;
+    }
+  } catch(e) {
+    if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Я оплатил'; }
+    showToast('❌ Ошибка соединения, попробуй ещё раз');
+    return;
+  }
+
+  // 3. Заявка создана — сохраняем состояние и показываем экран ожидания
   localStorage.setItem('vpn_end_before', endBefore);
   localStorage.setItem('vpn_status_before', statusBefore);
   localStorage.setItem('vpn_pending', '1');
   localStorage.setItem('vpn_plan_label', planLabel);
-  // vpn_submit_time уже сохранён выше
-
-  // 2. Показываем экран ожидания
+  if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Я оплатил'; }
   showWaitScreen(planLabel);
-
-  // 3. Открываем бота
-    const promoCode = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim().toUpperCase() : '';
-  const finalPrice2 = selectedPlan.discountedPrice || selectedPlan.price;
-  const url = 'https://t.me/EurUsdVpnService_bot?start=pay_'+selectedPlan.key+'_'+digits+(promoCode ? '_'+promoCode : '')+'_'+finalPrice2+'_'+devicesCount;
-  if (tg) tg.openTelegramLink(url);
-  else window.open(url,'_blank');
-
-  // 4. Запускаем поллинг
   startPolling();
 }
 
@@ -883,19 +1015,67 @@ function showWaitScreen(planLabel) {
 }
 
 // ── DEVICES MINIAPP ──
+let dockPlan = '', dockDaysLeft = 0, dockMaxTotal = 5, addonPriceVal = 0;
+
 async function loadDevicesMini(){
   try{
-    const r = await fetch(API+'/devices_tg?tg_id='+MY_TG_ID,{signal:AbortSignal.timeout(8000)});
+    const r = await fetch(withAuth(API+'/devices_tg?tg_id='+MY_TG_ID),{signal:AbortSignal.timeout(8000)});
     const d = await r.json();
+    dockPlan = d.plan || '';
+    dockDaysLeft = d.days_left || 0;
+    dockMaxTotal = d.max_total || 5;
     renderDevicesMini(d.devices||[], d.max_devices||1, d.count||0);
   }catch(e){
     document.getElementById('devicesContent').innerHTML='<div style="color:var(--muted);font-size:13px">Ошибка загрузки устройств</div>';
   }
 }
 
+function dockBlockHtml(maxDev){
+  // Можно докупить, если достигнут лимит подписки и он меньше общего максимума (5)
+  const base = BASE_PRICES[dockPlan] || 169;
+  const total = BASE_DAYS[dockPlan] || 30;
+  addonPriceVal = Math.max(9, Math.round(base * 0.55 * (dockDaysLeft / total) / 10) * 10);
+  return `
+    <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px">
+      <button class="btn btn-primary" style="width:100%;background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.4);color:#fff" onclick="toggleDockMini()" id="dockToggleMini">💳 Докупить устройство (${addonPriceVal}₽)</button>
+      <div id="dockFormMini" style="display:none;margin-top:10px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Доплата <b style="color:#fff">${addonPriceVal}₽</b> — пропорционально оставшимся дням подписки.</div>
+        <div style="font-size:12px;line-height:1.7;background:rgba(255,255,255,.04);border-radius:8px;padding:10px;margin-bottom:10px">
+          📱 <b onclick="copyText('+79778547710')" style="cursor:pointer">+7 977 854-77-10</b> · копировать<br>
+          🏦 Т-БАНК · 👤 EurUsdVpnService<br>
+          <span style="color:rgba(255,200,0,.7)">⚠️ В комментарии ничего не пиши</span>
+        </div>
+        <input id="addonDigitsMini" type="text" inputmode="numeric" maxlength="4" placeholder="Последние 4 цифры" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:16px;text-align:center;letter-spacing:4px;outline:none;margin-bottom:8px">
+        <button class="btn btn-primary" style="width:100%" onclick="submitAddonMini()" id="addonBtnMini">Отправить заявку</button>
+      </div>
+    </div>`;
+}
+
+function toggleDockMini(){
+  const f = document.getElementById('dockFormMini');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitAddonMini(){
+  const digits = document.getElementById('addonDigitsMini').value.trim();
+  if(digits.length !== 4){ showToast('Введи ровно 4 цифры'); return; }
+  const btn = document.getElementById('addonBtnMini');
+  btn.disabled = true; btn.textContent = '⏳...';
+  try{
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'buy_addon',digits,amount:addonPriceVal}),signal:AbortSignal.timeout(12000)});
+    const d = await r.json();
+    if(d.status==='ok'){
+      btn.textContent = '✅ Отправлено';
+      showToast('✅ Заявка на докупку отправлена! Ожидай подтверждения (до 30 мин)');
+    } else { btn.disabled=false; btn.textContent='Отправить заявку'; showToast('❌ '+(d.msg||'Ошибка')); }
+  }catch(e){ btn.disabled=false; btn.textContent='Отправить заявку'; showToast('❌ Ошибка соединения'); }
+}
+
 function renderDevicesMini(devices, maxDev, count){
   const addSec = document.getElementById('addDevSection');
   addSec.style.display = count < maxDev ? 'block' : 'none';
+  const canDock = (count >= maxDev && maxDev < dockMaxTotal);
   if(!devices.length){
     document.getElementById('devicesContent').innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">Нет устройств</div>';
     return;
@@ -925,6 +1105,7 @@ function renderDevicesMini(devices, maxDev, count){
         </div>
       </div>
     `).join('')}
+    ${canDock ? dockBlockHtml(maxDev) : ''}
   `;
 }
 
@@ -940,7 +1121,7 @@ async function renameMini(id){
   const name = document.getElementById(`rinp-${id}`).value.trim();
   if(!name) return;
   try{
-    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'rename',device_id:id,name})});
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'rename',device_id:id,name})});
     const d = await r.json();
     if(d.status==='ok'){document.getElementById(`dmn-${id}`).textContent=name;hideRenameMini(id);}
   }catch(e){}
@@ -949,7 +1130,7 @@ async function renameMini(id){
 async function deleteDevMini(id, name){
   if(!confirm(`Удалить "${name}"?`)) return;
   try{
-    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'delete',device_id:id})});
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'delete',device_id:id})});
     const d = await r.json();
     if(d.status==='ok') loadDevicesMini();
   }catch(e){}
@@ -957,7 +1138,7 @@ async function deleteDevMini(id, name){
 
 async function copyDevMini(id){
   try{
-    const r=await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'config',device_id:id})});
+    const r=await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'config',device_id:id})});
     const d=await r.json();
     if(d.status==='ok'){
       await navigator.clipboard.writeText(d.config);
@@ -969,7 +1150,7 @@ async function copyDevMini(id){
 
 async function downloadDevMini(id){
   try{
-    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'config',device_id:id})});
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'config',device_id:id})});
     const d = await r.json();
     if(d.status==='ok'){
       const blob = new Blob([d.config],{type:'text/plain'});
@@ -987,7 +1168,7 @@ async function addDeviceMini(){
   const btn = document.getElementById('addDevBtnMini');
   btn.disabled=true; btn.textContent='⏳...';
   try{
-    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tg_id:MY_TG_ID,action:'add',name}),signal:AbortSignal.timeout(15000)});
+    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'add',name}),signal:AbortSignal.timeout(15000)});
     const d = await r.json();
     if(d.status==='ok'){
       document.getElementById('newDevNameMini').value='';
@@ -1022,7 +1203,7 @@ async function loadRecreateMiniDevices(){
   if(!list) return;
   list.innerHTML = '<div style="color:rgba(255,220,100,.5);font-size:12px">Загрузка...</div>';
   try{
-    const r = await fetch(API+'/devices_tg?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(8000)});
+    const r = await fetch(withAuth(API+'/devices_tg?tg_id='+MY_TG_ID), {signal:AbortSignal.timeout(8000)});
     const d = await r.json();
     if(d.status==='ok' && d.devices.length > 0){
       if(d.devices.length === 1){
@@ -1065,7 +1246,7 @@ async function doRecreateMiniapp(){
   try{
     const r = await fetch(API+'/device_tg',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({tg_id:MY_TG_ID, action:'recreate', device_id:selectedRecreateDevMini}),
+      body: JSON.stringify({init_data:MY_INIT, tg_id:MY_TG_ID, action:'recreate', device_id:selectedRecreateDevMini}),
       signal: AbortSignal.timeout(15000)
     });
     const d = await r.json();
@@ -1122,7 +1303,7 @@ async function checkConfirmation() {
   const endBefore = localStorage.getItem('vpn_end_before') || '';
 
   try {
-    const r = await fetch(API + '?tg_id=' + MY_TG_ID, {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(withAuth(API + '?tg_id=' + MY_TG_ID), {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
 
     // Check rejection: last_rejected_at > submit time
@@ -1220,7 +1401,7 @@ async function confirmCancel() {
   const btn = document.querySelector('#s-cancel .btn-danger');
   if (btn) { btn.textContent = '⏳ Отменяю...'; btn.style.pointerEvents = 'none'; }
   try {
-    const r = await fetch(API+'/cancel?tg_id='+MY_TG_ID, {signal:AbortSignal.timeout(8000)});
+    const r = await fetch(withAuth(API+'/cancel?tg_id='+MY_TG_ID), {signal:AbortSignal.timeout(8000)});
     const d = await r.json();
     if (d.status === 'cancelled') {
       renderSubInactive();
@@ -1251,7 +1432,7 @@ async function checkPromo() {
   result.style.color='var(--muted)';
   result.textContent='⏳ Проверяем...';
   try {
-    const r = await fetch(API + '/promo?code=' + code + (MY_TG_ID ? '&tg_id=' + MY_TG_ID : ''), {signal: AbortSignal.timeout(5000)});
+    const r = await fetch(withAuth(API + '/promo?code=' + code + (MY_TG_ID ? '&tg_id=' + MY_TG_ID : '')), {signal: AbortSignal.timeout(5000)});
     const d = await r.json();
     if (d.valid) {
       activePromo = {code, days: d.days || 0, percent: d.percent || 0};
