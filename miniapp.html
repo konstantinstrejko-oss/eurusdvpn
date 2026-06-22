@@ -365,17 +365,9 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
     <div class="screen" id="s-buy">
       <div class="card">
         <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
-        <!-- Выбор устройств -->
-        <div id="devSelectBlock" style="margin-bottom:14px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 Количество устройств:</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="setDevCount(1)" id="dBtn1" class="dev-count-btn active">1</button>
-            <button onclick="setDevCount(2)" id="dBtn2" class="dev-count-btn">2</button>
-            <button onclick="setDevCount(3)" id="dBtn3" class="dev-count-btn">3</button>
-            <button onclick="setDevCount(4)" id="dBtn4" class="dev-count-btn">4</button>
-            <button onclick="setDevCount(5)" id="dBtn5" class="dev-count-btn">5</button>
-          </div>
-          <div id="devPriceHint" style="font-size:11px;color:var(--muted);margin-top:6px">1 устройство — базовая цена</div>
+        <!-- 2 устройства включены в любой тариф -->
+        <div id="devSelectBlock" style="margin-bottom:14px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.5">
+          📱 <b style="color:#fff">2 устройства включены</b> в любой тариф по базовой цене. Больше (до 5) — докупишь в разделе «Мои устройства».
         </div>
         <div class="plans-grid">
           <div class="plan-card" onclick="selectPlanDev('7d',89,7)">
@@ -541,7 +533,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q"><span class="faq-icon">📲</span><span>Сколько устройств?</span><span class="faq-arr">›</span></div>
-            <div class="faq-a">1 подписка = 1 устройство одновременно.</div>
+            <div class="faq-a">В любой тариф включено 2 устройства по базовой цене. При необходимости можно докупить до 5 в разделе «Мои устройства».</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q"><span class="faq-icon">🔐</span><span>Мои данные в безопасности?</span><span class="faq-arr">›</span></div>
@@ -738,10 +730,13 @@ function renderSubInactive() {
 // Базовые цены тарифов
 const BASE_PRICES = {'7d':89,'1m':169,'3m':529,'6m':829,'1y':2000};
 const BASE_DAYS = {'7d':7,'1m':30,'3m':90,'6m':180,'1y':365};
-let selectedDevCount = 1;
+let selectedDevCount = 2; // 2 устройства включены в любой тариф
 
 function calcPrice(basePrice, devCount){
-  const total = basePrice * (1 + 0.55 * (devCount - 1));
+  // 2 устройства входят в базовую цену; наценка 0.55 только за каждое сверх двух
+  const extra = Math.max(0, devCount - 2);
+  if(extra === 0) return basePrice;
+  const total = basePrice * (1 + 0.55 * extra);
   return Math.round(total / 10) * 10;
 }
 
@@ -1876,7 +1871,7 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q"><span class="faq-icon">📲</span><span>Сколько устройств?</span><span class="faq-arr">›</span></div>
-            <div class="faq-a">1 подписка = 1 устройство одновременно.</div>
+            <div class="faq-a">В любой тариф включено 2 устройства по базовой цене. При необходимости можно докупить до 5 в разделе «Мои устройства».</div>
           </div>
           <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-q"><span class="faq-icon">🔐</span><span>Мои данные в безопасности?</span><span class="faq-arr">›</span></div>
