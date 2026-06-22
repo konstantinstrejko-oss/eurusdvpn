@@ -27,40 +27,51 @@
   }
   var DOT = sprite();
 
-  // ── TUNNEL ──
-  var tunnelData;
-  function buildTunnel(){
+  // ── HALO (спокойные орбитальные кольца частиц) ──
+  // Частицы НЕ летят на камеру — мягко вращаются вокруг центра + лёгкое «дыхание».
+  function buildHalo(){
     group=new THREE.Group();scene.add(group);
-    var N = mobile?1400:3200, pos=new Float32Array(N*3), col=new Float32Array(N*3), spd=new Float32Array(N);
-    var col3=new THREE.Color();
-    for(var i=0;i<N;i++){
-      var a=Math.random()*Math.PI*2, rad=42+Math.random()*16, z=-Math.random()*1100;
-      pos[i*3]=Math.cos(a)*rad; pos[i*3+1]=Math.sin(a)*rad; pos[i*3+2]=z;
-      col3.copy(rc()); col[i*3]=col3.r;col[i*3+1]=col3.g;col[i*3+2]=col3.b;
-      spd[i]=1.6+Math.random()*2.4;
+    var RINGS = mobile?5:7;
+    var perRing = mobile?180:300;
+    var N = RINGS*perRing;
+    var pos=new Float32Array(N*3),col=new Float32Array(N*3),col3=new THREE.Color();
+    var k=0;
+    for(var r=0;r<RINGS;r++){
+      var R = 60 + r*26;                 // радиус кольца
+      var tilt = (r/RINGS)*Math.PI*0.9 - 0.45; // наклон кольца
+      var ct=Math.cos(tilt), st=Math.sin(tilt);
+      for(var j=0;j<perRing;j++){
+        var a = (j/perRing)*Math.PI*2 + Math.random()*0.05;
+        var rr = R + (Math.random()-0.5)*7;       // лёгкая толщина кольца
+        var x = Math.cos(a)*rr;
+        var y0 = Math.sin(a)*rr;
+        pos[k*3]   = x;
+        pos[k*3+1] = y0*ct;
+        pos[k*3+2] = y0*st + (Math.random()-0.5)*6;
+        col3.copy(rc()); col[k*3]=col3.r;col[k*3+1]=col3.g;col[k*3+2]=col3.b;
+        k++;
+      }
     }
     var geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
     geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-    var mat=new THREE.PointsMaterial({size:mobile?1.5:1.9,map:DOT,vertexColors:true,transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending});
-    var pts=new THREE.Points(geo,mat);group.add(pts);
-    // тонкие кольца-каркас
-    for(var r=0;r<10;r++){
-      var rg=new THREE.RingGeometry(48,48.4,64);
-      var rm=new THREE.MeshBasicMaterial({color:r%2?C.cyan:C.emerald,transparent:true,opacity:.10,side:THREE.DoubleSide});
-      var ring=new THREE.Mesh(rg,rm);ring.position.z=-r*110;group.add(ring);
+    group.add(new THREE.Points(geo,new THREE.PointsMaterial({size:mobile?2.2:2.8,map:DOT,vertexColors:true,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending})));
+    // пара тонких каркасных колец
+    for(var w=0;w<3;w++){
+      var rg=new THREE.RingGeometry(64+w*30,64+w*30+0.5,90);
+      var rm=new THREE.MeshBasicMaterial({color:w%2?C.cyan:C.emerald,transparent:true,opacity:.10,side:THREE.DoubleSide});
+      var ring=new THREE.Mesh(rg,rm);ring.rotation.x=0.5+w*0.25;group.add(ring);
     }
-    camera.position.z=60;
-    tunnelData={geo:geo,pos:pos,spd:spd,N:N};
+    group.rotation.x=0.32;
+    camera.position.z=290;
   }
-  function animTunnel(){
-    var p=tunnelData.pos,spd=tunnelData.spd;
-    for(var i=0;i<tunnelData.N;i++){ p[i*3+2]+=spd[i]; if(p[i*3+2]>60){p[i*3+2]=-1100;} }
-    tunnelData.geo.attributes.position.needsUpdate=true;
-    group.rotation.z+=0.0011;
-    camera.position.x+=((tmx*14)-camera.position.x)*.05;
-    camera.position.y+=((-tmy*14)-camera.position.y)*.05;
-    camera.lookAt(0,0,-200);
+  function animHalo(){
+    group.rotation.y += 0.0009;                       // очень медленное вращение
+    var s = 1 + Math.sin(t*0.5)*0.022;                // мягкое «дыхание»
+    group.scale.set(s,s,s);
+    camera.position.x+=((tmx*26)-camera.position.x)*.04;
+    camera.position.y+=((-tmy*20)-camera.position.y)*.04;
+    camera.lookAt(0,0,0);
   }
 
   // ── NETWORK (сфера узлов + связи) ──
@@ -134,7 +145,7 @@
   }
 
   var anim;
-  if(mode==='tunnel'){buildTunnel();anim=animTunnel;}
+  if(mode==='halo'||mode==='tunnel'){buildHalo();anim=animHalo;}
   else if(mode==='network'){buildNetwork();anim=animNetwork;}
   else if(mode==='grid'){buildGrid();anim=animGrid;}
   else {buildField();anim=animField;}
