@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Как подключить — EurUsdVPN</title>
+<meta name="description" content="Пошаговая инструкция подключения EurUsdVPN на Android и iPhone. Основной способ — скопировать конфиг и вставить в приложение AmneziaVPN или DefaultVPN.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="loader" id="loader"><div class="loader-ring"></div><div class="loader-mk">🛡</div></div>
+<canvas id="scene"></canvas><div class="veil"></div><div class="grain"></div>
+
+<header id="hdr"><div class="wrap hd">
+  <a href="index.html" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
+  <nav class="nav-links">
+    <a href="index.html">Главная</a>
+    <a href="pricing.html">Тарифы</a>
+    <a href="how.html" class="active">Как подключить</a>
+    <a href="faq.html">FAQ</a>
+    <a href="cabinet.html">Кабинет</a>
+  </nav>
+  <a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
+  <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</div></header>
+<div class="mobnav" id="mobnav">
+  <a href="index.html">Главная</a><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a>
+  <a href="cabinet.html">Личный кабинет</a><a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
+</div>
+
+<main class="shell">
+<section class="pagehero">
+  <div class="wrap">
+    <span class="chip"><span class="dot"></span> Подключение за 2 минуты</span>
+    <h1 class="title">Подключайся<br><span class="g">в пару касаний</span></h1>
+    <p class="subt">Основной способ — скопировать текст конфига из бота и вставить в приложение. Не получилось — импортируй файл <span class="mono">.conf</span>. Выбери своё устройство ниже.</p>
+  </div>
+</section>
+
+<section style="padding-top:24px">
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(0,this)">🤖 Android</button>
+      <button class="tab" onclick="switchTab(1,this)">🍏 iPhone · AmneziaVPN</button>
+      <button class="tab" onclick="switchTab(2,this)">🍏 iPhone · DefaultVPN</button>
+    </div>
+
+    <div class="panel active" id="panel0">
+      <ol>
+        <li>Установи <b>AmneziaVPN</b> из Google Play: <a href="https://play.google.com/store/apps/details?id=org.amnezia.vpn" target="_blank" rel="noopener">открыть в Play Маркете</a>.</li>
+        <li>В нашем боте открой <b>«Моя подписка» → конфиг устройства</b> и нажми <b>«Скопировать»</b> — текст конфига попадёт в буфер обмена.</li>
+        <li>В AmneziaVPN нажми <b>«+»</b> → <b>«Я уже знаю как настроить» / «Файл или текст»</b> → <b>«Вставить из буфера»</b>.</li>
+        <li>Приложение распознает конфиг — нажми <b>«Подключиться»</b>. Готово.</li>
+        <li><b>Запасной способ:</b> сохрани присланный файл <span class="mono">.conf</span> и выбери в приложении «Импорт из файла».</li>
+      </ol>
+    </div>
+
+    <div class="panel" id="panel1">
+      <ol>
+        <li>Установи <b>AmneziaVPN</b> из App Store: <a href="https://apps.apple.com/app/id1600529900" target="_blank" rel="noopener">открыть в App Store</a>.</li>
+        <li>В боте открой конфиг устройства и нажми <b>«Скопировать»</b>.</li>
+        <li>В AmneziaVPN нажми <b>«+»</b> → <b>«Ввести вручную / из буфера»</b> и вставь скопированный текст.</li>
+        <li>Разреши добавление VPN-конфигурации в настройках iOS, затем нажми <b>«Подключиться»</b>.</li>
+        <li><b>Запасной способ:</b> открой присланный файл <span class="mono">.conf</span> и выбери «Открыть в AmneziaVPN».</li>
+      </ol>
+    </div>
+
+    <div class="panel" id="panel2">
+      <ol>
+        <li>Если AmneziaVPN недоступна в твоём App Store — используй <b>DefaultVPN</b>: <a href="https://apps.apple.com/app/id6744725017" target="_blank" rel="noopener">открыть в App Store</a>. Приложение принимает наши конфиги <span class="mono">.conf</span>.</li>
+        <li>В боте открой конфиг устройства и нажми <b>«Скопировать»</b>.</li>
+        <li>В DefaultVPN нажми <b>«Добавить конфигурацию»</b> → <b>«Вставить из буфера»</b>.</li>
+        <li>Разреши VPN-профиль в настройках iOS и нажми <b>«Подключиться»</b>.</li>
+        <li><b>Запасной способ:</b> сохрани файл <span class="mono">.conf</span> и импортируй его в приложение.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:10px">
+  <div class="wrap">
+    <span class="eyebrow reveal">Если что-то пошло не так</span>
+    <h2 class="h2 reveal">Частые ситуации</h2>
+    <div class="trust-grid">
+      <div class="tcard glass reveal"><div class="ic">📋</div><h3>Не вставляется текст</h3><p>Скопируй конфиг заново из бота и проверь, что приложение открыто на экране импорта.</p></div>
+      <div class="tcard glass reveal"><div class="ic">📎</div><h3>Не открывается файл</h3><p>Сохрани <span class="mono">.conf</span> в «Файлы», затем выбери «Импорт из файла» внутри приложения.</p></div>
+      <div class="tcard glass reveal"><div class="ic">💬</div><h3>Нужна помощь</h3><p>Напиши в <a href="https://t.me/eurusdvpnservicemanager" style="color:var(--cyan)">поддержку</a> — поможем подключить на твоём устройстве.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap"><div class="cta-band reveal">
+    <h2>Готов подключиться?</h2>
+    <p>Открой бота, выбери тариф — конфиг придёт прямо в Telegram.</p>
+    <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Открыть бота →</a>
+  </div></div>
+</section>
+</main>
+
+<footer><div class="wrap foot">
+  <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
+  <div class="foot-links"><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a><a href="cabinet.html">Кабинет</a><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a></div>
+  <div>© 2026 EurUsdVPN</div>
+</div></footer>
+
+<script>window.SCENE='grid';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/scene.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

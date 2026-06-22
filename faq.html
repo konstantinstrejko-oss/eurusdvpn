@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Частые вопросы — EurUsdVPN</title>
+<meta name="description" content="Ответы на частые вопросы о EurUsdVPN: устройства, оплата, скорость, приватность, возврат средств и подключение.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="loader" id="loader"><div class="loader-ring"></div><div class="loader-mk">🛡</div></div>
+<canvas id="scene"></canvas><div class="veil"></div><div class="grain"></div>
+
+<header id="hdr"><div class="wrap hd">
+  <a href="index.html" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
+  <nav class="nav-links">
+    <a href="index.html">Главная</a>
+    <a href="pricing.html">Тарифы</a>
+    <a href="how.html">Как подключить</a>
+    <a href="faq.html" class="active">FAQ</a>
+    <a href="cabinet.html">Кабинет</a>
+  </nav>
+  <a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
+  <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</div></header>
+<div class="mobnav" id="mobnav">
+  <a href="index.html">Главная</a><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a>
+  <a href="cabinet.html">Личный кабинет</a><a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
+</div>
+
+<main class="shell">
+<section class="pagehero">
+  <div class="wrap">
+    <span class="chip"><span class="dot"></span> Коротко и по делу</span>
+    <h1 class="title">Частые<br><span class="g">вопросы</span></h1>
+    <p class="subt">Всё, что обычно спрашивают перед подключением. Не нашёл ответ — напиши в поддержку.</p>
+  </div>
+</section>
+
+<section style="padding-top:20px">
+  <div class="wrap">
+    <div class="faq-list">
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">На сколько устройств работает подписка?<span class="pl"></span></div><div class="fa">В любой тариф включено 2 устройства по базовой цене — например телефон и ноутбук одновременно. При желании докупи до 5 устройств в личном кабинете: цена считается пропорционально остатку дней подписки.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Как происходит оплата?<span class="pl"></span></div><div class="fa">Оплата переводом по реквизитам прямо в Telegram-боте. После перевода вводишь 4 последние цифры карты для сверки — и получаешь конфиг автоматически. Никаких автосписаний: подписка не продлевается без твоего участия.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Есть ли бесплатный период?<span class="pl"></span></div><div class="fa">Да. Новым пользователям доступны 3 дня бесплатно на 2 устройства — без карты и автопродления. Активируется в один клик в боте.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Какая скорость соединения?<span class="pl"></span></div><div class="fa">Канал до 10 Gbps на европейском сервере. Протокол AmneziaWG на базе WireGuard работает быстро и стабильно — хватает для стриминга в 4K, загрузок и видеозвонков.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Храните ли вы логи?<span class="pl"></span></div><div class="fa">Нет. Система архитектурно не хранит историю посещений, посещённые сайты и IP-адреса. Это политика Zero-Log: нечего запрашивать и нечего раскрывать.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Как подключиться после оплаты?<span class="pl"></span></div><div class="fa">Конфиг приходит в Telegram сразу после подтверждения. Основной способ — скопировать текст конфига и вставить в приложение AmneziaVPN (или DefaultVPN). Запасной — импортировать файл .conf. Подробности на странице «Как подключить».</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Что если VPN не заработал?<span class="pl"></span></div><div class="fa">Напиши в поддержку в течение 24 часов — поможем настроить, а если подключить не удастся, вернём деньги. Живые менеджеры на связи каждый день.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Можно продлить подписку?<span class="pl"></span></div><div class="fa">Да, в боте или личном кабинете. При продлении сохраняются твои устройства и настройки — конфиги перевыпускать не нужно, дни просто добавляются к остатку.</div></div>
+      <div class="fi glass" onclick="toggleFaq(this)"><div class="fq">Есть реферальная программа?<span class="pl"></span></div><div class="fa">Да. Делись своей ссылкой из бота или кабинета — за приглашённых друзей начисляются бонусные дни подписки.</div></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:30px">
+  <div class="wrap"><div class="cta-band reveal">
+    <h2>Остались вопросы?</h2>
+    <p>Напиши в поддержку — ответим быстро и поможем подключиться.</p>
+    <a href="https://t.me/eurusdvpnservicemanager" class="cta lg">Написать в поддержку →</a>
+  </div></div>
+</section>
+</main>
+
+<footer><div class="wrap foot">
+  <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
+  <div class="foot-links"><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a><a href="cabinet.html">Кабинет</a><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a></div>
+  <div>© 2026 EurUsdVPN</div>
+</div></footer>
+
+<script>window.SCENE='field';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/scene.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

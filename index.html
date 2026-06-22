@@ -4,247 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EurUsdVPN — Приватный VPN на AmneziaWG</title>
-<meta name="description" content="Приватный VPN на AmneziaWG. Zero-Log, шифрование AES-256, сервер в Европе, высокая скорость, 2 устройства в подарок. Оплата за минуту, конфиг сразу в Telegram.">
+<meta name="description" content="Приватный VPN на AmneziaWG. Zero-Log, шифрование AES-256, сервер в Европе, высокая скорость, 2 устройства в подарок. Конфиг сразу в Telegram.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#06070d; --bg2:#0a0c16;
-  --text:#eef1f8; --dim:#9aa3b8; --mute:rgba(255,255,255,.42);
-  --glass:rgba(255,255,255,.045); --glass2:rgba(255,255,255,.07); --brd:rgba(255,255,255,.10);
-  --violet:#6d5ef6; --cyan:#22d3ee; --emerald:#2be8a6; --pink:#ff5da2; --amber:#ffb020;
-  --grad:linear-gradient(135deg,#6d5ef6,#22d3ee);
-  --grad-text:linear-gradient(120deg,#a78bfa,#22d3ee 55%,#2be8a6);
-  --r12:12px;--r16:16px;--r20:20px;--r28:28px;
-  --ease:cubic-bezier(.22,.61,.36,1);
-  --maxw:1140px;
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-a{color:inherit;text-decoration:none}
-img{max-width:100%}
-.mono{font-family:'JetBrains Mono',monospace}
-
-/* ── Aurora background ── */
-.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;filter:blur(70px);opacity:.55}
-.blob{position:absolute;border-radius:50%;mix-blend-mode:screen;will-change:transform}
-.b1{width:48vw;height:48vw;background:#6d5ef6;top:-12vw;left:-6vw;animation:drift1 22s var(--ease) infinite alternate}
-.b2{width:42vw;height:42vw;background:#22d3ee;top:-6vw;right:-8vw;animation:drift2 26s var(--ease) infinite alternate}
-.b3{width:40vw;height:40vw;background:#2be8a6;bottom:-14vw;left:18vw;animation:drift3 30s var(--ease) infinite alternate}
-.b4{width:30vw;height:30vw;background:#ff5da2;bottom:-6vw;right:6vw;opacity:.5;animation:drift1 24s var(--ease) infinite alternate-reverse}
-@keyframes drift1{to{transform:translate(8vw,10vh) scale(1.15)}}
-@keyframes drift2{to{transform:translate(-7vw,12vh) scale(1.1)}}
-@keyframes drift3{to{transform:translate(10vw,-8vh) scale(1.2)}}
-.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
-  background-image:radial-gradient(rgba(255,255,255,.6) 1px,transparent 1px);background-size:3px 3px}
-
-/* ── Shell ── */
-.shell{position:relative;z-index:2}
-.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 24px}
-
-/* ── Header ── */
-header{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s var(--ease),border-color .3s,backdrop-filter .3s}
-header.scrolled{background:rgba(6,7,13,.72);backdrop-filter:blur(16px) saturate(140%);border-bottom:1px solid var(--brd)}
-.hd{display:flex;align-items:center;justify-content:space-between;height:68px}
-.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.3px}
-.brand .mk{width:32px;height:32px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:15px;box-shadow:0 6px 20px -6px var(--cyan)}
-.brand b{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
-.nav-links{display:flex;align-items:center;gap:28px}
-.nav-links a{font-size:14px;color:var(--dim);transition:color .2s}
-.nav-links a:hover{color:var(--text)}
-.cta{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;padding:10px 18px;border-radius:50px;background:var(--grad);color:#05060c;box-shadow:0 8px 24px -10px var(--cyan);transition:transform .2s var(--ease),box-shadow .2s;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border:none}
-.cta:hover{transform:translateY(-2px);box-shadow:0 14px 34px -10px var(--cyan)}
-.cta:active{transform:scale(.97)}
-.cta.ghost{background:transparent;color:var(--text);border:1px solid var(--brd);box-shadow:none}
-.cta.ghost:hover{background:var(--glass);border-color:var(--glass2)}
-.burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
-.burger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.25s var(--ease)}
-.burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.burger.open span:nth-child(2){opacity:0}
-.burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.mobnav{position:fixed;top:68px;left:0;right:0;z-index:49;background:rgba(8,10,18,.96);backdrop-filter:blur(18px);border-bottom:1px solid var(--brd);transform:translateY(-130%);transition:transform .35s var(--ease);padding:14px 24px 22px}
-.mobnav.open{transform:translateY(0)}
-.mobnav a{display:block;padding:13px 4px;font-size:16px;color:var(--dim);border-bottom:1px solid var(--brd)}
-.mobnav a:last-of-type{border:none}
-.mobnav .cta{width:100%;justify-content:center;margin-top:14px;color:#05060c}
-
-/* ── Hero ── */
-.hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:110px 0 60px;overflow:hidden}
-#net{position:absolute;inset:0;z-index:0;width:100%;height:100%}
-.hero-grid{position:absolute;inset:0;z-index:0;opacity:.4;
-  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
-  background-size:54px 54px;mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 30%,transparent 75%)}
-.hero-inner{position:relative;z-index:2;width:100%;max-width:var(--maxw);margin:0 auto;padding:0 24px;text-align:center}
-.chip{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--emerald);
-  padding:7px 14px;border-radius:50px;background:rgba(43,232,166,.08);border:1px solid rgba(43,232,166,.25);margin-bottom:26px;
-  box-shadow:0 0 0 1px rgba(43,232,166,.03),0 10px 30px -14px rgba(43,232,166,.6)}
-.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 10px var(--emerald);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
-h1.title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(38px,7.2vw,82px);line-height:1.02;letter-spacing:-1.8px;margin-bottom:22px}
-h1.title .g{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
-.subt{font-size:clamp(15px,2.4vw,20px);color:var(--dim);max-width:600px;margin:0 auto 34px;line-height:1.6}
-.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.cta.lg{font-size:16px;padding:15px 28px}
-.trust{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-top:38px;font-size:13px;color:var(--mute)}
-.trust span{display:inline-flex;align-items:center;gap:7px}
-.trust .tick{color:var(--emerald)}
-.scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:var(--mute);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;animation:bob 2.4s var(--ease) infinite}
-@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);opacity:.5}50%{transform:translateX(-50%) translateY(6px);opacity:1}}
-
-/* ── Ticker ── */
-.ticker{position:relative;z-index:2;border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);background:rgba(255,255,255,.015);overflow:hidden;white-space:nowrap;padding:13px 0}
-.ticker-row{display:inline-flex;gap:42px;animation:scrollx 28s linear infinite;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);letter-spacing:1px}
-.ticker-row span{display:inline-flex;align-items:center;gap:10px}
-.ticker-row b{color:var(--emerald);font-weight:700}
-@keyframes scrollx{to{transform:translateX(-50%)}}
-
-/* ── Sections ── */
-section{position:relative;z-index:2;padding:96px 0;scroll-margin-top:84px}
-a:focus-visible,button:focus-visible,.pbtn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:8px}
-.eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:block;text-align:center}
-.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,46px);line-height:1.08;letter-spacing:-1px;text-align:center;margin-bottom:14px}
-.lead{text-align:center;color:var(--dim);max-width:560px;margin:0 auto 52px;font-size:16px}
-
-/* glass card base */
-.glass{background:var(--glass);border:1px solid var(--brd);border-radius:var(--r20);backdrop-filter:blur(10px);position:relative;overflow:hidden}
-.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.06),transparent 40%);pointer-events:none}
-
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.stat{padding:28px 22px;text-align:center}
-.stat .num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(30px,4.4vw,44px);letter-spacing:-1px;background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
-.stat .lab{color:var(--dim);font-size:13px;margin-top:10px}
-
-/* Features */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.feat{padding:30px 26px;transition:transform .3s var(--ease),border-color .3s,box-shadow .3s}
-.feat:hover{transform:translateY(-6px);border-color:var(--glass2);box-shadow:0 30px 60px -34px rgba(109,94,246,.6)}
-.feat .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:22px;margin-bottom:18px;
-  background:linear-gradient(135deg,rgba(109,94,246,.18),rgba(34,211,238,.14));border:1px solid var(--brd)}
-.feat h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-bottom:9px}
-.feat p{color:var(--dim);font-size:14.5px;line-height:1.65}
-
-/* How it works */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;position:relative}
-.step{padding:30px 26px;text-align:left}
-.step .no{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:1px;margin-bottom:16px;
-  display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25)}
-.step h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-bottom:8px}
-.step p{color:var(--dim);font-size:14.5px}
-
-/* Pricing */
-.price-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:stretch}
-.pc{padding:26px 18px;text-align:center;display:flex;flex-direction:column;transition:transform .3s var(--ease),border-color .3s,box-shadow .3s}
-.pc:hover{transform:translateY(-6px);border-color:var(--glass2);box-shadow:0 30px 60px -34px rgba(34,211,238,.5)}
-.pc.hot{border-color:rgba(43,232,166,.4);box-shadow:0 0 0 1px rgba(43,232,166,.15),0 24px 60px -30px rgba(43,232,166,.6)}
-.pc .pem{font-size:24px;margin-bottom:8px}
-.pc .pn{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--dim);margin-bottom:12px}
-.pc .pv{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:34px;letter-spacing:-1px;line-height:1}
-.pc .pv sup{font-size:16px;color:var(--dim);font-weight:500;margin-right:2px}
-.pc .pd{font-size:12px;color:var(--mute);margin:10px 0 18px;min-height:30px}
-.pc .pbtn{margin-top:auto;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;padding:12px;border-radius:var(--r12);background:var(--glass2);border:1px solid var(--brd);color:var(--text);transition:all .2s var(--ease);cursor:pointer}
-.pc .pbtn:hover{background:rgba(255,255,255,.12)}
-.pc.hot .pbtn{background:var(--grad);color:#05060c;border:none;box-shadow:0 10px 26px -10px var(--cyan)}
-.hot-tag{position:absolute;top:0;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:#05060c;background:var(--emerald);padding:4px 12px;border-radius:0 0 9px 9px}
-.price-note{text-align:center;color:var(--mute);font-size:13px;margin-top:24px}
-.price-note b{color:var(--emerald)}
-
-/* Trust */
-.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.tcard{padding:30px 26px;text-align:center}
-.tcard .ic{font-size:26px;margin-bottom:14px}
-.tcard h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px;margin-bottom:8px}
-.tcard p{color:var(--dim);font-size:14px}
-
-/* FAQ */
-.faq-list{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-.fi{padding:0 22px;cursor:pointer;transition:border-color .25s}
-.fi:hover{border-color:var(--glass2)}
-.fq{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px}
-.fq .pl{flex-shrink:0;width:22px;height:22px;position:relative;transition:transform .3s var(--ease)}
-.fq .pl::before,.fq .pl::after{content:"";position:absolute;background:var(--cyan);border-radius:2px;top:50%;left:50%;transform:translate(-50%,-50%)}
-.fq .pl::before{width:13px;height:2px}.fq .pl::after{width:2px;height:13px;transition:transform .3s var(--ease)}
-.fi.op .fq .pl::after{transform:translate(-50%,-50%) rotate(90deg);opacity:0}
-.fa{max-height:0;overflow:hidden;color:var(--dim);font-size:14.5px;line-height:1.7;transition:max-height .35s var(--ease),padding .35s}
-.fi.op .fa{max-height:240px;padding:0 0 20px}
-
-/* Final CTA */
-.cta-band{margin:40px auto 0;max-width:var(--maxw);padding:54px 32px;text-align:center;border-radius:var(--r28);
-  background:linear-gradient(135deg,rgba(109,94,246,.16),rgba(34,211,238,.12));border:1px solid var(--brd);position:relative;overflow:hidden}
-.cta-band::after{content:"";position:absolute;width:60vw;height:60vw;background:radial-gradient(circle,rgba(43,232,166,.14),transparent 60%);top:-30vw;left:50%;transform:translateX(-50%);pointer-events:none}
-.cta-band h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(26px,4vw,40px);letter-spacing:-1px;margin-bottom:14px;position:relative}
-.cta-band p{color:var(--dim);margin-bottom:28px;position:relative}
-
-/* Footer */
-footer{position:relative;z-index:2;border-top:1px solid var(--brd);margin-top:90px;padding:40px 0;color:var(--mute);font-size:13px}
-.foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.foot a{color:var(--dim)}.foot a:hover{color:var(--text)}
-
-/* Reveal */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
-.reveal.in{opacity:1;transform:none}
-
-/* Responsive */
-@media(max-width:920px){
-  .feat-grid,.steps,.trust-grid{grid-template-columns:1fr 1fr}
-  .price-grid{grid-template-columns:repeat(3,1fr)}
-  .stats{grid-template-columns:1fr 1fr}
-}
-@media(max-width:680px){
-  .nav-links{display:none}
-  .hd .cta:not(.burger){display:none}
-  .burger{display:flex}
-  section{padding:72px 0}
-  .feat-grid,.steps,.trust-grid,.price-grid,.stats{grid-template-columns:1fr}
-  .price-grid .pc.hot{order:-1}
-}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-  .reveal{opacity:1;transform:none}
-}
-</style>
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-<div class="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
-<div class="grain"></div>
+<div class="loader" id="loader"><div class="loader-ring"></div><div class="loader-mk">🛡</div></div>
+<canvas id="scene"></canvas><div class="veil"></div><div class="grain"></div>
 
-<header id="hdr">
-  <div class="wrap hd">
-    <a href="#" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
-    <nav class="nav-links">
-      <a href="#features">Возможности</a>
-      <a href="#how">Как работает</a>
-      <a href="#pricing">Тарифы</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/cabinet.html">Кабинет</a>
-    </nav>
-    <a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
-    <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
-  </div>
-</header>
-<div class="mobnav" id="mobnav">
-  <a href="#features">Возможности</a>
-  <a href="#how">Как работает</a>
-  <a href="#pricing">Тарифы</a>
-  <a href="#faq">FAQ</a>
-  <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/cabinet.html">Личный кабинет</a>
+<header id="hdr"><div class="wrap hd">
+  <a href="index.html" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
+  <nav class="nav-links">
+    <a href="index.html" class="active">Главная</a>
+    <a href="pricing.html">Тарифы</a>
+    <a href="how.html">Как подключить</a>
+    <a href="faq.html">FAQ</a>
+    <a href="cabinet.html">Кабинет</a>
+  </nav>
   <a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
+  <button class="burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+</div></header>
+<div class="mobnav" id="mobnav">
+  <a href="index.html">Главная</a><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a>
+  <a href="cabinet.html">Личный кабинет</a><a href="https://t.me/EurUsdVpnService_bot" class="cta">Подключиться →</a>
 </div>
 
-<div class="shell">
-
-<!-- HERO -->
+<main class="shell">
 <section class="hero">
-  <canvas id="net"></canvas>
-  <div class="hero-grid"></div>
-  <div class="hero-inner">
+  <div class="wrap">
     <span class="chip"><span class="dot"></span> Соединение защищено · AmneziaWG</span>
     <h1 class="title">Твой трафик —<br><span class="g">только твой</span></h1>
-    <p class="subt">Приватный VPN на AmneziaWG: надёжное шифрование трафика и политика Zero-Log. Сервер в Европе, высокая скорость, 2 устройства в подарок.</p>
+    <p class="subt">Приватный VPN на AmneziaWG: надёжное шифрование и политика Zero-Log. Сервер в Европе, высокая скорость, 2 устройства в подарок.</p>
     <div class="hero-cta">
       <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Подключиться за минуту →</a>
-      <a href="#pricing" class="cta lg ghost">Смотреть тарифы</a>
+      <a href="pricing.html" class="cta lg ghost">Смотреть тарифы</a>
     </div>
     <div class="trust">
       <span><span class="tick">✓</span> Zero-Log политика</span>
@@ -252,39 +46,25 @@ footer{position:relative;z-index:2;border-top:1px solid var(--brd);margin-top:90
       <span><span class="tick">✓</span> Конфиг сразу в Telegram</span>
     </div>
   </div>
-  <div class="scrollcue">прокрути ↓</div>
 </section>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-row" id="tick">
-    <span><b>AmneziaWG</b> современный протокол</span><span>·</span><span><b>Zero-Log</b> приватность</span><span>·</span>
-    <span><b>10 Gbps</b> канал</span><span>·</span><span><b>Европа</b> сервер</span><span>·</span>
-    <span><b>2 устройства</b> в подарок</span><span>·</span><span><b>AES-256</b> шифрование</span><span>·</span>
-  </div>
-</div>
-
-<!-- STATS -->
-<section id="stats">
-  <div class="wrap">
-    <div class="stats">
-      <div class="stat glass reveal"><div class="num"><span data-count="99.9" data-dec="1">0</span>%</div><div class="lab">Аптайм сервера</div></div>
-      <div class="stat glass reveal"><div class="num"><span data-count="10">0</span> Gbps</div><div class="lab">Скорость канала</div></div>
-      <div class="stat glass reveal"><div class="num"><span data-count="2">0</span></div><div class="lab">Устройства в подарок</div></div>
-      <div class="stat glass reveal"><div class="num"><span data-count="0" data-zero="1">0</span></div><div class="lab">Сохранённых логов</div></div>
-    </div>
-  </div>
+<section id="stats" style="padding-top:0">
+  <div class="wrap"><div class="stats">
+    <div class="stat glass reveal"><div class="num"><span data-count="99.9" data-dec="1">0</span>%</div><div class="lab">Аптайм сервера</div></div>
+    <div class="stat glass reveal"><div class="num"><span data-count="10">0</span> Gbps</div><div class="lab">Скорость канала</div></div>
+    <div class="stat glass reveal"><div class="num"><span data-count="2">0</span></div><div class="lab">Устройства в подарок</div></div>
+    <div class="stat glass reveal"><div class="num"><span data-count="0" data-zero="1">0</span></div><div class="lab">Сохранённых логов</div></div>
+  </div></div>
 </section>
 
-<!-- FEATURES -->
 <section id="features">
   <div class="wrap">
     <span class="eyebrow reveal">Возможности</span>
     <h2 class="h2 reveal">Сделано для приватности</h2>
-    <p class="lead reveal">Не просто VPN, а защищённый канал с современным шифрованием и строгой политикой Zero-Log.</p>
+    <p class="lead reveal">Защищённый канал с современным шифрованием — быстро, стабильно и без логов.</p>
     <div class="feat-grid">
-      <div class="feat glass reveal"><div class="ic">🛡️</div><h3>AmneziaWG</h3><p>Современный протокол на базе WireGuard с усиленным шифрованием — быстрое и стабильное защищённое соединение на любых сетях.</p></div>
-      <div class="feat glass reveal"><div class="ic">🕶️</div><h3>Zero-Log</h3><p>Система архитектурно не хранит историю, посещённые сайты и IP. Нечего запрашивать и нечего сливать.</p></div>
+      <div class="feat glass reveal"><div class="ic">🛡️</div><h3>AmneziaWG</h3><p>Современный протокол на базе WireGuard с усиленным шифрованием — быстрое и стабильное соединение на любых сетях.</p></div>
+      <div class="feat glass reveal"><div class="ic">🕶️</div><h3>Zero-Log</h3><p>Система архитектурно не хранит историю, посещённые сайты и IP. Нечего запрашивать и нечего раскрывать.</p></div>
       <div class="feat glass reveal"><div class="ic">📱</div><h3>2 устройства в подарок</h3><p>В любой тариф включено 2 устройства по базовой цене. Нужно больше — докупи до 5 в пару кликов.</p></div>
       <div class="feat glass reveal"><div class="ic">⚡</div><h3>10 Gbps в Европе</h3><p>Быстрый европейский сервер. Стриминг, загрузки и видеозвонки без просадок и буферизации.</p></div>
       <div class="feat glass reveal"><div class="ic">🔑</div><h3>Подключение за минуту</h3><p>Оплата переводом, ввод 4 цифр — и конфиг приходит прямо в Telegram. Без регистраций и анкет.</p></div>
@@ -293,183 +73,50 @@ footer{position:relative;z-index:2;border-top:1px solid var(--brd);margin-top:90
   </div>
 </section>
 
-<!-- HOW -->
-<section id="how">
+<section id="how-teaser">
   <div class="wrap">
     <span class="eyebrow reveal">Как это работает</span>
     <h2 class="h2 reveal">Три шага до защиты</h2>
-    <p class="lead reveal">От оплаты до подключения проходит пара минут.</p>
+    <p class="lead reveal">От оплаты до подключения — пара минут.</p>
     <div class="steps">
       <div class="step glass reveal"><div class="no">01</div><h3>Выбери тариф</h3><p>Открой бота, выбери срок. В каждом тарифе уже 2 устройства — без доплат.</p></div>
-      <div class="step glass reveal"><div class="no">02</div><h3>Оплати и получи конфиг</h3><p>Перевод по реквизитам, ввод последних 4 цифр. Конфиг приходит в Telegram автоматически.</p></div>
-      <div class="step glass reveal"><div class="no">03</div><h3>Подключись</h3><p>Скопируй конфиг или открой файл в приложении — и ты в защищённом канале. Готово.</p></div>
+      <div class="step glass reveal"><div class="no">02</div><h3>Оплати и получи конфиг</h3><p>Перевод по реквизитам, ввод 4 цифр. Конфиг приходит в Telegram автоматически.</p></div>
+      <div class="step glass reveal"><div class="no">03</div><h3>Подключись</h3><p>Скопируй конфиг или открой файл в приложении — и ты в защищённом канале.</p></div>
     </div>
+    <div style="text-align:center;margin-top:34px" class="reveal"><a href="how.html" class="cta ghost lg">Подробная инструкция →</a></div>
   </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing">
-  <div class="wrap">
-    <span class="eyebrow reveal">Тарифы</span>
-    <h2 class="h2 reveal">Честные цены, без скрытых платежей</h2>
-    <p class="lead reveal">Оплата переводом через Т-Банк. Чем дольше срок — тем выгоднее.</p>
-    <div class="price-grid">
-      <div class="pc glass reveal"><div class="pem">🔸</div><div class="pn">7 дней</div><div class="pv"><sup>₽</sup>89</div><div class="pd">Попробовать на неделю</div><a href="https://t.me/EurUsdVpnService_bot" class="pbtn">Выбрать</a></div>
-      <div class="pc glass hot reveal"><div class="hot-tag">ХИТ</div><div class="pem">⭐</div><div class="pn">1 месяц</div><div class="pv"><sup>₽</sup>169</div><div class="pd">Лучшее соотношение цены и срока</div><a href="https://t.me/EurUsdVpnService_bot" class="pbtn">Выбрать</a></div>
-      <div class="pc glass reveal"><div class="pem">💎</div><div class="pn">3 месяца</div><div class="pv"><sup>₽</sup>529</div><div class="pd">Экономия ~5%</div><a href="https://t.me/EurUsdVpnService_bot" class="pbtn">Выбрать</a></div>
-      <div class="pc glass reveal"><div class="pem">👑</div><div class="pn">6 месяцев</div><div class="pv"><sup>₽</sup>829</div><div class="pd">Экономия ~18%</div><a href="https://t.me/EurUsdVpnService_bot" class="pbtn">Выбрать</a></div>
-      <div class="pc glass reveal"><div class="pem">🏆</div><div class="pn">1 год</div><div class="pv"><sup>₽</sup>2000</div><div class="pd">Максимальная выгода</div><a href="https://t.me/EurUsdVpnService_bot" class="pbtn">Выбрать</a></div>
-    </div>
-    <p class="price-note reveal"><b>2 устройства включены</b> в любой тариф бесплатно · можно докупить до 5</p>
-  </div>
-</section>
-
-<!-- TRUST -->
 <section id="trust">
   <div class="wrap">
     <span class="eyebrow reveal">Доверие</span>
     <h2 class="h2 reveal">Почему нам можно доверять</h2>
     <div class="trust-grid">
-      <div class="tcard glass reveal"><div class="ic">🔒</div><h3>Приватность в основе</h3><p>Zero-Log — это не обещание, а архитектура. Мы физически не храним данные о вашей активности.</p></div>
+      <div class="tcard glass reveal"><div class="ic">🔒</div><h3>Приватность в основе</h3><p>Zero-Log — это архитектура, а не обещание. Мы физически не храним данные о вашей активности.</p></div>
       <div class="tcard glass reveal"><div class="ic">↩️</div><h3>Гарантия 24 часа</h3><p>Если VPN не заработал — напишите в течение суток, разберёмся или вернём деньги.</p></div>
       <div class="tcard glass reveal"><div class="ic">🛟</div><h3>Поддержка 24/7</h3><p>Живые менеджеры на связи. Поможем настроить и ответим на любой вопрос быстро.</p></div>
     </div>
   </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq">
-  <div class="wrap">
-    <span class="eyebrow reveal">FAQ</span>
-    <h2 class="h2 reveal">Частые вопросы</h2>
-    <div class="faq-list" style="margin-top:40px">
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Что такое AmneziaWG?<span class="pl"></span></div><div class="fa">Современный протокол на базе WireGuard с усиленным шифрованием. Обеспечивает быстрое и стабильное защищённое соединение с минимальной нагрузкой на батарею.</div></div>
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Вы храните мои данные?<span class="pl"></span></div><div class="fa">Нет. Zero-Log политика означает, что система архитектурно не хранит данные о вашей активности, посещённых сайтах и IP-адресах.</div></div>
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Сколько устройств можно подключить?<span class="pl"></span></div><div class="fa">В любой тариф уже включено 2 устройства по базовой цене — без доплат. При необходимости можно докупить ещё, всего до 5.</div></div>
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Как быстро придёт конфиг?<span class="pl"></span></div><div class="fa">Администратор подтверждает платёж вручную — обычно от нескольких минут до 30 минут. Конфиг приходит прямо в Telegram-бот.</div></div>
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Как оплатить?<span class="pl"></span></div><div class="fa">Переводом на номер телефона через Т-Банк. После перевода введите последние 4 цифры карты в боте для подтверждения.</div></div>
-      <div class="fi glass reveal" onclick="toggleFaq(this)"><div class="fq">Как подключиться на iPhone?<span class="pl"></span></div><div class="fa">Установите AmneziaVPN из App Store. Если приложение недоступно в вашем регионе — используйте бесплатный DefaultVPN, он работает с нашим конфигом. Пошаговая инструкция есть в боте.</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- FINAL CTA -->
 <section style="padding-top:0">
-  <div class="wrap">
-    <div class="cta-band reveal">
-      <h2>Готов сделать трафик приватным?</h2>
-      <p>Подключение занимает минуту. 2 устройства уже в подарок.</p>
-      <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Подключиться в Telegram →</a>
-    </div>
-  </div>
+  <div class="wrap"><div class="cta-band reveal">
+    <h2>Готов сделать трафик приватным?</h2>
+    <p>Подключение занимает минуту. 2 устройства уже в подарок.</p>
+    <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Подключиться в Telegram →</a>
+  </div></div>
 </section>
+</main>
 
-<footer>
-  <div class="wrap foot">
-    <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
-    <div>© 2026 EurUsdVPN · <a href="https://t.me/eurusdvpnservicemanager">Поддержка</a> · <a href="https://konstantinstrejko-oss.github.io/eurusdvpn/cabinet.html">Кабинет</a></div>
-  </div>
-</footer>
+<footer><div class="wrap foot">
+  <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
+  <div class="foot-links"><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a><a href="cabinet.html">Кабинет</a><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a></div>
+  <div>© 2026 EurUsdVPN</div>
+</div></footer>
 
-</div><!-- /shell -->
-
-<script>
-/* ── Header scroll state ── */
-const hdr=document.getElementById('hdr');
-const onScroll=()=>{hdr.classList.toggle('scrolled',window.scrollY>20)};
-window.addEventListener('scroll',onScroll,{passive:true});onScroll();
-
-/* ── Mobile nav ── */
-const burger=document.getElementById('burger'),mobnav=document.getElementById('mobnav');
-burger.addEventListener('click',()=>{burger.classList.toggle('open');mobnav.classList.toggle('open')});
-mobnav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{burger.classList.remove('open');mobnav.classList.remove('open')}));
-
-/* ── Ticker: duplicate row for seamless loop ── */
-(()=>{const t=document.getElementById('tick');t.innerHTML+=t.innerHTML;})();
-
-/* ── Reveal on scroll ── */
-const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(!reduce){
-  const io=new IntersectionObserver((es)=>{es.forEach((e,i)=>{if(e.isIntersecting){e.target.style.transitionDelay=(Math.min(i,6)*60)+'ms';e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-}else{document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'))}
-
-/* ── Count-up stats ── */
-function countUp(el){
-  const target=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec||'0'),zero=el.dataset.zero;
-  if(zero){el.textContent='0';return;}
-  const dur=1400,t0=performance.now();
-  function tick(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3),v=target*e;
-    el.textContent=dec?v.toFixed(dec):Math.round(v).toLocaleString('ru-RU');
-    if(p<1)requestAnimationFrame(tick);else el.textContent=dec?target.toFixed(dec):target.toLocaleString('ru-RU');}
-  requestAnimationFrame(tick);
-}
-function setFinal(n){if(n.dataset.zero){n.textContent='0';}else if(n.dataset.dec){n.textContent=parseFloat(n.dataset.count).toFixed(n.dataset.dec);}else{n.textContent=n.dataset.count;}}
-const sio=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.querySelectorAll('[data-count]').forEach(n=>{if(reduce)setFinal(n);else countUp(n);});sio.unobserve(e.target)}})},{threshold:.4});
-document.querySelectorAll('.stats .stat').forEach(s=>sio.observe(s));
-
-/* ── FAQ ── */
-function toggleFaq(el){const open=el.classList.contains('op');document.querySelectorAll('.fi.op').forEach(f=>f.classList.remove('op'));if(!open)el.classList.add('op')}
-
-/* ── Open cabinet / mini app ── */
-function openCabinet(e){e.preventDefault();const tg=window.Telegram?.WebApp;const u=tg?.initDataUnsafe?.user;if(u?.id){location.href='https://konstantinstrejko-oss.github.io/eurusdvpn/miniapp.html?tg_id='+u.id+'&name='+encodeURIComponent(u.first_name||'');}else{window.open('https://t.me/EurUsdVpnService_bot/miniapp','_blank');}return false}
-
-/* ── HERO: encrypted tunnel / network ── */
-(()=>{
-  const cvs=document.getElementById('net');if(!cvs)return;
-  const ctx=cvs.getContext('2d');
-  let W,H,DPR,cx,cy,rings=[],packets=[],mx=0,my=0,tmx=0,tmy=0;
-  const HUES=['109,94,246','34,211,238','43,232,166'];
-  function size(){
-    DPR=Math.min(window.devicePixelRatio||1,2);
-    W=cvs.clientWidth;H=cvs.clientHeight;
-    cvs.width=W*DPR;cvs.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
-    cx=W/2;cy=H*0.42;build();
-  }
-  function build(){
-    rings=[];const R=Math.min(W,H)*0.5;const nRings=W<600?4:5;
-    for(let r=1;r<=nRings;r++){
-      const rad=R*(r/nRings);const cnt=4+r*3;const nodes=[];
-      for(let i=0;i<cnt;i++){nodes.push({a:(i/cnt)*Math.PI*2+r*0.3,rad,sp:(0.04+r*0.012)*(r%2?1:-1),hue:HUES[r%HUES.length]});}
-      rings.push(nodes);
-    }
-    packets=[];const np=W<600?10:18;
-    for(let i=0;i<np;i++)packets.push(newPacket());
-  }
-  function newPacket(){return{a:Math.random()*Math.PI*2,r:Math.min(W,H)*0.5*(0.9+Math.random()*0.2),sp:0.6+Math.random()*0.9,hue:HUES[(Math.random()*HUES.length)|0]};}
-  function pos(a,rad){return[cx+Math.cos(a)*rad+ (tmx)*(rad/ (Math.min(W,H)*0.5))*18, cy+Math.sin(a)*rad*0.62 + (tmy)*(rad/(Math.min(W,H)*0.5))*18];}
-  function frame(){
-    tmx+=(mx-tmx)*0.05;tmy+=(my-tmy)*0.05;
-    ctx.clearRect(0,0,W,H);
-    // glow center
-    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.min(W,H)*0.5);
-    g.addColorStop(0,'rgba(43,232,166,.10)');g.addColorStop(.5,'rgba(34,211,238,.05)');g.addColorStop(1,'rgba(6,7,13,0)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    // rings
-    const all=[];
-    rings.forEach((nodes)=>{nodes.forEach(n=>{n.a+=n.sp*0.01;const[x,y]=pos(n.a,n.rad);n._x=x;n._y=y;all.push(n);});});
-    // connect within ring + to neighbours
-    rings.forEach(nodes=>{for(let i=0;i<nodes.length;i++){const a=nodes[i],b=nodes[(i+1)%nodes.length];
-      ctx.strokeStyle='rgba('+a.hue+',.16)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a._x,a._y);ctx.lineTo(b._x,b._y);ctx.stroke();}});
-    // spokes to center
-    rings[rings.length-1] && rings[0].forEach((n)=>{ctx.strokeStyle='rgba(34,211,238,.07)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(n._x,n._y);ctx.lineTo(cx,cy);ctx.stroke();});
-    // nodes
-    all.forEach(n=>{ctx.fillStyle='rgba('+n.hue+',.9)';ctx.beginPath();ctx.arc(n._x,n._y,1.8,0,7);ctx.fill();});
-    // packets flowing inward
-    packets.forEach((p,i)=>{p.r-=p.sp;if(p.r<6){packets[i]=newPacket();return;}const[x,y]=pos(p.a,p.r);
-      ctx.fillStyle='rgba('+p.hue+',1)';ctx.shadowColor='rgba('+p.hue+',.9)';ctx.shadowBlur=8;
-      ctx.beginPath();ctx.arc(x,y,2.1,0,7);ctx.fill();ctx.shadowBlur=0;});
-    // core
-    const cpulse=2.6+Math.sin(performance.now()*0.003)*0.7;
-    ctx.fillStyle='rgba(43,232,166,1)';ctx.shadowColor='rgba(43,232,166,.9)';ctx.shadowBlur=20;
-    ctx.beginPath();ctx.arc(cx,cy,cpulse+2,0,7);ctx.fill();ctx.shadowBlur=0;
-    if(!reduce) requestAnimationFrame(frame);
-  }
-  window.addEventListener('mousemove',e=>{mx=(e.clientX/window.innerWidth-.5)*2;my=(e.clientY/window.innerHeight-.5)*2;},{passive:true});
-  window.addEventListener('resize',()=>{clearTimeout(window._r);window._r=setTimeout(size,200)});
-  size();
-  frame(); // в reduced-motion нарисует один статичный кадр (loop отключён внутри)
-})();
-</script>
+<script>window.SCENE='tunnel';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/scene.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>
