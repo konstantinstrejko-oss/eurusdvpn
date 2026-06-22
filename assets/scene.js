@@ -187,6 +187,10 @@
   function loop(){ t+=0.01; tmx+=(mx-tmx)*0.04; tmy+=(my-tmy)*0.04; anim(); renderer.render(scene,camera); if(!reduce) requestAnimationFrame(loop); }
 
   window.addEventListener('mousemove',function(e){mx=(e.clientX/window.innerWidth-.5)*2;my=(e.clientY/window.innerHeight-.5)*2;},{passive:true});
+  // параллакс от пальца на тач-экранах
+  function touchPos(e){var tch=e.touches&&e.touches[0];if(!tch)return;mx=(tch.clientX/window.innerWidth-.5)*2;my=(tch.clientY/window.innerHeight-.5)*2;}
+  window.addEventListener('touchstart',touchPos,{passive:true});
+  window.addEventListener('touchmove',touchPos,{passive:true});
   window.addEventListener('resize',function(){clearTimeout(window.__sr);window.__sr=setTimeout(function(){
     camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);
   },180);});

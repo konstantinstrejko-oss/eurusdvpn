@@ -165,7 +165,6 @@ section{position:relative;z-index:2;padding:90px 0;scroll-margin-top:84px}
 .rev-row{display:flex;align-items:stretch;width:max-content;padding:8px 0;will-change:transform}
 .rev-row.r1{animation:marq 46s linear infinite}
 .rev-row.r2{margin-top:18px;animation:marq 58s linear infinite reverse}
-.reviews:hover .rev-row{animation-play-state:paused}
 @keyframes marq{to{transform:translateX(-50%)}}
 .rev-card{flex:0 0 320px;width:320px;margin-right:18px;padding:24px 24px 22px;display:flex;flex-direction:column;min-height:188px}
 .rev-stars{color:#ffcb5c;font-size:14px;letter-spacing:2px;margin-bottom:12px}
