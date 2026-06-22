@@ -144,8 +144,42 @@
     camera.position.x+=((tmx*60)-camera.position.x)*.04;camera.position.y+=((-tmy*40)-camera.position.y)*.04;camera.lookAt(0,0,0);
   }
 
+  // ── CRYSTALS (парящие каркасные многогранники) ──
+  var crystals=[];
+  function buildCrystals(){
+    group=new THREE.Group();scene.add(group);
+    var cols=[C.violet,C.cyan,C.emerald];
+    var n=mobile?7:11;
+    for(var i=0;i<n;i++){
+      var kind=i%3, sz=18+Math.random()*26, geo;
+      if(kind===0) geo=new THREE.IcosahedronGeometry(sz,0);
+      else if(kind===1) geo=new THREE.OctahedronGeometry(sz,0);
+      else geo=new THREE.TetrahedronGeometry(sz,0);
+      var wire=new THREE.WireframeGeometry(geo);
+      var line=new THREE.LineSegments(wire,new THREE.LineBasicMaterial({color:cols[i%3],transparent:true,opacity:.30}));
+      line.position.set((Math.random()-.5)*620,(Math.random()-.5)*420,(Math.random()-.5)*340);
+      group.add(line);
+      crystals.push({m:line,
+        rx:(Math.random()-.5)*0.004, ry:(Math.random()-.5)*0.004,
+        by:Math.random()*Math.PI*2, ba:8+Math.random()*10, bs:0.3+Math.random()*0.4,
+        y0:line.position.y});
+    }
+    camera.position.z=360;
+  }
+  function animCrystals(){
+    for(var i=0;i<crystals.length;i++){var c=crystals[i];
+      c.m.rotation.x+=c.rx; c.m.rotation.y+=c.ry;
+      c.m.position.y=c.y0+Math.sin(t*c.bs+c.by)*c.ba;
+    }
+    group.rotation.y+=0.0004;
+    camera.position.x+=((tmx*30)-camera.position.x)*.04;
+    camera.position.y+=((-tmy*22)-camera.position.y)*.04;
+    camera.lookAt(0,0,0);
+  }
+
   var anim;
-  if(mode==='halo'||mode==='tunnel'){buildHalo();anim=animHalo;}
+  if(mode==='crystals'){buildCrystals();anim=animCrystals;}
+  else if(mode==='halo'||mode==='tunnel'){buildHalo();anim=animHalo;}
   else if(mode==='network'){buildNetwork();anim=animNetwork;}
   else if(mode==='grid'){buildGrid();anim=animGrid;}
   else {buildField();anim=animField;}
