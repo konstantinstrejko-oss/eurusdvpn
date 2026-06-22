@@ -55,19 +55,19 @@
     var geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
     geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-    group.add(new THREE.Points(geo,new THREE.PointsMaterial({size:mobile?2.2:2.8,map:DOT,vertexColors:true,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending})));
+    group.add(new THREE.Points(geo,new THREE.PointsMaterial({size:mobile?1.6:2,map:DOT,vertexColors:true,transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending})));
     // пара тонких каркасных колец
     for(var w=0;w<3;w++){
       var rg=new THREE.RingGeometry(64+w*30,64+w*30+0.5,90);
-      var rm=new THREE.MeshBasicMaterial({color:w%2?C.cyan:C.emerald,transparent:true,opacity:.10,side:THREE.DoubleSide});
+      var rm=new THREE.MeshBasicMaterial({color:w%2?C.cyan:C.emerald,transparent:true,opacity:.05,side:THREE.DoubleSide});
       var ring=new THREE.Mesh(rg,rm);ring.rotation.x=0.5+w*0.25;group.add(ring);
     }
     group.rotation.x=0.32;
     camera.position.z=290;
   }
   function animHalo(){
-    group.rotation.y += 0.0009;                       // очень медленное вращение
-    var s = 1 + Math.sin(t*0.5)*0.022;                // мягкое «дыхание»
+    group.rotation.y += 0.0007;                       // очень медленное вращение
+    var s = 1 + Math.sin(t*0.45)*0.014;               // едва заметное «дыхание»
     group.scale.set(s,s,s);
     camera.position.x+=((tmx*26)-camera.position.x)*.04;
     camera.position.y+=((-tmy*20)-camera.position.y)*.04;
