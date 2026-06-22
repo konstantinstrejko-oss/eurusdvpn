@@ -387,6 +387,61 @@ body{
     <button class="btn btn-ghost btn-block" onclick="toggleRenew()" id="renewToggle">💳 Оплатить и продлить</button>
   </div>
 
+  <!-- TRIAL CARD -->
+  <div class="card" id="trialCard" style="display:none;text-align:center;padding:22px">
+    <div style="font-size:32px;margin-bottom:8px">🎁</div>
+    <div class="sec-title" style="justify-content:center">Пробный период — 3 дня бесплатно</div>
+    <p style="font-size:13px;color:var(--text2);margin:8px 0 16px;line-height:1.6">2 устройства · без оплаты · даётся один раз новым пользователям.</p>
+    <button class="btn btn-primary btn-block" onclick="activateTrialCab()" id="trialBtn">🎁 Активировать пробные 3 дня</button>
+    <div class="err-box" id="trialErr"></div>
+    <div class="ok-box" id="trialOk"></div>
+  </div>
+
+  <!-- REFERRAL CARD -->
+  <div class="card" style="animation-delay:170ms">
+    <div class="sec-title">👥 Пригласить друга</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">🎁 Когда друг купит подписку, вы <strong>оба получите +3 дня</strong> бесплатно.</p>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:var(--r12);padding:12px"><div style="font-size:22px;font-weight:700" id="refTotalCab">0</div><div style="font-size:11px;color:var(--text3)">Приглашено</div></div>
+      <div style="flex:1;text-align:center;background:var(--card2);border:1px solid var(--border);border-radius:var(--r12);padding:12px"><div style="font-size:22px;font-weight:700;color:var(--green)" id="refPaidCab">0</div><div style="font-size:11px;color:var(--text3)">Бонусов</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:6px">Твоя ссылка:</div>
+    <div class="config-pre" id="refLinkCab" style="word-break:break-all;font-size:12px;margin-bottom:10px">—</div>
+    <button class="btn btn-primary btn-block" onclick="copyRefCab()">📋 Скопировать ссылку</button>
+  </div>
+
+  <!-- INSTRUCTION CARD -->
+  <div class="card" style="animation-delay:190ms">
+    <div class="sec-title">📖 Как подключиться</div>
+    <details style="margin-bottom:8px;border:1px solid var(--border);border-radius:var(--r12);padding:10px 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:14px">📱 Android</summary>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:10px">
+        1️⃣ Установи <b>AmneziaVPN</b> (Google Play или amnezia.org)<br>
+        2️⃣ Выше в «📱 Мои устройства» нажми 📋 — конфиг скопируется<br>
+        3️⃣ Открой <b>AmneziaVPN</b> → <b>+</b> → вставь текст → <b>Подключиться</b> ✅<br>
+        <span style="color:var(--text3)">Не вставляется? Скачай файл ⬇️ и импортируй.</span>
+      </div>
+    </details>
+    <details style="margin-bottom:8px;border:1px solid var(--border);border-radius:var(--r12);padding:10px 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:14px">🍏 iPhone — AmneziaVPN доступна</summary>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:10px">
+        Если AmneziaVPN открывается в App Store (или сменён регион).<br>
+        1️⃣ Установи <b><a href="https://apps.apple.com/app/amneziavpn/id1600529900" target="_blank" style="color:var(--blue)">AmneziaVPN</a></b><br>
+        2️⃣ Скопируй конфиг 📋 (выше)<br>
+        3️⃣ <b>AmneziaVPN</b> → <b>+</b> → вставь → разреши VPN → <b>Подключиться</b> ✅
+      </div>
+    </details>
+    <details style="border:1px solid var(--border);border-radius:var(--r12);padding:10px 14px">
+      <summary style="cursor:pointer;font-weight:700;font-size:14px">🇷🇺 iPhone — Россия (DefaultVPN)</summary>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-top:10px">
+        В России AmneziaVPN убрали из App Store — используй бесплатный <b>DefaultVPN</b>.<br>
+        1️⃣ Установи <b><a href="https://apps.apple.com/ru/app/defaultvpn/id6744725017" target="_blank" style="color:var(--blue)">DefaultVPN</a></b><br>
+        2️⃣ Скопируй конфиг 📋 (выше)<br>
+        3️⃣ <b>DefaultVPN</b> → <b>+</b> → вставь → разреши VPN → включи переключатель ✅
+      </div>
+    </details>
+  </div>
+
   <!-- SUPPORT -->
   <div class="card" style="animation-delay:200ms;text-align:center;padding:20px">
     <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Нужна помощь или возникли вопросы?</div>
@@ -531,6 +586,8 @@ function showDash(d){
       </a>
     `;
     document.getElementById('dashView').insertBefore(buyCard, document.getElementById('dashView').firstChild.nextSibling);
+    if(d.trial_available) document.getElementById('trialCard').style.display='block';
+    loadReferralCab();
     return;
   }
 
@@ -566,6 +623,8 @@ function showDash(d){
   loadHistory(d);
   // Load devices
   loadDevices();
+  // Load referral
+  loadReferralCab();
 }
 
 // ── COUNTDOWN ──
@@ -964,6 +1023,37 @@ async function submitRenew(){
 // ── UTILS ──
 function copyText(el,text){
   navigator.clipboard.writeText(text).then(()=>{const o=el.textContent;el.textContent='✅ Скопировано';setTimeout(()=>el.textContent=o,1800);});
+}
+let refLinkCab='';
+async function loadReferralCab(){
+  try{
+    const r=await fetch(`${API}/referral?token=${currentToken}`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      refLinkCab=d.link||'';
+      document.getElementById('refLinkCab').textContent=d.link||'—';
+      document.getElementById('refTotalCab').textContent=d.total||0;
+      document.getElementById('refPaidCab').textContent=d.paid||0;
+    }
+  }catch(e){}
+}
+function copyRefCab(){
+  if(!refLinkCab) return;
+  navigator.clipboard.writeText(refLinkCab).catch(()=>{});
+  const b=event&&event.target;
+  if(b){const o=b.textContent;b.textContent='✅ Скопировано';setTimeout(()=>b.textContent=o,1800);}
+}
+async function activateTrialCab(){
+  const btn=document.getElementById('trialBtn'); btn.disabled=true; btn.textContent='⏳ Активирую...';
+  hideErr('trialErr');
+  try{
+    const r=await fetch(`${API}/trial`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken}),signal:AbortSignal.timeout(25000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      const ok=document.getElementById('trialOk'); ok.textContent='✅ Пробный период активирован! Конфиги придут в чат бота.'; ok.style.display='block';
+      setTimeout(()=>location.reload(),1800);
+    } else { btn.disabled=false; btn.textContent='🎁 Активировать пробные 3 дня'; showErr('trialErr',d.msg||'Не удалось'); }
+  }catch(e){ btn.disabled=false; btn.textContent='🎁 Активировать пробные 3 дня'; showErr('trialErr','Ошибка соединения'); }
 }
 function showErr(id,msg){const el=document.getElementById(id);el.textContent='❌ '+msg;el.style.display='block';}
 function hideErr(id){document.getElementById(id).style.display='none';}
