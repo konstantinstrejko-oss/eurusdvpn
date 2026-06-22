@@ -7,7 +7,7 @@
   var mobile = window.innerWidth < 680;
 
   var renderer = new THREE.WebGLRenderer({canvas:canvas, alpha:true, antialias:!mobile, powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, mobile?1.5:2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   var scene = new THREE.Scene();
@@ -184,13 +184,23 @@
   else if(mode==='grid'){buildGrid();anim=animGrid;}
   else {buildField();anim=animField;}
 
-  function loop(){ t+=0.01; tmx+=(mx-tmx)*0.04; tmy+=(my-tmy)*0.04; anim(); renderer.render(scene,camera); if(!reduce) requestAnimationFrame(loop); }
+  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints>0);
+  function loop(){
+    t+=0.01;
+    if(isTouch && !touching){ mx+=(0-mx)*0.05; my+=(0-my)*0.05; } // плавный возврат к центру после отрыва пальца
+    tmx+=(mx-tmx)*0.06; tmy+=(my-tmy)*0.06;
+    anim(); renderer.render(scene,camera);
+    if(!reduce) requestAnimationFrame(loop);
+  }
 
   window.addEventListener('mousemove',function(e){mx=(e.clientX/window.innerWidth-.5)*2;my=(e.clientY/window.innerHeight-.5)*2;},{passive:true});
-  // параллакс от пальца на тач-экранах
-  function touchPos(e){var tch=e.touches&&e.touches[0];if(!tch)return;mx=(tch.clientX/window.innerWidth-.5)*2;my=(tch.clientY/window.innerHeight-.5)*2;}
-  window.addEventListener('touchstart',touchPos,{passive:true});
-  window.addEventListener('touchmove',touchPos,{passive:true});
+  // тач-параллакс: относительное движение пальца (без резких скачков между касаниями)
+  var touching=false, sx=0, sy=0, bmx=0, bmy=0;
+  function clamp(v){return v<-1?-1:v>1?1:v;}
+  window.addEventListener('touchstart',function(e){var t0=e.touches&&e.touches[0];if(!t0)return;touching=true;sx=t0.clientX;sy=t0.clientY;bmx=mx;bmy=my;},{passive:true});
+  window.addEventListener('touchmove',function(e){var t0=e.touches&&e.touches[0];if(!t0)return;mx=clamp(bmx+(t0.clientX-sx)/window.innerWidth*1.8);my=clamp(bmy+(t0.clientY-sy)/window.innerHeight*1.8);},{passive:true});
+  window.addEventListener('touchend',function(){touching=false;},{passive:true});
+  window.addEventListener('touchcancel',function(){touching=false;},{passive:true});
   window.addEventListener('resize',function(){clearTimeout(window.__sr);window.__sr=setTimeout(function(){
     camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);
   },180);});
