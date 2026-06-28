@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оплата прошла — EurUsdVPN</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Оплата подтверждена. Подписка EurUsdVPN активируется автоматически, конфиги отправлены в Telegram-бот.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=5">
+<style>
+.pay-shell{min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:90px 18px 60px}
+.pay-card{max-width:540px;width:100%;text-align:center;padding:44px 34px}
+.pay-badge{width:104px;height:104px;margin:0 auto 26px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,rgba(43,232,166,.22),rgba(43,232,166,.04));
+  border:1px solid rgba(43,232,166,.35);box-shadow:0 0 50px -12px var(--emerald),inset 0 0 24px -8px rgba(43,232,166,.4);
+  animation:badgePop .6s var(--ease) both}
+@keyframes badgePop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.pay-badge svg{width:54px;height:54px}
+.pay-badge .ring{stroke:var(--emerald);stroke-width:4;fill:none;opacity:.25}
+.pay-badge .tick{stroke:var(--emerald);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:48;stroke-dashoffset:48;animation:tickDraw .5s .35s var(--ease) forwards}
+@keyframes tickDraw{to{stroke-dashoffset:0}}
+.pay-card .chip{margin:0 auto 18px}
+.pay-card .ttl{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(28px,5vw,40px);letter-spacing:-1px;line-height:1.05;margin-bottom:14px}
+.pay-card .ttl .g{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pay-card .msg{color:var(--dim);font-size:15.5px;line-height:1.6;max-width:430px;margin:0 auto 26px}
+.pay-cta{display:flex;flex-direction:column;gap:12px;align-items:center}
+.pay-cta .cta{width:100%;max-width:320px;justify-content:center}
+.pay-steps{margin-top:28px;padding-top:22px;border-top:1px solid var(--brd);display:grid;gap:12px;text-align:left;max-width:380px;margin-left:auto;margin-right:auto}
+.pay-steps .st{display:flex;gap:12px;align-items:flex-start;color:var(--dim);font-size:14px}
+.pay-steps .st b{color:var(--text);font-weight:600}
+.pay-steps .n{flex:0 0 24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;
+  background:var(--glass2);border:1px solid var(--brd);color:var(--emerald);font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><div class="loader-ring"></div><div class="loader-mk">🛡</div></div>
+<canvas id="scene"></canvas><div class="veil"></div><div class="grain"></div>
+
+<header id="hdr"><div class="wrap hd">
+  <a href="index.html" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
+  <nav class="nav-links">
+    <a href="index.html">Главная</a>
+    <a href="pricing.html">Тарифы</a>
+    <a href="how.html">Как подключить</a>
+    <a href="faq.html">FAQ</a>
+    <a href="cabinet.html">Кабинет</a>
+  </nav>
+  <a href="https://t.me/EurUsdVpnService_bot" class="cta">Открыть бота →</a>
+</div></header>
+
+<main class="shell page-enter">
+<section class="pay-shell">
+  <div class="pay-card glass">
+    <div class="pay-badge">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <circle class="ring" cx="30" cy="30" r="26"/>
+        <path class="tick" d="M18 31 l8 8 l16 -18"/>
+      </svg>
+    </div>
+    <span class="chip"><span class="dot"></span> Платёж подтверждён · СБП</span>
+    <h1 class="ttl">Оплата <span class="g">прошла</span></h1>
+    <p class="msg">Спасибо! Подписка активируется автоматически. Конфигурации уже отправлены в Telegram-бот — открой его, чтобы скачать и подключиться.</p>
+    <div class="pay-cta">
+      <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Открыть бота и забрать конфиг →</a>
+      <a href="cabinet.html" class="cta ghost">Личный кабинет</a>
+    </div>
+    <div class="pay-steps">
+      <div class="st"><span class="n">1</span><span>Вернись в <b>Telegram-бот</b> — там уже пришли 2 конфига (файлами и текстом).</span></div>
+      <div class="st"><span class="n">2</span><span>Импортируй конфиг в <b>AmneziaVPN</b> (или DefaultVPN на iPhone для РФ).</span></div>
+      <div class="st"><span class="n">3</span><span>Нажми «Подключиться» — и трафик защищён. Инструкция: <a href="how.html" style="color:var(--cyan)">как подключить</a>.</span></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap foot">
+  <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
+  <div class="foot-links"><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a><a href="cabinet.html">Кабинет</a><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a><a href="https://telegra.ph/Politika-konfidencialnosti--EurUsdVPN-06-23" target="_blank" rel="noopener">Политика конфиденциальности</a><a href="https://telegra.ph/Polzovatelskoe-soglashenie--EurUsdVPN-06-23" target="_blank" rel="noopener">Пользовательское соглашение</a></div>
+  <div>© 2026 EurUsdVPN</div>
+</div></footer>
+
+<script>window.SCENE='halo';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/scene.js?v=5"></script>
+<script src="assets/app.js?v=5"></script>
+</body>
+</html>

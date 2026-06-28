@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Платёж не завершён — EurUsdVPN</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Платёж не был завершён. Попробуйте оплатить ещё раз — деньги не списаны.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css?v=5">
+<style>
+.pay-shell{min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:90px 18px 60px}
+.pay-card{max-width:540px;width:100%;text-align:center;padding:44px 34px}
+.pay-badge{width:104px;height:104px;margin:0 auto 26px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,rgba(255,93,162,.20),rgba(255,93,162,.04));
+  border:1px solid rgba(255,93,162,.35);box-shadow:0 0 50px -14px var(--pink),inset 0 0 24px -8px rgba(255,93,162,.4);
+  animation:badgePop .6s var(--ease) both}
+@keyframes badgePop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.pay-badge svg{width:52px;height:52px}
+.pay-badge .ring{stroke:var(--pink);stroke-width:4;fill:none;opacity:.25}
+.pay-badge .x{stroke:var(--pink);stroke-width:5;fill:none;stroke-linecap:round;
+  stroke-dasharray:26;stroke-dashoffset:26;animation:xDraw .4s .35s var(--ease) forwards}
+.pay-badge .x2{animation-delay:.5s}
+@keyframes xDraw{to{stroke-dashoffset:0}}
+.pay-card .chip{margin:0 auto 18px}
+.pay-card .ttl{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(28px,5vw,40px);letter-spacing:-1px;line-height:1.05;margin-bottom:14px}
+.pay-card .ttl .g{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pay-card .msg{color:var(--dim);font-size:15.5px;line-height:1.6;max-width:430px;margin:0 auto 26px}
+.pay-cta{display:flex;flex-direction:column;gap:12px;align-items:center}
+.pay-cta .cta{width:100%;max-width:320px;justify-content:center}
+.pay-note{margin-top:24px;padding-top:20px;border-top:1px solid var(--brd);color:var(--mute);font-size:13.5px;line-height:1.6}
+.pay-note a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><div class="loader-ring"></div><div class="loader-mk">🛡</div></div>
+<canvas id="scene"></canvas><div class="veil"></div><div class="grain"></div>
+
+<header id="hdr"><div class="wrap hd">
+  <a href="index.html" class="brand"><span class="mk">🛡</span> EurUsd<b>VPN</b></a>
+  <nav class="nav-links">
+    <a href="index.html">Главная</a>
+    <a href="pricing.html">Тарифы</a>
+    <a href="how.html">Как подключить</a>
+    <a href="faq.html">FAQ</a>
+    <a href="cabinet.html">Кабинет</a>
+  </nav>
+  <a href="https://t.me/EurUsdVpnService_bot" class="cta">Открыть бота →</a>
+</div></header>
+
+<main class="shell page-enter">
+<section class="pay-shell">
+  <div class="pay-card glass">
+    <div class="pay-badge">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <circle class="ring" cx="30" cy="30" r="26"/>
+        <path class="x" d="M22 22 l16 16"/>
+        <path class="x x2" d="M38 22 l-16 16"/>
+      </svg>
+    </div>
+    <span class="chip"><span class="dot" style="background:var(--pink)"></span> Платёж не завершён</span>
+    <h1 class="ttl">Оплата <span class="g">не прошла</span></h1>
+    <p class="msg">Платёж был отменён или не завершён. Ничего страшного — попробуй ещё раз. Если деньги всё же списались, напиши в поддержку, и мы всё решим.</p>
+    <div class="pay-cta">
+      <a href="https://t.me/EurUsdVpnService_bot" class="cta lg">Вернуться в бота и повторить →</a>
+      <a href="https://t.me/eurusdvpnservicemanager" class="cta ghost">Написать в поддержку</a>
+    </div>
+    <div class="pay-note">
+      Если оплата прошла, но конфиг не пришёл — подписка всё равно активируется автоматически в течение пары минут. Проверь сообщения в <a href="https://t.me/EurUsdVpnService_bot">боте</a>.
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap foot">
+  <div class="brand" style="font-size:15px"><span class="mk" style="width:26px;height:26px;font-size:12px">🛡</span> EurUsd<b>VPN</b></div>
+  <div class="foot-links"><a href="pricing.html">Тарифы</a><a href="how.html">Как подключить</a><a href="faq.html">FAQ</a><a href="cabinet.html">Кабинет</a><a href="https://t.me/eurusdvpnservicemanager">Поддержка</a><a href="https://telegra.ph/Politika-konfidencialnosti--EurUsdVPN-06-23" target="_blank" rel="noopener">Политика конфиденциальности</a><a href="https://telegra.ph/Polzovatelskoe-soglashenie--EurUsdVPN-06-23" target="_blank" rel="noopener">Пользовательское соглашение</a></div>
+  <div>© 2026 EurUsdVPN</div>
+</div></footer>
+
+<script>window.SCENE='field';</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/scene.js?v=5"></script>
+<script src="assets/app.js?v=5"></script>
+</body>
+</html>
