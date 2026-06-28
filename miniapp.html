@@ -709,11 +709,7 @@ function nav(id) {
         const banner = document.createElement('div');
         banner.id = 'pendingBanner';
         banner.style.cssText = 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;';
-        banner.innerHTML = `<div style="font-size:24px">⏳</div><div style="flex:1"><div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--yellow);margin-bottom:2px">ОЖИДАЮ ОПЛАТУ</div><div style="font-size:13px;color:var(--muted2)">${planLabel} · Открой ссылку СБП и оплати</div></div><div style="color:var(--yellow);font-size:18px">›</div>`;
-        banner.onclick = () => {
-          showWaitScreen(localStorage.getItem('vpn_plan_label') || '—');
-          if (!pollTimer) { checkConfirmation(); pollTimer = setInterval(checkConfirmation, 4000); }
-        };
+        banner.innerHTML = `<div style="font-size:24px">⏳</div><div style="flex:1;cursor:pointer" onclick="showWaitScreen(localStorage.getItem('vpn_plan_label')||'—');if(!pollTimer){checkConfirmation();pollTimer=setInterval(checkConfirmation,4000);}"<div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--yellow);margin-bottom:2px">ОЖИДАЮ ОПЛАТУ</div><div style="font-size:13px;color:var(--muted2)">${planLabel} · Открой ссылку СБП и оплати</div></div><div onclick="event.stopPropagation();cancelPayment()" style="color:#ef4444;font-size:12px;padding:4px 8px;border:1px solid rgba(239,68,68,.3);border-radius:6px;cursor:pointer;white-space:nowrap">✕ Отмена</div>`;
         const homeScreen = document.getElementById('s-home');
         homeScreen.insertBefore(banner, homeScreen.firstChild);
       }
@@ -990,6 +986,7 @@ async function submitPayment() {
   localStorage.setItem('vpn_status_before', statusBefore);
   localStorage.setItem('vpn_pending', '1');
   localStorage.setItem('vpn_plan_label', planLabel);
+  if (d.pid) localStorage.setItem('vpn_pending_pid', String(d.pid));
   if (payBtn) { payBtn.disabled = false; payBtn.textContent = '💳 Оплатить через СБП'; }
   showWaitScreen(planLabel);
   startPolling();
@@ -1011,7 +1008,8 @@ function showWaitScreen(planLabel) {
       <div class="pay-step current"><div class="step-num current">⟳</div><div class="step-info"><div class="step-name">Оплата</div><div class="step-desc">Подтверждается автоматически</div></div></div>
       <div class="pay-step waiting"><div class="step-num waiting">4</div><div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">Сразу после оплаты</div></div></div>
     </div>
-    <button class="btn btn-secondary" onclick="cancelWait()">🏠 На главную</button>
+    <button class="btn btn-secondary" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#ef4444" onclick="cancelPayment()">❌ Отменить оплату</button>
+    <button class="btn btn-secondary" style="margin-top:0" onclick="cancelWait()">🏠 На главную (не отменять)</button>
     <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
   `;
   nav('wait');
@@ -1256,7 +1254,28 @@ async function doRecreateMiniapp(){
 
 function cancelWait() {
   stopPolling();
-  localStorage.removeItem('vpn_pending');
+  clearPendingStorage();
+  const b = document.getElementById('pendingBanner'); if (b) b.remove();
+  nav('home');
+  loadSub();
+}
+
+async function cancelPayment() {
+  const pid = localStorage.getItem('vpn_pending_pid');
+  if (pid) {
+    try {
+      await fetch(withAuth(API + '/cancel_payment'), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({init_data: MY_INIT, pid: parseInt(pid)}),
+        signal: AbortSignal.timeout(8000)
+      });
+    } catch(e) {}
+  }
+  stopPolling();
+  clearPendingStorage();
+  const b = document.getElementById('pendingBanner'); if (b) b.remove();
+  showToast('Оплата отменена');
   nav('home');
   loadSub();
 }
@@ -1281,6 +1300,7 @@ function clearPendingStorage() {
   localStorage.removeItem('vpn_status_before');
   localStorage.removeItem('vpn_submit_time');
   localStorage.removeItem('vpn_plan_label');
+  localStorage.removeItem('vpn_pending_pid');
 }
 
 async function checkConfirmation() {

@@ -818,7 +818,7 @@ async function submitAddon(){
     const d = await r.json();
     if(d.status==='ok' && d.redirect){
       window.open(d.redirect,'_blank');
-      document.getElementById('addonOk').textContent='✅ Открыта страница оплаты СБП. Слот добавится автоматически после оплаты.';
+      document.getElementById('addonOk').innerHTML='✅ Открыта страница оплаты СБП. Слот добавится автоматически после оплаты.<br><button onclick="cancelCabPayment('+d.pid+')" style="margin-top:8px;padding:6px 14px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;cursor:pointer;font-size:12px">❌ Отменить оплату</button>';
       document.getElementById('addonOk').style.display='block';
       btn.disabled=false; btn.textContent='💳 Оплатить через СБП';
       schedRefreshCab();
@@ -1010,12 +1010,23 @@ async function submitRenew(){
     const d=await r.json();
     if(d.status==='ok' && d.redirect){
       window.open(d.redirect,'_blank');
-      document.getElementById('renewOk').textContent='✅ Открыта страница оплаты СБП. Подписка продлится автоматически после оплаты.';
+      document.getElementById('renewOk').innerHTML='✅ Открыта страница оплаты СБП. Подписка продлится автоматически после оплаты.<br><button onclick="cancelCabPayment('+d.pid+')" style="margin-top:8px;padding:6px 14px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;cursor:pointer;font-size:12px">❌ Отменить оплату</button>';
       document.getElementById('renewOk').style.display='block';
       btn.disabled=false;btn.textContent='💳 Оплатить через СБП';
       schedRefreshCab();
     }else{showErr('renewErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
   }catch(e){showErr('renewErr','Ошибка соединения');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
+}
+
+async function cancelCabPayment(pid){
+  try{
+    const r=await fetch(`${API}/cancel_payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,pid}),signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'){
+      ['addonOk','renewOk'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+      alert('Оплата отменена');
+    }else{alert('Не удалось отменить: '+(d.msg||'ошибка'));}
+  }catch(e){alert('Ошибка соединения');}
 }
 
 // ── UTILS ──
