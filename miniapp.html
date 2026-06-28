@@ -709,7 +709,7 @@ function nav(id) {
         const banner = document.createElement('div');
         banner.id = 'pendingBanner';
         banner.style.cssText = 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;';
-        banner.innerHTML = `<div style="font-size:24px">⏳</div><div style="flex:1"><div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--yellow);margin-bottom:2px">ОЖИДАНИЕ ПОДТВЕРЖДЕНИЯ</div><div style="font-size:13px;color:var(--muted2)">${planLabel}</div></div><div style="color:var(--yellow);font-size:18px">›</div>`;
+        banner.innerHTML = `<div style="font-size:24px">⏳</div><div style="flex:1"><div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--yellow);margin-bottom:2px">ОЖИДАЮ ОПЛАТУ</div><div style="font-size:13px;color:var(--muted2)">${planLabel} · Открой ссылку СБП и оплати</div></div><div style="color:var(--yellow);font-size:18px">›</div>`;
         banner.onclick = () => {
           showWaitScreen(localStorage.getItem('vpn_plan_label') || '—');
           if (!pollTimer) { checkConfirmation(); pollTimer = setInterval(checkConfirmation, 4000); }
@@ -754,7 +754,7 @@ async function loadSub() {
     const d = await r.json();
     trialAvailable = !!d.trial_available;
     if (d.status === 'active') renderSubActive(d);
-    else if (d.status === 'pending') setStatus('pending','⏳ ОЖИДАНИЕ','Платёж на проверке');
+    else if (d.status === 'pending') setStatus('pending','⏳ ОЖИДАЮ ОПЛАТУ','Открой ссылку СБП и оплати');
     else renderSubInactive();
   } catch(e) {
     setStatus('inactive','⚠️ ОШИБКА','Не удалось загрузить статус');
@@ -1290,6 +1290,16 @@ async function checkConfirmation() {
   const submitTime = parseInt(localStorage.getItem('vpn_submit_time') || '0');
   const statusBefore = localStorage.getItem('vpn_status_before') || 'inactive';
   const endBefore = localStorage.getItem('vpn_end_before') || '';
+
+  // Таймаут ожидания: СБП-ссылка живёт ~30 мин. Если не оплатили — снимаем «ожидание».
+  const nowS = Math.floor(Date.now()/1000);
+  if (submitTime > 0 && nowS - submitTime > 1800) {
+    stopPolling();
+    clearPendingStorage();
+    const b = document.getElementById('pendingBanner'); if (b) b.remove();
+    loadSub();
+    return;
+  }
 
   try {
     const r = await fetch(withAuth(API + '?tg_id=' + MY_TG_ID), {signal: AbortSignal.timeout(5000)});
