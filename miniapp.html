@@ -177,6 +177,10 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
 .digits-input::placeholder { letter-spacing:4px; font-size:18px; color:var(--muted); }
 .digits-hint { text-align:center; color:var(--muted); font-size:13px; }
 
+/* Device count selector */
+.dev-cnt-btn{background:rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.3);border-radius:10px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;padding:10px 4px;text-align:center;cursor:pointer;transition:.2s;line-height:1.2;width:100%}
+.dev-cnt-btn.sel{background:rgba(124,58,237,.25);border-color:var(--purple2);color:#fff}
+
 /* WAIT SCREEN */
 .wait-ring { width:100px; height:100px; margin:0 auto 24px; border-radius:50%;
   position:relative; display:flex; align-items:center; justify-content:center; }
@@ -366,8 +370,14 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
       <div class="card">
         <div class="card-title" id="buyTitle"><span>🛒</span> Выбери тариф</div>
         <!-- 2 устройства включены в любой тариф -->
-        <div id="devSelectBlock" style="margin-bottom:14px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.5">
-          📱 <b style="color:#fff">2 устройства включены</b> в любой тариф по базовой цене. Больше (до 5) — докупишь в разделе «Мои устройства».
+        <div id="devSelectBlock" style="margin-bottom:16px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">📱 Кол-во устройств — <span id="devPriceHint" style="color:var(--purple2);font-weight:600">2 устройства — базовая цена</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <button class="dev-cnt-btn sel" id="dBtn2" onclick="setDevCount(2)">2</button>
+            <button class="dev-cnt-btn" id="dBtn3" onclick="setDevCount(3)">3<span style="display:block;font-size:9px;opacity:.65">+69₽</span></button>
+            <button class="dev-cnt-btn" id="dBtn4" onclick="setDevCount(4)">4<span style="display:block;font-size:9px;opacity:.65">+138₽</span></button>
+            <button class="dev-cnt-btn" id="dBtn5" onclick="setDevCount(5)">5<span style="display:block;font-size:9px;opacity:.65">+207₽</span></button>
+          </div>
         </div>
         <div class="plans-grid">
           <div class="plan-card" onclick="selectPlanDev('7d',89,7)">
@@ -774,6 +784,7 @@ function renderSubActive(d) {
   setProgress(used, total);
   const endDate = d.end_date ? new Date(d.end_date).toLocaleDateString('ru-RU') : '—';
   const devCount = d.devices_count || 1;
+  setDevCount(Math.max(2, devCount)); // инициализируем селектор устройств на экране покупки
   const clientIp = d.client_ip || '—';
   document.getElementById('subContent').innerHTML = `
     <div class="irow"><span class="irow-label">📅 Активна до</span><span class="irow-val hl">${endDate}</span></div>
@@ -877,9 +888,9 @@ function calcPrice(basePrice, devCount){
 function setDevCount(n){
   selectedDevCount = n;
   // Обновляем кнопки
-  for(let i=1;i<=5;i++){
+  for(let i=2;i<=5;i++){
     const btn = document.getElementById(`dBtn${i}`);
-    if(btn) btn.className = 'dev-count-btn' + (i===n?' active':'');
+    if(btn) btn.className = 'dev-cnt-btn' + (i===n?' sel':'');
   }
   // Обновляем цены в тарифах
   Object.keys(BASE_PRICES).forEach(key=>{
@@ -969,7 +980,7 @@ async function submitPayment() {
   try {
     const r = await fetch(API+'/buy', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({init_data:MY_INIT, plan:selectedPlan.key, promo:promoCode}),
+      body: JSON.stringify({init_data:MY_INIT, plan:selectedPlan.key, devices_count:selectedDevCount, promo:promoCode}),
       signal:AbortSignal.timeout(15000)
     });
     const d = await r.json();

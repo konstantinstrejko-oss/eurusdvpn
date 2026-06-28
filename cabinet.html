@@ -166,6 +166,8 @@ body{
 .dev-btn:active{transform:scale(.95)}
 .dev-btn.danger:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--red)}
 .rename-row{display:flex;gap:6px;margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r8);border:1px solid var(--border)}
+.cnt-btn{background:rgba(43,232,166,.06);border:1.5px solid var(--border);border-radius:var(--r8);color:var(--text3);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;padding:9px 4px;text-align:center;cursor:pointer;transition:.2s;line-height:1.2;width:100%}
+.cnt-btn.sel{background:rgba(43,232,166,.12);border-color:var(--accent2);color:var(--accent)}
 .plan-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r12);padding:14px;cursor:pointer;transition:all .2s var(--ease-out);text-align:center}
 .plan-card:hover{border-color:rgba(43,232,166,.3);transform:translateY(-1px)}
 .plan-card:active{transform:scale(.97)}
@@ -361,12 +363,21 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <!-- RENEWAL CARD -->
   <div class="card" style="animation-delay:150ms">
     <div class="sec-title">🔄 Продлить подписку</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">📱 Устройств — <span id="cabDevHint" style="color:var(--accent);font-weight:600">2 устройства — базовая цена</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+        <button class="cnt-btn sel" id="cBtn2" onclick="setCabDevCount(2)">2</button>
+        <button class="cnt-btn" id="cBtn3" onclick="setCabDevCount(3)">3<span style="display:block;font-size:9px;opacity:.65">+69₽</span></button>
+        <button class="cnt-btn" id="cBtn4" onclick="setCabDevCount(4)">4<span style="display:block;font-size:9px;opacity:.65">+138₽</span></button>
+        <button class="cnt-btn" id="cBtn5" onclick="setCabDevCount(5)">5<span style="display:block;font-size:9px;opacity:.65">+207₽</span></button>
+      </div>
+    </div>
     <div class="plans-grid">
-      <div class="plan-card" onclick="selPlan('7d',89,7)" data-k="7d"><div class="plan-n">7 дней</div><div class="plan-p">89₽</div></div>
-      <div class="plan-card hot" onclick="selPlan('1m',169,30)" data-k="1m"><div class="plan-n">1 месяц</div><div class="plan-p">169₽</div><div class="plan-badge">🔥 HIT</div></div>
-      <div class="plan-card" onclick="selPlan('3m',529,90)" data-k="3m"><div class="plan-n">3 месяца</div><div class="plan-p">529₽</div></div>
-      <div class="plan-card" onclick="selPlan('6m',829,180)" data-k="6m"><div class="plan-n">6 месяцев</div><div class="plan-p">829₽</div><div class="plan-badge">Выгодно</div></div>
-      <div class="plan-card sel" onclick="selPlan('1y',2000,365)" data-k="1y"><div class="plan-n">1 год</div><div class="plan-p">2000₽</div><div class="plan-badge">Максимум</div></div>
+      <div class="plan-card" onclick="selPlan('7d',89,7)" data-k="7d" data-base="89"><div class="plan-n">7 дней</div><div class="plan-p" id="cp_7d">89₽</div></div>
+      <div class="plan-card hot" onclick="selPlan('1m',169,30)" data-k="1m" data-base="169"><div class="plan-n">1 месяц</div><div class="plan-p" id="cp_1m">169₽</div><div class="plan-badge">🔥 HIT</div></div>
+      <div class="plan-card" onclick="selPlan('3m',529,90)" data-k="3m" data-base="529"><div class="plan-n">3 месяца</div><div class="plan-p" id="cp_3m">529₽</div></div>
+      <div class="plan-card" onclick="selPlan('6m',829,180)" data-k="6m" data-base="829"><div class="plan-n">6 месяцев</div><div class="plan-p" id="cp_6m">829₽</div><div class="plan-badge">Выгодно</div></div>
+      <div class="plan-card" onclick="selPlan('1y',2000,365)" data-k="1y" data-base="2000"><div class="plan-n">1 год</div><div class="plan-p" id="cp_1y">2000₽</div><div class="plan-badge">Максимум</div></div>
     </div>
     <div id="renewBlock" style="display:none;animation:enter .25s var(--ease-out)">
       <div class="req-box">
@@ -463,8 +474,32 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 const API = 'https://took-sentences-bacterial-albert.trycloudflare.com/api';
 const PLANS_MAP = {'3d':'🔹 3 дня','7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца'};
 let currentConfig = '', currentToken = '', endDateTs = 0, countdownTimer = null, currentPlan = '1m', currentDaysLeft = 0;
-let selPlanData = {key:'3m',price:249,days:90};
+let selPlanData = {key:'3m',price:529,days:90,basePrice:529};
 let renewVisible = false;
+let cabDevCount = 2;
+
+function calcCabPrice(base, n){ return base + 69 * Math.max(0, n-2); }
+
+function setCabDevCount(n){
+  cabDevCount = n;
+  for(let i=2;i<=5;i++){
+    const b=document.getElementById('cBtn'+i);
+    if(b) b.className='cnt-btn'+(i===n?' sel':'');
+  }
+  const hint=document.getElementById('cabDevHint');
+  if(hint) hint.textContent = n<=2 ? '2 устройства — базовая цена' : `${n} устройства — база + ${(n-2)*69}₽`;
+  // обновляем цены в карточках
+  document.querySelectorAll('.plan-card[data-base]').forEach(el=>{
+    const base=parseInt(el.dataset.base)||0;
+    const priceEl=el.querySelector('.plan-p');
+    if(priceEl) priceEl.textContent=calcCabPrice(base,n)+'₽';
+  });
+  // пересчитываем выбранный план
+  if(selPlanData.basePrice){
+    selPlanData.price=calcCabPrice(selPlanData.basePrice,n);
+    document.getElementById('renewAmt').textContent=selPlanData.price+'₽';
+  }
+}
 
 // ── THEME ──
 function toggleTheme(){
@@ -601,6 +636,7 @@ function showDash(d){
   document.getElementById('planName').textContent=PLANS_MAP[d.plan]||d.plan;
   currentPlan = d.plan;
   currentDaysLeft = d.days_left;
+  setCabDevCount(Math.max(2, d.devices_count || 2)); // инициализируем селектор устройств
 
   // Progress
   const planDays={'3d':3,'7d':7,'1m':30,'3m':90}[d.plan]||30;
@@ -988,10 +1024,11 @@ async function doRecreate(){
 }
 
 // ── RENEWAL ──
-function selPlan(k,p,d){
-  selPlanData={key:k,price:p,days:d};
+function selPlan(k,basePrice,d){
+  const price=calcCabPrice(basePrice,cabDevCount);
+  selPlanData={key:k,price,days:d,basePrice};
   document.querySelectorAll('.plan-card').forEach(el=>el.classList.toggle('sel',el.dataset.k===k));
-  document.getElementById('renewAmt').textContent=p+'₽';
+  document.getElementById('renewAmt').textContent=price+'₽';
   if(renewVisible)document.getElementById('renewBlock').style.display='block';
 }
 function toggleRenew(){
@@ -1006,7 +1043,7 @@ async function submitRenew(){
   const btn=document.getElementById('renewBtn');
   btn.disabled=true;btn.textContent='⏳ Создаю платёж...';
   try{
-    const r=await fetch(`${API}/buy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,plan:selPlanData.key}),signal:AbortSignal.timeout(15000)});
+    const r=await fetch(`${API}/buy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,plan:selPlanData.key,devices_count:cabDevCount}),signal:AbortSignal.timeout(15000)});
     const d=await r.json();
     if(d.status==='ok' && d.redirect){
       window.open(d.redirect,'_blank');
