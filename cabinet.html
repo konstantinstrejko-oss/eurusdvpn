@@ -276,8 +276,17 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <!-- EMAIL PANEL -->
     <div id="authEmailPanel" style="display:none">
 
+      <!-- Выбор: войти или зарегистрироваться -->
+      <div id="emChoicePanel">
+        <button class="btn btn-primary btn-block" style="margin-bottom:8px" onclick="emShowLogin()">Войти</button>
+        <button class="btn btn-ghost btn-block" onclick="emShowReg()">Зарегистрироваться</button>
+        <div class="hint" style="margin-top:12px">
+          <a href="#" onclick="emShowReset();return false">Забыл пароль</a>
+        </div>
+      </div>
+
       <!-- Email login -->
-      <div id="emLoginPanel">
+      <div id="emLoginPanel" style="display:none">
         <label class="field-label">Email</label>
         <input class="inp inp-plain" id="emLoginEmail" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')emailLogin()">
         <label class="field-label">Пароль</label>
@@ -285,31 +294,30 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
         <button class="btn btn-primary btn-block" id="emLoginBtn" onclick="emailLogin()">Войти</button>
         <div class="err-box" id="emLoginErr"></div>
         <div class="hint" style="margin-top:12px">
-          Нет аккаунта? <a href="#" onclick="emShowReg();return false">Создать пароль</a>
+          <a href="#" onclick="emShowChoice();return false">← Назад</a>
           &nbsp;·&nbsp;
           <a href="#" onclick="emShowReset();return false">Забыл пароль</a>
         </div>
       </div>
 
-      <!-- Register step 1: email -->
+      <!-- Register step 1: email + OTP -->
       <div id="emRegStep1Panel" style="display:none">
-        <div class="hint" style="margin-bottom:12px;margin-top:4px">Привяжи email в боте (👤 Профиль → «📧 Привязать email»), затем создай пароль здесь.</div>
         <label class="field-label">Email</label>
         <input class="inp inp-plain" id="emRegEmail" type="email" placeholder="you@example.com">
-        <button class="btn btn-primary btn-block" id="emRegSendBtn" onclick="emSendRegOtp()">Отправить код</button>
+        <button class="btn btn-primary btn-block" id="emRegSendBtn" onclick="emSendRegOtp()">Отправить код подтверждения</button>
         <div class="err-box" id="emRegErr"></div>
-        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowLogin();return false">← Назад</a></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowChoice();return false">← Назад</a></div>
       </div>
 
       <!-- Register step 2: otp + password -->
       <div id="emRegStep2Panel" style="display:none">
         <label class="field-label">Код из письма</label>
         <input class="inp inp-plain" id="emRegOtp" type="text" placeholder="000000" maxlength="6" style="text-align:center;letter-spacing:6px" oninput="this.value=this.value.replace(/\D/g,'')">
-        <label class="field-label">Новый пароль</label>
+        <label class="field-label">Придумай пароль</label>
         <input class="inp inp-plain" id="emRegPw" type="password" placeholder="минимум 8 символов">
         <label class="field-label">Повтори пароль</label>
         <input class="inp inp-plain" id="emRegPw2" type="password" placeholder="••••••••">
-        <button class="btn btn-primary btn-block" id="emRegConfirmBtn" onclick="emRegisterConfirm()">Зарегистрироваться</button>
+        <button class="btn btn-primary btn-block" id="emRegConfirmBtn" onclick="emRegisterConfirm()">Создать аккаунт</button>
         <div class="err-box" id="emRegStep2Err"></div>
         <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowReg();return false">← Назад</a></div>
       </div>
@@ -320,7 +328,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
         <input class="inp inp-plain" id="emResetEmail" type="email" placeholder="you@example.com">
         <button class="btn btn-primary btn-block" id="emResetSendBtn" onclick="emSendResetOtp()">Отправить код</button>
         <div class="err-box" id="emResetErr"></div>
-        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowLogin();return false">← Назад</a></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowChoice();return false">← Назад</a></div>
       </div>
 
       <!-- Reset step 2: otp + new password -->
@@ -342,6 +350,18 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 <!-- DASHBOARD -->
 <div class="dash" id="dashView">
+
+  <!-- TG LINK BANNER (email auth без привязки Telegram) -->
+  <div class="card" id="tgLinkBanner" style="display:none;text-align:center;padding:22px;border-color:rgba(255,176,32,.35);background:rgba(255,176,32,.05)">
+    <div style="font-size:28px;margin-bottom:10px">🔗</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin-bottom:8px;color:var(--amber)">Привяжи Telegram-аккаунт</div>
+    <div style="color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px">
+      Чтобы видеть подписку и конфиги, открой бота и нажми<br>
+      <b>👤 Профиль → 📧 Привязать email</b><br>
+      Введи тот же email, что использовал при регистрации.
+    </div>
+    <a href="https://t.me/EurUsdVpnService_bot" class="btn btn-primary" style="display:inline-block;text-decoration:none">Открыть бота</a>
+  </div>
 
   <!-- STATUS CARD -->
   <div class="card" style="animation-delay:0ms">
@@ -630,9 +650,11 @@ function switchAuthTab(tab){
   document.getElementById('authEmailPanel').style.display=tab==='email'?'':'none';
   document.getElementById('tabToken').className='auth-tab'+(tab==='token'?' at-active':'');
   document.getElementById('tabEmail').className='auth-tab'+(tab==='email'?' at-active':'');
+  if(tab==='email') emShowChoice();
 }
-const _emPanels=['emLoginPanel','emRegStep1Panel','emRegStep2Panel','emResetStep1Panel','emResetStep2Panel'];
+const _emPanels=['emChoicePanel','emLoginPanel','emRegStep1Panel','emRegStep2Panel','emResetStep1Panel','emResetStep2Panel'];
 function _emShow(id){_emPanels.forEach(p=>document.getElementById(p).style.display=p===id?'':'none');}
+function emShowChoice(){_emShow('emChoicePanel');}
 function emShowLogin(){_emShow('emLoginPanel');}
 function emShowReg(){_emShow('emRegStep1Panel');}
 function emShowReset(){_emShow('emResetStep1Panel');}
@@ -765,6 +787,11 @@ function showDash(d){
   document.getElementById('loginView').style.display='none';
   const dash=document.getElementById('dashView');
   dash.style.display='block';
+
+  // Email без привязки TG
+  if(d.no_tg_link){
+    document.getElementById('tgLinkBanner').style.display='block';
+  }
 
   // Нет подписки
   if(d.no_sub){
@@ -1291,8 +1318,11 @@ function logout(){
   clearInterval(countdownTimer);
   currentConfig='';currentToken='';endDateTs=0;
   document.getElementById('dashView').style.display='none';
+  document.getElementById('tgLinkBanner').style.display='none';
   document.getElementById('loginView').style.display='block';
   document.getElementById('tokenInput').value='';
+  // Сбрасываем email-панель на выбор
+  switchAuthTab('token');
   const btn=document.getElementById('loginBtn');btn.disabled=false;btn.textContent='Войти';
 }
 </script>
