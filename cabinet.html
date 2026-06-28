@@ -97,6 +97,13 @@ body{
 .err-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:var(--r12);padding:12px 14px;font-size:13px;color:var(--red);display:none;margin-top:10px;animation:enter .2s var(--ease-out)}
 .ok-box{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:var(--r12);padding:12px 14px;font-size:13px;color:var(--green);display:none;margin-top:10px;animation:enter .2s var(--ease-out)}
 
+/* ── AUTH TABS ── */
+.auth-tabs{display:flex;gap:6px;margin-bottom:16px}
+.auth-tab{flex:1;padding:10px 8px;border-radius:var(--r8);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);transition:all .2s var(--ease-out)}
+.auth-tab:hover{background:var(--bg3)}
+.auth-tab.at-active{background:rgba(43,232,166,.12);border-color:var(--border2);color:var(--accent)}
+.inp-plain{text-transform:none!important;letter-spacing:normal!important;font-size:14px!important;font-weight:500!important;width:100%;margin-bottom:10px}
+
 /* ── DASHBOARD ── */
 .dash{display:none;animation:enter .4s var(--ease-out) both}
 
@@ -247,16 +254,89 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <div class="login-hero">
     <div class="login-icon">🔐</div>
     <h1 class="login-title">Личный кабинет</h1>
-    <p class="login-sub">Введи ключ доступа для входа</p>
+    <p class="login-sub">Выбери способ входа</p>
   </div>
   <div class="card">
-    <label class="field-label">Ключ доступа</label>
-    <div class="field-row">
-      <input class="inp" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
-      <button class="btn btn-primary" id="loginBtn" onclick="login()">Войти</button>
+    <div class="auth-tabs">
+      <button class="auth-tab at-active" id="tabToken" onclick="switchAuthTab('token')">🔑 По токену</button>
+      <button class="auth-tab" id="tabEmail" onclick="switchAuthTab('email')">📧 По email</button>
     </div>
-    <div class="hint">Ключ был выслан в Telegram вместе с конфигом.<br>Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.</div>
-    <div class="err-box" id="loginErr"></div>
+
+    <!-- TOKEN PANEL -->
+    <div id="authTokenPanel">
+      <label class="field-label">Ключ доступа</label>
+      <div class="field-row">
+        <input class="inp" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
+        <button class="btn btn-primary" id="loginBtn" onclick="login()">Войти</button>
+      </div>
+      <div class="hint">Ключ был выслан в Telegram вместе с конфигом.<br>Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.</div>
+      <div class="err-box" id="loginErr"></div>
+    </div>
+
+    <!-- EMAIL PANEL -->
+    <div id="authEmailPanel" style="display:none">
+
+      <!-- Email login -->
+      <div id="emLoginPanel">
+        <label class="field-label">Email</label>
+        <input class="inp inp-plain" id="emLoginEmail" type="email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')emailLogin()">
+        <label class="field-label">Пароль</label>
+        <input class="inp inp-plain" id="emLoginPw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')emailLogin()">
+        <button class="btn btn-primary btn-block" id="emLoginBtn" onclick="emailLogin()">Войти</button>
+        <div class="err-box" id="emLoginErr"></div>
+        <div class="hint" style="margin-top:12px">
+          Нет аккаунта? <a href="#" onclick="emShowReg();return false">Создать пароль</a>
+          &nbsp;·&nbsp;
+          <a href="#" onclick="emShowReset();return false">Забыл пароль</a>
+        </div>
+      </div>
+
+      <!-- Register step 1: email -->
+      <div id="emRegStep1Panel" style="display:none">
+        <div class="hint" style="margin-bottom:12px;margin-top:4px">Привяжи email в боте (👤 Профиль → «📧 Привязать email»), затем создай пароль здесь.</div>
+        <label class="field-label">Email</label>
+        <input class="inp inp-plain" id="emRegEmail" type="email" placeholder="you@example.com">
+        <button class="btn btn-primary btn-block" id="emRegSendBtn" onclick="emSendRegOtp()">Отправить код</button>
+        <div class="err-box" id="emRegErr"></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowLogin();return false">← Назад</a></div>
+      </div>
+
+      <!-- Register step 2: otp + password -->
+      <div id="emRegStep2Panel" style="display:none">
+        <label class="field-label">Код из письма</label>
+        <input class="inp inp-plain" id="emRegOtp" type="text" placeholder="000000" maxlength="6" style="text-align:center;letter-spacing:6px" oninput="this.value=this.value.replace(/\D/g,'')">
+        <label class="field-label">Новый пароль</label>
+        <input class="inp inp-plain" id="emRegPw" type="password" placeholder="минимум 8 символов">
+        <label class="field-label">Повтори пароль</label>
+        <input class="inp inp-plain" id="emRegPw2" type="password" placeholder="••••••••">
+        <button class="btn btn-primary btn-block" id="emRegConfirmBtn" onclick="emRegisterConfirm()">Зарегистрироваться</button>
+        <div class="err-box" id="emRegStep2Err"></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowReg();return false">← Назад</a></div>
+      </div>
+
+      <!-- Reset step 1: email -->
+      <div id="emResetStep1Panel" style="display:none">
+        <label class="field-label">Email</label>
+        <input class="inp inp-plain" id="emResetEmail" type="email" placeholder="you@example.com">
+        <button class="btn btn-primary btn-block" id="emResetSendBtn" onclick="emSendResetOtp()">Отправить код</button>
+        <div class="err-box" id="emResetErr"></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowLogin();return false">← Назад</a></div>
+      </div>
+
+      <!-- Reset step 2: otp + new password -->
+      <div id="emResetStep2Panel" style="display:none">
+        <label class="field-label">Код из письма</label>
+        <input class="inp inp-plain" id="emResetOtp" type="text" placeholder="000000" maxlength="6" style="text-align:center;letter-spacing:6px" oninput="this.value=this.value.replace(/\D/g,'')">
+        <label class="field-label">Новый пароль</label>
+        <input class="inp inp-plain" id="emResetPw" type="password" placeholder="минимум 8 символов">
+        <label class="field-label">Повтори пароль</label>
+        <input class="inp inp-plain" id="emResetPw2" type="password" placeholder="••••••••">
+        <button class="btn btn-primary btn-block" id="emResetConfirmBtn" onclick="emResetConfirm()">Сохранить пароль</button>
+        <div class="err-box" id="emResetStep2Err"></div>
+        <div class="hint" style="margin-top:12px"><a href="#" onclick="emShowReset();return false">← Назад</a></div>
+      </div>
+
+    </div><!-- /authEmailPanel -->
   </div>
 </div>
 
@@ -543,6 +623,109 @@ function draw(){
   requestAnimationFrame(draw);
 }
 draw();
+
+// ── AUTH TABS ──
+function switchAuthTab(tab){
+  document.getElementById('authTokenPanel').style.display=tab==='token'?'':'none';
+  document.getElementById('authEmailPanel').style.display=tab==='email'?'':'none';
+  document.getElementById('tabToken').className='auth-tab'+(tab==='token'?' at-active':'');
+  document.getElementById('tabEmail').className='auth-tab'+(tab==='email'?' at-active':'');
+}
+const _emPanels=['emLoginPanel','emRegStep1Panel','emRegStep2Panel','emResetStep1Panel','emResetStep2Panel'];
+function _emShow(id){_emPanels.forEach(p=>document.getElementById(p).style.display=p===id?'':'none');}
+function emShowLogin(){_emShow('emLoginPanel');}
+function emShowReg(){_emShow('emRegStep1Panel');}
+function emShowReset(){_emShow('emResetStep1Panel');}
+
+// ── EMAIL LOGIN ──
+async function emailLogin(){
+  const email=document.getElementById('emLoginEmail').value.trim();
+  const pw=document.getElementById('emLoginPw').value;
+  const btn=document.getElementById('emLoginBtn');
+  hideErr('emLoginErr');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const r=await fetch(`${API}/email_login`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pw}),signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status!=='ok'){showErr('emLoginErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Войти';return;}
+    currentToken=d.token;localStorage.setItem('evpn_token',d.token);
+    const r2=await fetch(`${API}/cabinet?token=${d.token}`,{signal:AbortSignal.timeout(8000)});
+    const d2=await r2.json();
+    if(d2.config) currentConfig=d2.config;
+    showDash(d2);
+  }catch(e){showErr('emLoginErr','Ошибка соединения');btn.disabled=false;btn.textContent='Войти';}
+}
+
+// ── EMAIL REGISTER (create password for existing linked email) ──
+async function emSendRegOtp(){
+  const email=document.getElementById('emRegEmail').value.trim();
+  const btn=document.getElementById('emRegSendBtn');
+  hideErr('emRegErr');btn.disabled=true;btn.textContent='...';
+  try{
+    const r=await fetch(`${API}/email_send_otp`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,purpose:'verify'}),signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(d.status!=='ok'){showErr('emRegErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Отправить код';return;}
+    _emShow('emRegStep2Panel');
+  }catch(e){showErr('emRegErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить код';}
+}
+async function emRegisterConfirm(){
+  const email=document.getElementById('emRegEmail').value.trim();
+  const otp=document.getElementById('emRegOtp').value.trim();
+  const pw=document.getElementById('emRegPw').value;
+  const pw2=document.getElementById('emRegPw2').value;
+  const btn=document.getElementById('emRegConfirmBtn');
+  hideErr('emRegStep2Err');
+  if(pw!==pw2){showErr('emRegStep2Err','Пароли не совпадают');return;}
+  if(pw.length<8){showErr('emRegStep2Err','Пароль минимум 8 символов');return;}
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const r=await fetch(`${API}/email_register`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,otp,password:pw}),signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(d.status!=='ok'){showErr('emRegStep2Err',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Зарегистрироваться';return;}
+    currentToken=d.token;localStorage.setItem('evpn_token',d.token);
+    const r2=await fetch(`${API}/cabinet?token=${d.token}`,{signal:AbortSignal.timeout(8000)});
+    const d2=await r2.json();
+    if(d2.config) currentConfig=d2.config;
+    showDash(d2);
+  }catch(e){showErr('emRegStep2Err','Ошибка соединения');btn.disabled=false;btn.textContent='Зарегистрироваться';}
+}
+
+// ── PASSWORD RESET ──
+async function emSendResetOtp(){
+  const email=document.getElementById('emResetEmail').value.trim();
+  const btn=document.getElementById('emResetSendBtn');
+  hideErr('emResetErr');btn.disabled=true;btn.textContent='...';
+  try{
+    await fetch(`${API}/email_send_otp`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,purpose:'reset'}),signal:AbortSignal.timeout(10000)});
+    _emShow('emResetStep2Panel');
+  }catch(e){showErr('emResetErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить код';}
+}
+async function emResetConfirm(){
+  const email=document.getElementById('emResetEmail').value.trim();
+  const otp=document.getElementById('emResetOtp').value.trim();
+  const pw=document.getElementById('emResetPw').value;
+  const pw2=document.getElementById('emResetPw2').value;
+  const btn=document.getElementById('emResetConfirmBtn');
+  hideErr('emResetStep2Err');
+  if(pw!==pw2){showErr('emResetStep2Err','Пароли не совпадают');return;}
+  if(pw.length<8){showErr('emResetStep2Err','Пароль минимум 8 символов');return;}
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const r=await fetch(`${API}/email_reset_confirm`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,otp,new_password:pw}),signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(d.status!=='ok'){showErr('emResetStep2Err',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Сохранить пароль';return;}
+    currentToken=d.token;localStorage.setItem('evpn_token',d.token);
+    const r2=await fetch(`${API}/cabinet?token=${d.token}`,{signal:AbortSignal.timeout(8000)});
+    const d2=await r2.json();
+    if(d2.config) currentConfig=d2.config;
+    showDash(d2);
+  }catch(e){showErr('emResetStep2Err','Ошибка соединения');btn.disabled=false;btn.textContent='Сохранить пароль';}
+}
 
 // ── TOKEN FORMAT ──
 function formatToken(el){
