@@ -778,8 +778,11 @@ function showDash(d){
     document.getElementById('cdH').textContent='——';
     document.getElementById('cdM').textContent='——';
     document.getElementById('cdS').textContent='——';
-    // Показываем кнопку покупки
+    // Показываем кнопку покупки (удаляем предыдущую если есть)
+    const existingBuyCard = document.getElementById('buyCard');
+    if(existingBuyCard) existingBuyCard.remove();
     const buyCard = document.createElement('div');
+    buyCard.id = 'buyCard';
     buyCard.className = 'card';
     buyCard.style.textAlign = 'center';
     buyCard.style.padding = '24px';
