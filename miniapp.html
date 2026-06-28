@@ -869,11 +869,9 @@ const BASE_DAYS = {'7d':7,'1m':30,'3m':90,'6m':180,'1y':365};
 let selectedDevCount = 2; // 2 устройства включены в любой тариф
 
 function calcPrice(basePrice, devCount){
-  // 2 устройства входят в базовую цену; наценка 0.55 только за каждое сверх двух
+  // 2 устройства входят в базовую цену; +69₽ за каждое сверх двух
   const extra = Math.max(0, devCount - 2);
-  if(extra === 0) return basePrice;
-  const total = basePrice * (1 + 0.55 * extra);
-  return Math.round(total / 10) * 10;
+  return basePrice + 69 * extra;
 }
 
 function setDevCount(n){
@@ -891,8 +889,8 @@ function setDevCount(n){
   // Обновляем хинт
   const hint = document.getElementById('devPriceHint');
   if(hint){
-    if(n===1) hint.textContent = '1 устройство — базовая цена';
-    else hint.textContent = `${n} устройства — цена ×${(1+0.55*(n-1)).toFixed(2)}`;
+    if(n<=2) hint.textContent = '2 устройства — базовая цена';
+    else hint.textContent = `${n} устройства — база + ${(n-2)*69}₽`;
   }
   // Пересчитываем если план уже выбран
   if(selectedPlan){
