@@ -408,22 +408,14 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
           <div id="reqPlanName" style="color:var(--muted);font-size:14px;margin-top:6px">—</div>
         </div>
       </div>
-      <div class="req-box">
-        <div class="req-row"><span class="req-label">📱 Номер</span>
-          <span class="req-val phone" onclick="copyPhone()">+7 977 854-77-10 <span>⧉</span></span></div>
-        <div class="req-row"><span class="req-label">🏦 Банк</span><span class="req-val">Т-БАНК</span></div>
-        <div class="req-row"><span class="req-label">👤 Получатель</span><span class="req-val">EurUsdVpnService</span></div>
-      </div>
       <div class="card">
-        <div class="card-title"><span>📱</span> После перевода</div>
-        <div style="color:var(--muted2);font-size:14px;margin-bottom:8px;line-height:1.6">
-          Введи <b style="color:var(--text)">последние 4 цифры</b> карты/телефона отправителя:
+        <div class="card-title"><span>💳</span> Оплата через СБП</div>
+        <div style="color:var(--muted2);font-size:14px;margin-bottom:14px;line-height:1.6">
+          Нажми кнопку — откроется страница оплаты по QR или в приложении банка.<br>
+          Подписка активируется <b style="color:var(--text)">автоматически</b> сразу после оплаты.
         </div>
-        <input class="digits-input" id="digitsInput" type="text" inputmode="numeric"
-          maxlength="4" placeholder="••••" oninput="onDigits(this)" onkeyup="onDigits(this)" onchange="onDigits(this)">
-        <div class="digits-hint" id="digitsHint">Введи 4 цифры чтобы продолжить</div>
-        <button class="btn btn-primary" id="submitBtn" style="margin-top:16px;opacity:0.4;pointer-events:none" onclick="submitPayment()">
-          ✅ Подтвердить оплату
+        <button class="btn btn-primary" id="submitBtn" style="margin-top:4px" onclick="submitPayment()">
+          💳 Оплатить через СБП
         </button>
       </div>
       <div class="card" style="margin-top:0">
@@ -433,9 +425,6 @@ body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:no
           <button onclick="checkPromo()" style="padding:12px 16px;background:rgba(124,58,237,0.2);border:1px solid var(--border2);border-radius:10px;color:var(--purple2);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Проверить</button>
         </div>
         <div id="promoResult" style="font-size:13px;margin-top:8px;display:none"></div>
-      </div>
-      <div style="padding:4px;color:var(--muted);font-size:12px;text-align:center">
-        ⚠️ В комментарии к переводу ничего не пиши
       </div>
     </div>
 
@@ -932,11 +921,8 @@ function selectPlan(key, price, days) {
   const po = document.getElementById('priceOld');
   if (po) po.style.display = 'none';
   document.getElementById('reqPlanName').textContent = (names[key]||key)+' · '+days+' дней';
-  document.getElementById('digitsInput').value = '';
-  document.getElementById('digitsHint').textContent = 'Введи 4 цифры чтобы продолжить';
-  document.getElementById('digitsHint').style.color = 'var(--muted)';
   const btn = document.getElementById('submitBtn');
-  btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+  if (btn) { btn.style.opacity='1'; btn.style.pointerEvents='all'; btn.disabled=false; btn.textContent='💳 Оплатить через СБП'; }
   nav('req');
 }
 
@@ -957,17 +943,16 @@ function onDigits(el) {
 }
 
 async function submitPayment() {
-  const digits = document.getElementById('digitsInput').value;
-  if (!digits || digits.length !== 4 || !selectedPlan) return;
+  if (!selectedPlan) return;
   const names = {'7d':'🔸 7 дней','1m':'⭐ 1 месяц','3m':'💎 3 месяца','6m':'👑 6 месяцев','1y':'🏆 1 год'};
   const finalPrice = selectedPlan.discountedPrice || selectedPlan.price;
   const planLabel = (names[selectedPlan.key]||selectedPlan.key)+' · '+finalPrice+'₽'+(activePromo ? ' ['+activePromo.code+']' : '');
   const promoCode = document.getElementById('promoInput') ? document.getElementById('promoInput').value.trim().toUpperCase() : '';
 
   const payBtn = document.getElementById('submitBtn');
-  if (payBtn) { payBtn.disabled = true; payBtn.textContent = '⏳ Отправляю...'; }
+  if (payBtn) { payBtn.disabled = true; payBtn.textContent = '⏳ Создаю платёж...'; }
 
-  // 1. Текущий end_date ПЕРЕД созданием заявки (для сравнения при поллинге)
+  // 1. Текущий end_date ПЕРЕД оплатой (для сравнения при поллинге)
   const nowTs = Math.floor(Date.now()/1000);
   localStorage.setItem('vpn_submit_time', nowTs.toString());
   let endBefore = '', statusBefore = 'inactive';
@@ -978,31 +963,34 @@ async function submitPayment() {
     statusBefore = d0.status || 'inactive';
   } catch(e) {}
 
-  // 2. Создаём заявку напрямую (мини-апп сам инициирует оплату — без перехода в чат)
+  // 2. Создаём СБП-платёж и получаем ссылку оплаты
+  let redirect = '';
   try {
     const r = await fetch(API+'/buy', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({init_data:MY_INIT, plan:selectedPlan.key, digits, promo:promoCode}),
-      signal:AbortSignal.timeout(12000)
+      body: JSON.stringify({init_data:MY_INIT, plan:selectedPlan.key, promo:promoCode}),
+      signal:AbortSignal.timeout(15000)
     });
     const d = await r.json();
-    if (d.status !== 'ok') {
-      if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Подтвердить оплату'; }
-      showToast('❌ ' + (d.msg || 'Не удалось создать заявку'));
+    if (d.status !== 'ok' || !d.redirect) {
+      if (payBtn) { payBtn.disabled = false; payBtn.textContent = '💳 Оплатить через СБП'; }
+      showToast('❌ ' + (d.msg || 'Не удалось создать платёж'));
       return;
     }
+    redirect = d.redirect;
   } catch(e) {
-    if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Я оплатил'; }
+    if (payBtn) { payBtn.disabled = false; payBtn.textContent = '💳 Оплатить через СБП'; }
     showToast('❌ Ошибка соединения, попробуй ещё раз');
     return;
   }
 
-  // 3. Заявка создана — сохраняем состояние и показываем экран ожидания
+  // 3. Открываем страницу оплаты СБП + показываем экран ожидания (поллинг ловит подтверждение)
+  openLink(redirect);
   localStorage.setItem('vpn_end_before', endBefore);
   localStorage.setItem('vpn_status_before', statusBefore);
   localStorage.setItem('vpn_pending', '1');
   localStorage.setItem('vpn_plan_label', planLabel);
-  if (payBtn) { payBtn.disabled = false; payBtn.textContent = '✅ Я оплатил'; }
+  if (payBtn) { payBtn.disabled = false; payBtn.textContent = '💳 Оплатить через СБП'; }
   showWaitScreen(planLabel);
   startPolling();
 }
@@ -1011,17 +999,17 @@ function showWaitScreen(planLabel) {
   document.getElementById('waitContent').innerHTML = `
     <div class="card" style="text-align:center;padding:30px 20px">
       <div class="wait-ring"><span class="wait-icon">⏳</span></div>
-      <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидание подтверждения</div>
+      <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--purple2);margin-bottom:8px">Ожидаю оплату</div>
       <div style="color:var(--muted);font-size:14px;line-height:1.6">
-        Администратор проверяет платёж.<br>Обычно до 30 минут.<br><br>Конфиг придёт в бот 📱
+        Заверши оплату на открывшейся странице СБП.<br>Подписка активируется <b style="color:var(--text)">автоматически</b> за несколько секунд.<br><br>Конфиг придёт в бот 📱
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><span>📋</span> Статус заявки</div>
+      <div class="card-title"><span>📋</span> Статус оплаты</div>
       <div class="pay-step done"><div class="step-num done">✓</div><div class="step-info"><div class="step-name">Тариф выбран</div><div class="step-desc">${planLabel}</div></div></div>
-      <div class="pay-step done"><div class="step-num done">✓</div><div class="step-info"><div class="step-name">Оплата отправлена</div><div class="step-desc">Заявка создана</div></div></div>
-      <div class="pay-step current"><div class="step-num current">⟳</div><div class="step-info"><div class="step-name">Проверка платежа</div><div class="step-desc">Администратор проверяет</div></div></div>
-      <div class="pay-step waiting"><div class="step-num waiting">4</div><div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">После проверки</div></div></div>
+      <div class="pay-step done"><div class="step-num done">✓</div><div class="step-info"><div class="step-name">Платёж создан</div><div class="step-desc">Открыта страница СБП</div></div></div>
+      <div class="pay-step current"><div class="step-num current">⟳</div><div class="step-info"><div class="step-name">Оплата</div><div class="step-desc">Подтверждается автоматически</div></div></div>
+      <div class="pay-step waiting"><div class="step-num waiting">4</div><div class="step-info"><div class="step-name">Получение конфига</div><div class="step-desc">Сразу после оплаты</div></div></div>
     </div>
     <button class="btn btn-secondary" onclick="cancelWait()">🏠 На главную</button>
     <button class="btn btn-secondary" style="margin-top:0" onclick="openLink('https://t.me/eurusdvpnservicemanager')">💬 Поддержка</button>
@@ -1047,45 +1035,30 @@ async function loadDevicesMini(){
 }
 
 function dockBlockHtml(maxDev){
-  // Можно докупить, если достигнут лимит подписки и он меньше общего максимума (5)
-  const base = BASE_PRICES[dockPlan] || 169;
-  const total = BASE_DAYS[dockPlan] || 30;
-  addonPriceVal = Math.max(9, Math.round(base * 0.55 * (dockDaysLeft / total) / 10) * 10);
+  addonPriceVal = 59;
   return `
     <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px">
-      <button class="btn btn-primary" style="width:100%;background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.4);color:#fff" onclick="toggleDockMini()" id="dockToggleMini">💳 Докупить устройство (${addonPriceVal}₽)</button>
-      <div id="dockFormMini" style="display:none;margin-top:10px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Доплата <b style="color:#fff">${addonPriceVal}₽</b> — пропорционально оставшимся дням подписки.</div>
-        <div style="font-size:12px;line-height:1.7;background:rgba(255,255,255,.04);border-radius:8px;padding:10px;margin-bottom:10px">
-          📱 <b onclick="copyText('+79778547710')" style="cursor:pointer">+7 977 854-77-10</b> · копировать<br>
-          🏦 Т-БАНК · 👤 EurUsdVpnService<br>
-          <span style="color:rgba(255,200,0,.7)">⚠️ В комментарии ничего не пиши</span>
-        </div>
-        <input id="addonDigitsMini" type="text" inputmode="numeric" maxlength="4" placeholder="Последние 4 цифры" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:16px;text-align:center;letter-spacing:4px;outline:none;margin-bottom:8px">
-        <button class="btn btn-primary" style="width:100%" onclick="submitAddonMini()" id="addonBtnMini">Отправить заявку</button>
-      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Докупи устройство — фиксированно <b style="color:#fff">${addonPriceVal}₽</b> за каждое. Оплата через СБП, слот добавится автоматически.</div>
+      <button class="btn btn-primary" style="width:100%" onclick="submitAddonMini()" id="addonBtnMini">💳 Докупить устройство за ${addonPriceVal}₽</button>
     </div>`;
 }
 
-function toggleDockMini(){
-  const f = document.getElementById('dockFormMini');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
 async function submitAddonMini(){
-  const digits = document.getElementById('addonDigitsMini').value.trim();
-  if(digits.length !== 4){ showToast('Введи ровно 4 цифры'); return; }
   const btn = document.getElementById('addonBtnMini');
-  btn.disabled = true; btn.textContent = '⏳...';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Создаю платёж...'; }
+  let redirect = '';
   try{
-    const r = await fetch(API+'/device_tg',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({init_data:MY_INIT,tg_id:MY_TG_ID,action:'buy_addon',digits,amount:addonPriceVal}),signal:AbortSignal.timeout(12000)});
+    const r = await fetch(API+'/buy_addon',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({init_data:MY_INIT}),signal:AbortSignal.timeout(15000)});
     const d = await r.json();
-    if(d.status==='ok'){
-      btn.textContent = '✅ Отправлено';
-      showToast('✅ Заявка на докупку отправлена! Ожидай подтверждения (до 30 мин)');
-    } else { btn.disabled=false; btn.textContent='Отправить заявку'; showToast('❌ '+(d.msg||'Ошибка')); }
-  }catch(e){ btn.disabled=false; btn.textContent='Отправить заявку'; showToast('❌ Ошибка соединения'); }
+    if(d.status==='ok' && d.redirect){ redirect = d.redirect; }
+    else { if(btn){btn.disabled=false; btn.textContent='💳 Докупить устройство за 59₽';} showToast('❌ '+(d.msg||'Ошибка')); return; }
+  }catch(e){ if(btn){btn.disabled=false; btn.textContent='💳 Докупить устройство за 59₽';} showToast('❌ Ошибка соединения'); return; }
+  openLink(redirect);
+  if(btn){ btn.disabled=false; btn.textContent='💳 Докупить устройство за 59₽'; }
+  showToast('Открыта страница оплаты. Слот добавится автоматически после оплаты.');
+  setTimeout(loadDevicesMini, 8000);
+  setTimeout(loadDevicesMini, 20000);
 }
 
 function renderDevicesMini(devices, maxDev, count){
@@ -1514,6 +1487,7 @@ function copyPhone() {
 }
 function openLink(url) {
   if (tg && url.includes('t.me')) tg.openTelegramLink(url);
+  else if (tg && tg.openLink) tg.openLink(url);
   else window.open(url,'_blank');
 }
 function showToast(msg) {

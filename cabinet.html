@@ -324,20 +324,10 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <button class="btn btn-warn btn-block" onclick="toggleBuySlot()" id="buySlotToggle">💳 Докупить слот устройства</button>
       <div id="buySlotForm" style="display:none;margin-top:10px;padding:14px;background:rgba(43,232,166,.05);border:1px solid rgba(43,232,166,.15);border-radius:var(--r12)">
         <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
-          💳 Доплата: <strong id="addonPrice" style="color:var(--text)">—</strong><br>
-          <span style="font-size:11px;color:var(--text3)">Пропорционально оставшимся дням подписки</span>
+          💳 Доплата за устройство: <strong id="addonPrice" style="color:var(--text)">—</strong><br>
+          <span style="font-size:11px;color:var(--text3)">Фиксированно за каждое устройство. Оплата через СБП — слот добавится автоматически.</span>
         </div>
-        <div style="background:rgba(43,232,166,.06);border:1px solid rgba(43,232,166,.15);border-radius:var(--r8);padding:12px;margin-bottom:12px">
-          <div class="req-row"><span class="req-l">📱 Номер</span><span class="req-v" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
-          <div class="req-row"><span class="req-l">🏦 Банк</span><span class="req-v">Т-БАНК</span></div>
-          <div class="req-row" style="border:none"><span class="req-l">👤 Получатель</span><span class="req-v">EurUsdVpnService</span></div>
-          <div style="font-size:11px;color:rgba(251,191,36,.7);margin-top:8px">⚠️ В комментарии ничего не пиши!</div>
-        </div>
-        <label class="field-label">Последние 4 цифры карты/телефона</label>
-        <div class="field-row" style="margin-bottom:10px">
-          <input class="inp" id="addonDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
-          <button class="btn btn-primary" onclick="submitAddon()" id="addonBtn">Отправить</button>
-        </div>
+        <button class="btn btn-primary btn-block" onclick="submitAddon()" id="addonBtn">💳 Оплатить через СБП</button>
         <div class="err-box" id="addonErr"></div>
         <div class="ok-box" id="addonOk"></div>
       </div>
@@ -380,17 +370,9 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
     <div id="renewBlock" style="display:none;animation:enter .25s var(--ease-out)">
       <div class="req-box">
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Переведи <strong id="renewAmt" style="color:var(--text)">—</strong> на:</div>
-        <div class="req-row"><span class="req-l">📱 Номер</span><span class="req-v" onclick="copyText(this,'+79778547710')">+7 977 854-77-10 ⧉</span></div>
-        <div class="req-row"><span class="req-l">🏦 Банк</span><span class="req-v">Т-БАНК</span></div>
-        <div class="req-row"><span class="req-l">👤 Получатель</span><span class="req-v">EurUsdVpnService</span></div>
-        <div class="req-warn">⚠️ В комментарии к переводу ничего не пиши!</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">К оплате: <strong id="renewAmt" style="color:var(--text)">—</strong><br><span style="font-size:11px;color:var(--text3)">Оплата через СБП — подписка продлится автоматически после оплаты.</span></div>
       </div>
-      <label class="field-label">Последние 4 цифры карты/телефона</label>
-      <div class="field-row" style="margin-bottom:10px">
-        <input class="inp" id="renewDigits" type="text" placeholder="1234" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="letter-spacing:4px;font-size:20px;text-align:center">
-        <button class="btn btn-primary" onclick="submitRenew()" id="renewBtn">Отправить</button>
-      </div>
+      <button class="btn btn-primary btn-block" onclick="submitRenew()" id="renewBtn">💳 Оплатить через СБП</button>
       <div class="err-box" id="renewErr"></div>
       <div class="ok-box" id="renewOk"></div>
     </div>
@@ -801,18 +783,23 @@ let addonPriceVal = 0;
 async function checkBuySlot(devCount, maxDev, daysLeft, plan){
   const block = document.getElementById('buySlotBlock');
   if(devCount >= maxDev && maxDev < 5){
-    // Считаем цену
-    const planPrices = {'7d':89,'1m':169,'3m':529,'6m':829,'1y':2000};
-    const planDays = {'7d':7,'1m':30,'3m':90,'6m':180,'1y':365};
-    const base = planPrices[plan] || 169;
-    const total = planDays[plan] || 30;
-    addonPriceVal = Math.max(9, Math.round(base * 0.55 * (daysLeft / total) / 10) * 10);
+    addonPriceVal = 59;  // фиксированная цена за устройство
     document.getElementById('addonPrice').textContent = addonPriceVal + '₽';
     block.style.display = 'block';
   } else {
     block.style.display = 'none';
   }
 }
+
+async function refreshCab(){
+  if(!currentToken) return;
+  try{
+    const r=await fetch(`${API}/cabinet?token=${currentToken}`,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.status==='ok'){ if(d.config) currentConfig=d.config; showDash(d); }
+  }catch(e){}
+}
+function schedRefreshCab(){ [8000,18000,32000,50000].forEach(t=>setTimeout(refreshCab,t)); }
 
 function toggleBuySlot(){
   const form = document.getElementById('buySlotForm');
@@ -823,21 +810,20 @@ function toggleBuySlot(){
 }
 
 async function submitAddon(){
-  const digits = document.getElementById('addonDigits').value.trim();
-  if(digits.length !== 4){showErr('addonErr','Введи ровно 4 цифры');return;}
   hideErr('addonErr');
   const btn = document.getElementById('addonBtn');
-  btn.disabled=true; btn.textContent='...';
+  btn.disabled=true; btn.textContent='⏳ Создаю платёж...';
   try{
-    const r = await fetch(`${API}/buy_addon`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,digits,amount:addonPriceVal}),signal:AbortSignal.timeout(8000)});
+    const r = await fetch(`${API}/buy_addon`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken}),signal:AbortSignal.timeout(15000)});
     const d = await r.json();
-    if(d.status==='ok'){
-      document.getElementById('addonOk').textContent='✅ Заявка отправлена! Ожидай подтверждения (до 30 мин).';
+    if(d.status==='ok' && d.redirect){
+      window.open(d.redirect,'_blank');
+      document.getElementById('addonOk').textContent='✅ Открыта страница оплаты СБП. Слот добавится автоматически после оплаты.';
       document.getElementById('addonOk').style.display='block';
-      document.getElementById('addonDigits').value='';
-      btn.textContent='✅ Отправлено';
-    }else{showErr('addonErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Отправить';}
-  }catch(e){showErr('addonErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить';}
+      btn.disabled=false; btn.textContent='💳 Оплатить через СБП';
+      schedRefreshCab();
+    }else{showErr('addonErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
+  }catch(e){showErr('addonErr','Ошибка соединения');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
 }
 
 function toggleAddDev(){
@@ -1015,21 +1001,21 @@ function toggleRenew(){
   if(renewVisible)document.getElementById('renewAmt').textContent=selPlanData.price+'₽';
 }
 async function submitRenew(){
-  const digits=document.getElementById('renewDigits').value.trim();
-  if(digits.length!==4){showErr('renewErr','Введи ровно 4 цифры');return;}
+  if(!selPlanData || !selPlanData.key){showErr('renewErr','Выбери тариф');return;}
   hideErr('renewErr');
   const btn=document.getElementById('renewBtn');
-  btn.disabled=true;btn.textContent='...';
+  btn.disabled=true;btn.textContent='⏳ Создаю платёж...';
   try{
-    const r=await fetch(`${API}/buy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,plan:selPlanData.key,digits,amount:selPlanData.price}),signal:AbortSignal.timeout(8000)});
+    const r=await fetch(`${API}/buy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken,plan:selPlanData.key}),signal:AbortSignal.timeout(15000)});
     const d=await r.json();
-    if(d.status==='ok'){
-      document.getElementById('renewOk').textContent='✅ Заявка отправлена! Ожидай подтверждения (до 30 мин).';
+    if(d.status==='ok' && d.redirect){
+      window.open(d.redirect,'_blank');
+      document.getElementById('renewOk').textContent='✅ Открыта страница оплаты СБП. Подписка продлится автоматически после оплаты.';
       document.getElementById('renewOk').style.display='block';
-      document.getElementById('renewDigits').value='';
-      btn.textContent='✅ Отправлено';
-    }else{showErr('renewErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Отправить';}
-  }catch(e){showErr('renewErr','Ошибка соединения');btn.disabled=false;btn.textContent='Отправить';}
+      btn.disabled=false;btn.textContent='💳 Оплатить через СБП';
+      schedRefreshCab();
+    }else{showErr('renewErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
+  }catch(e){showErr('renewErr','Ошибка соединения');btn.disabled=false;btn.textContent='💳 Оплатить через СБП';}
 }
 
 // ── UTILS ──
