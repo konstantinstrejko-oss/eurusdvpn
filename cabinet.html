@@ -254,27 +254,12 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   <div class="login-hero">
     <div class="login-icon">🔐</div>
     <h1 class="login-title">Личный кабинет</h1>
-    <p class="login-sub">Выбери способ входа</p>
+    <p class="login-sub">Войди через email</p>
   </div>
   <div class="card">
-    <div class="auth-tabs">
-      <button class="auth-tab at-active" id="tabToken" onclick="switchAuthTab('token')">🔑 По токену</button>
-      <button class="auth-tab" id="tabEmail" onclick="switchAuthTab('email')">📧 По email</button>
-    </div>
-
-    <!-- TOKEN PANEL -->
-    <div id="authTokenPanel">
-      <label class="field-label">Ключ доступа</label>
-      <div class="field-row">
-        <input class="inp" id="tokenInput" type="text" placeholder="EVPN-XXXX-XXXX-XXXX" maxlength="19" oninput="formatToken(this)" onkeydown="if(event.key==='Enter')login()">
-        <button class="btn btn-primary" id="loginBtn" onclick="login()">Войти</button>
-      </div>
-      <div class="hint">Ключ был выслан в Telegram вместе с конфигом.<br>Нет ключа? <a href="https://t.me/EurUsdVpnService_bot">Открой бота</a> или <a href="https://t.me/eurusdvpnservicemanager">напиши в поддержку</a>.</div>
-      <div class="err-box" id="loginErr"></div>
-    </div>
 
     <!-- EMAIL PANEL -->
-    <div id="authEmailPanel" style="display:none">
+    <div id="authEmailPanel">
 
       <!-- Выбор: войти или зарегистрироваться -->
       <div id="emChoicePanel">
@@ -358,7 +343,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     <div style="color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px">
       Чтобы видеть подписку и конфиги, открой бота и нажми<br>
       <b>👤 Профиль → 📧 Привязать email</b><br>
-      Введи тот же email, что использовал при регистрации.
+      После привязки можно сразу установить пароль через бота:<br>
+      <b>👤 Профиль → 🔐 Установить пароль кабинета</b>
     </div>
     <a href="https://t.me/EurUsdVpnService_bot" class="btn btn-primary" style="display:inline-block;text-decoration:none">Открыть бота</a>
   </div>
@@ -644,14 +630,7 @@ function draw(){
 }
 draw();
 
-// ── AUTH TABS ──
-function switchAuthTab(tab){
-  document.getElementById('authTokenPanel').style.display=tab==='token'?'':'none';
-  document.getElementById('authEmailPanel').style.display=tab==='email'?'':'none';
-  document.getElementById('tabToken').className='auth-tab'+(tab==='token'?' at-active':'');
-  document.getElementById('tabEmail').className='auth-tab'+(tab==='email'?' at-active':'');
-  if(tab==='email') emShowChoice();
-}
+// ── EMAIL PANELS ──
 const _emPanels=['emChoicePanel','emLoginPanel','emRegStep1Panel','emRegStep2Panel','emResetStep1Panel','emResetStep2Panel'];
 function _emShow(id){_emPanels.forEach(p=>document.getElementById(p).style.display=p===id?'':'none');}
 function emShowChoice(){_emShow('emChoicePanel');}
@@ -761,27 +740,15 @@ function formatToken(el){
   el.value=parts.length>0?'EVPN-'+parts.join('-'):'';
 }
 
-// Auto-login
-const urlToken=new URLSearchParams(location.search).get('token');
-if(urlToken){document.getElementById('tokenInput').value=urlToken;login();}
-else{const s=localStorage.getItem('evpn_token');if(s){document.getElementById('tokenInput').value=s;login();}}
-
-async function login(){
-  const raw=document.getElementById('tokenInput').value.trim();
-  if(raw.replace(/[^A-Z0-9]/g,'').length<12){showErr('loginErr','Введи полный ключ доступа');return;}
-  const btn=document.getElementById('loginBtn');
-  btn.disabled=true;btn.textContent='...';
-  hideErr('loginErr');
-  try{
-    const r=await fetch(`${API}/cabinet?token=${raw}`,{signal:AbortSignal.timeout(8000)});
-    const d=await r.json();
-    if(d.status!=='ok'){showErr('loginErr',d.msg||'Ключ не найден');btn.disabled=false;btn.textContent='Войти';return;}
-    currentToken=raw;
-    localStorage.setItem('evpn_token',raw);
-    if(d.config) currentConfig=d.config;
-    showDash(d);
-  }catch(e){showErr('loginErr','Ошибка соединения. Попробуй позже.');btn.disabled=false;btn.textContent='Войти';}
-}
+// Auto-login from saved token (email session)
+(function(){
+  const s=localStorage.getItem('evpn_token');
+  if(!s) return;
+  fetch(`${API}/cabinet?token=${s}`,{signal:AbortSignal.timeout(8000)})
+    .then(r=>r.json()).then(d=>{
+      if(d.status==='ok'){currentToken=s;if(d.config)currentConfig=d.config;showDash(d);}
+    }).catch(()=>{});
+})();
 
 function showDash(d){
   document.getElementById('loginView').style.display='none';
@@ -1320,10 +1287,7 @@ function logout(){
   document.getElementById('dashView').style.display='none';
   document.getElementById('tgLinkBanner').style.display='none';
   document.getElementById('loginView').style.display='block';
-  document.getElementById('tokenInput').value='';
-  // Сбрасываем email-панель на выбор
-  switchAuthTab('token');
-  const btn=document.getElementById('loginBtn');btn.disabled=false;btn.textContent='Войти';
+  emShowChoice();
 }
 </script>
 </body>
