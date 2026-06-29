@@ -1175,33 +1175,7 @@ async function doRecreate(){
     }else{showErr('recreateErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Подтвердить';}
   }catch(e){showErr('recreateErr','Ошибка соединения');btn.disabled=false;btn.textContent='Подтвердить';}
 }
-function hideRecreate(){
-  document.getElementById('recreateBlock').style.display='none';
-  document.getElementById('recreateShowBtn').style.display='block';
-}
-async function doRecreate(){
-  const btn=document.getElementById('recreateBtn');
-  btn.disabled=true;btn.textContent='⏳...';
-  hideErr('recreateErr');
-  try{
-    const r=await fetch(`${API}/recreate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:currentToken}),signal:AbortSignal.timeout(15000)});
-    const d=await r.json();
-    if(d.status==='ok'){
-      currentConfig=d.config;
-      document.getElementById('clientIp').textContent=d.ip;
-      const pre=document.getElementById('configText');
-      if(pre)pre.textContent=d.config;
-      // Показываем конфиг текстом
-      document.getElementById('configBlock').style.display='block';
-      document.getElementById('toggleConfigBtn').textContent='🙈 Скрыть конфиг';
-      document.getElementById('configText').textContent=d.config;
-      document.getElementById('recreateOk').textContent='✅ Конфиг пересоздан! Скачай новый файл.';
-      document.getElementById('recreateOk').style.display='block';
-      btn.textContent='✅ Готово';
-      setTimeout(()=>{downloadConfig();document.getElementById('configBlock').scrollIntoView({behavior:'smooth'})},400);
-    }else{showErr('recreateErr',d.msg||'Ошибка');btn.disabled=false;btn.textContent='Подтвердить';}
-  }catch(e){showErr('recreateErr','Ошибка соединения');btn.disabled=false;btn.textContent='Подтвердить';}
-}
+// (удалён дубль hideRecreate/doRecreate — пересоздание идёт через doRecreate выше, /api/recreate_device)
 
 // ── RENEWAL ──
 function selPlan(k,basePrice,d){
