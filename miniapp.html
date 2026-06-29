@@ -1508,7 +1508,8 @@ function updatePriceDisplay() {
   const origPrice = selectedPlan.price;
   let newPrice = origPrice;
   if (activePromo && activePromo.percent > 0) {
-    newPrice = Math.round(origPrice * (1 - activePromo.percent / 100));
+    // Совпадает с серверной cfg.apply_promo_percent: floor до десятков, минимум 10₽
+    newPrice = Math.max(10, Math.floor(origPrice * (1 - activePromo.percent / 100) / 10) * 10);
   }
   selectedPlan.discountedPrice = newPrice;
   const oldEl = document.getElementById('priceOld');
